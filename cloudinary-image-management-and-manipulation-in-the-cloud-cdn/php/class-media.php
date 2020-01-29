@@ -1263,6 +1263,20 @@ class Media implements Setup {
 	}
 
 	/**
+	 * Set holds the Cloudinary folder.
+	 *
+	 * @param  string  $cloudinary_folder  Holds the Cloudinary folder.
+	 *
+	 * @return  self
+	 */ 
+	public function set_cloudinary_folder($cloudinary_folder)
+	{
+		$this->cloudinary_folder = $cloudinary_folder;
+
+		return $this;
+	}
+
+	/**
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
