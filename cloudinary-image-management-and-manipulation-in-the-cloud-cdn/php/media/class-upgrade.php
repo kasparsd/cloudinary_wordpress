@@ -118,24 +118,35 @@ class Upgrade {
 	}
 
 	/**
+	 * When dealing with an upgrade from Cloudinary 1.x, 
+	 * preserve the original sync to the root folder within Cloudinary.
+	 */
+	public function preserve_legacy_sync_folder() {
+		global $plugin_page;
+
+		if ( empty( $plugin_page ) || false === strpos( $plugin_page, 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn' ) ) {
+			return;
+		}
+
+		$this->media->set_cloudinary_folder( '' );
+
+		$cloudinary_sync_media = get_option( 'cloudinary_sync_media') ; 
+		$cloudinary_settings   = get_option( 'cloudinary_settings_cache' );
+
+		$cloudinary_sync_media['cloudinary_folder'] = '';
+		$cloudinary_settings['sync_media']['cloudinary_folder'] = '';
+
+		update_option( 'cloudinary_sync_media', $cloudinary_sync_media );
+		update_option( 'cloudinary_settings_cache', $cloudinary_settings );
+	}
+
+	/**
 	 * Setup hooks for the filters.
 	 */
 	public function setup_hooks() {
 		add_filter( 'cloudinary_id', array( $this, 'check_cloudinary_version' ), 9, 2 ); // Priority 9, to take preference over prep_on_demand_upload.
 
-		add_action( 'admin_menu', function () {
-			global $plugin_page;
-
-			if ( empty( $plugin_page ) || false === strpos( $plugin_page, 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn' ) ) {
-				return;
-			}
-
-			$this->media->set_cloudinary_folder('');
-	
-			$cloudinary_settings = get_option('cloudinary_settings_cache');
-			$cloudinary_settings['sync_media']['cloudinary_folder'] = '';
-			update_option('cloudinary_settings_cache', $cloudinary_settings);
-		});
+		add_action( 'admin_menu', array( $this, 'preserve_legacy_sync_folder' ) );
 
 		// Add a redirection to the new plugin settings, from the old plugin.
 		if( is_admin() ) {
