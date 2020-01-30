@@ -120,13 +120,16 @@ class Upgrade {
 	/**
 	 * When dealing with an upgrade from Cloudinary 1.x, 
 	 * preserve the original sync to the root folder within Cloudinary.
+	 * Also deactivate the old plugin as it's no longer useful.
 	 */
 	public function preserve_legacy_sync_folder() {
-		global $plugin_page;
+		$cloundinary_v1 = 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn/cloudinary.php';
 
-		if ( empty( $plugin_page ) || false === strpos( $plugin_page, 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn' ) ) {
+		if ( ! is_plugin_active( $cloundinary_v1 ) ) {
 			return;
 		}
+
+		deactivate_plugins( $cloundinary_v1 );
 
 		$this->media->set_cloudinary_folder( '' );
 
@@ -146,17 +149,8 @@ class Upgrade {
 	public function setup_hooks() {
 		add_filter( 'cloudinary_id', array( $this, 'check_cloudinary_version' ), 9, 2 ); // Priority 9, to take preference over prep_on_demand_upload.
 
-		add_action( 'admin_menu', array( $this, 'preserve_legacy_sync_folder' ) );
-
-		// Add a redirection to the new plugin settings, from the old plugin.
-		if( is_admin() ) {
-			add_action( 'admin_menu', function () {
-				global $plugin_page;
-				if ( ! empty( $plugin_page ) && false !== strpos( $plugin_page, 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn' ) ) {
-					wp_safe_redirect( admin_url( '?page=cloudinary' ) );
-					die;
-				}
-			} );
+		if ( is_admin() ) {
+			add_action( 'admin_menu', array( $this, 'preserve_legacy_sync_folder' ) );
 		}
 	}
 }
