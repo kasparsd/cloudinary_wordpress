@@ -286,7 +286,7 @@ class Connect implements Config, Setup, Notice {
 			if ( empty( $stats ) ) {
 				// Get users plan.
 				$stats = $this->plugin->components['connect']->api->usage();
-				if ( ! empty( $stats['media_limits'] ) ) {
+				if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 					$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 					$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
 					set_transient( '_cloudinary_usage', $stats, HOUR_IN_SECONDS );
