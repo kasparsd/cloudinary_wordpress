@@ -279,7 +279,6 @@ class Connect implements Config, Setup, Notice {
 
 			$this->api = new Connect\Api( $this, $this->plugin->version );
 			$stats     = get_transient( '_cloudinary_usage' );
-
 			if ( empty( $stats ) ) {
 				// Get users plan.
 				$stats = $this->plugin->components['connect']->api->usage();
