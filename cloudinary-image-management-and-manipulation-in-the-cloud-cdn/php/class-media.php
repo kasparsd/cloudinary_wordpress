@@ -1102,11 +1102,14 @@ class Media implements Setup {
 	 */
 	public static function sanitize_cloudinary_folder( $value, $field ) {
 		$value = trim( $value );
+
 		if ( empty( $value ) && ! empty( $field['default'] ) ) {
 			$value = $field['default'];
 		}
 
-		return sanitize_text_field( $value );
+		$sanitzed = sanitize_text_field( $value );
+
+		return $sanitzed ? $sanitzed : '/';
 	}
 
 	/**
