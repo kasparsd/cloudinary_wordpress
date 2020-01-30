@@ -13,7 +13,7 @@ $struct = array(
 		'connect',
 	),
 	'sanitize_callback' => function ( $value ) {
-		if ( 'off' === $value['video_autoplay'] && 'off' === $value['video_controls'] && 'off' === $value['video_loop'] ) {
+		if ( 'off' === $value['video_autoplay_mode'] && 'off' === $value['video_controls'] && 'off' === $value['video_loop'] ) {
 			return new WP_Error( 'cant_play', __( 'At least one of the video player settings must be set to "On".', 'cloudinary' ) );
 		}
 

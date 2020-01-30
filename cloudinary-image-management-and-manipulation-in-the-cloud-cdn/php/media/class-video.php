@@ -299,7 +299,7 @@ class Video {
 				$args['transformation'] = $transformations;
 			}
 			$video = wp_get_attachment_metadata( $attachment_id );
-			if ( $this->player_enabled() ) {
+			if ( $this->player_enabled() && $video ) {
 				$instance = $this->queue_video_config( $attachment_id, $url, $video['fileformat'], $args );
 				// Remove src and replace with an ID.
 				$new_tag = str_replace( 'src="' . $url . '"', 'id="cloudinary-video-' . esc_attr( $instance ) . '"', $tag );
