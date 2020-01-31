@@ -131,16 +131,14 @@ class Upgrade {
 
 		deactivate_plugins( $cloundinary_v1 );
 
-		$this->media->set_cloudinary_folder( '' );
+		$this->media->set_cloudinary_folder( '/' );
 
-		$cloudinary_sync_media = get_option( 'cloudinary_sync_media') ; 
-		$cloudinary_settings   = get_option( 'cloudinary_settings_cache' );
+		$cloudinary_settings = get_option( 'cloudinary_settings_cache', array() );
 
-		$cloudinary_sync_media['cloudinary_folder'] = '';
-		$cloudinary_settings['sync_media']['cloudinary_folder'] = '';
-
-		update_option( 'cloudinary_sync_media', $cloudinary_sync_media );
-		update_option( 'cloudinary_settings_cache', $cloudinary_settings );
+		if ( count( $cloudinary_settings ) > 0 ) {
+			$cloudinary_settings['sync_media']['cloudinary_folder'] = '/';
+			update_option( 'cloudinary_settings_cache', $cloudinary_settings );
+		}
 	}
 
 	/**
