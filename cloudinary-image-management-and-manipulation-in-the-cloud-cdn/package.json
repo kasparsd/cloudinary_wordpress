@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "cross-env webpack --mode=development --watch",
-    "build": "cross-env webpack --mode=production"
+    "build": "cross-env webpack --mode=development"
   },
   "author": "XWP",
   "license": "GPL-2.0+",
