@@ -338,7 +338,7 @@ class Connect implements Config, Setup, Notice {
 				$sync = get_option( 'cloudinary_sync_media' );
 				if ( empty( $sync ) ) {
 					$sync = array(
-						'auto_sync'         => '',
+						'auto_sync'         => 'off',
 						'cloudinary_folder' => '',
 					);
 				}
