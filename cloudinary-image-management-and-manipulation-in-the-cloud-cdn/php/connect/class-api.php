@@ -165,8 +165,15 @@ class Api {
 		if ( empty( $this->credentials['cname'] ) || $endpoint ) {
 			$parts[] = $this->credentials['cloud_name'];
 		}
-		$parts[] = $resource;
-		$parts[] = $function;
+
+		// Dynamic SEO friendly URLS require the shorter /images path
+		// https://cloudinary.com/blog/how_to_dynamically_create_seo_friendly_urls_for_your_site_s_images#dynamic_seo_suffixes
+		if ( get_the_title() && 'image' === $resource && 'upload' === $function ) {
+			$parts[] = 'images';
+		} else {
+			$parts[] = $resource;
+			$parts[] = $function;
+		}
 
 		$parts = array_filter( $parts );
 		$url   = implode( '/', $parts );
@@ -253,7 +260,17 @@ class Api {
 
 		$url_parts[] = $args['version'];
 
-		$url_parts[] = $public_id;
+		$title = get_the_title();
+
+		// Dynamic SEO friendly suffix.
+		if ( ! empty( $title ) ) {
+			$public_id   = pathinfo( $public_id );
+			$url_parts[] = $public_id['dirname'];
+			$url_parts[] = $public_id['filename'];
+			$url_parts[] = sanitize_title( $title );
+		} else {
+			$url_parts[] = $public_id;
+		}
 
 		// Clear out empty parts.
 		$url_parts = array_filter( $url_parts );
