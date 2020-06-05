@@ -168,8 +168,19 @@ class Api {
 
 		// Dynamic SEO friendly URLS require the shorter /images path
 		// https://cloudinary.com/blog/how_to_dynamically_create_seo_friendly_urls_for_your_site_s_images#dynamic_seo_suffixes
-		if ( get_the_title() && 'image' === $resource && 'upload' === $function ) {
-			$parts[] = 'images';
+		if ( get_the_title() && 'upload' === $function ) {
+			switch ( $resource ) {
+				case 'image':
+					$parts[] = 'images';
+					break;
+
+				case 'video':
+					$parts[] = 'videos';
+					break;
+
+				default:
+					$parts[] = 'files';
+			}
 		} else {
 			$parts[] = $resource;
 			$parts[] = $function;

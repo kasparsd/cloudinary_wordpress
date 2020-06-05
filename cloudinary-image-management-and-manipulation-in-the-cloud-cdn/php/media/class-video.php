@@ -316,7 +316,7 @@ class Video {
 			if ( $this->player_enabled() ) {
 				$instance = $this->queue_video_config( $attachment_id, $url, $video['fileformat'], $args );
 				// Remove src and replace with an ID.
-				$new_tag = str_replace( 'src="' . $url . '"', 'id="cloudinary-video-' . esc_attr( $instance ) . '"', $tag );
+				$new_tag = str_replace( 'src="' . $url . '"', 'src="' . $cloudinary_url. '" id="cloudinary-video-' . esc_attr( $instance ) . '"', $tag );
 				$content = str_replace( $tag, $new_tag, $content );
 			} else {
 				// Just replace URL.
