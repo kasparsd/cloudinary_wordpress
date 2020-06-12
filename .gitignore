@@ -1,5 +1,9 @@
 .DS_Store
 
+# Allow local overrides.
+/phpcs.xml
+/phpunit.xml
+
 # Grunt
 /build/
 /node_modules/
