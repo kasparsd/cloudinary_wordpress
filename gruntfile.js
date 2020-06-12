@@ -26,6 +26,19 @@ module.exports = function( grunt ) {
 			},
 		},
 
+		compress: {
+			release: {
+				options: {
+					archive: 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip',
+				},
+				cwd: 'build',
+				dest: 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn',
+				src: [
+					'**/*',
+				],
+			},
+		},
+
 		wp_deploy: {
 			options: {
 				plugin_slug: 'cloudinary-image-management-and-manipulation-in-the-cloud-cdn',
@@ -41,6 +54,7 @@ module.exports = function( grunt ) {
 		'build', [
 			'clean',
 			'copy',
+			'compress',
 		]
 	);
 

@@ -9,7 +9,7 @@
 	},
 	"scripts": {
 		"dev": "webpack --mode=development --watch",
-		"build": "webpack --mode=production",
+		"build": "webpack --mode=production && grunt build",
 		"deploy": "npm run build && grunt deploy",
 		"lint-php": "composer lint",
 		"lint-js": "eslint js/src",
@@ -62,6 +62,7 @@
 		"file-loader": "^4.0.0",
 		"grunt": "1.0.4",
 		"grunt-contrib-clean": "2.0.0",
+		"grunt-contrib-compress": "1.6.0",
 		"grunt-contrib-copy": "1.0.0",
 		"grunt-wp-deploy": "2.0.0",
 		"load-grunt-tasks": "5.1.0",
