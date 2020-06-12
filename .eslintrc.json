@@ -1,0 +1,8 @@
+{
+	"plugins": [
+		"jest"
+	],
+	"extends": [
+		"plugin:@wordpress/eslint-plugin/recommended"
+	]
+}

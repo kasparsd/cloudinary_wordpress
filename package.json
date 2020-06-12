@@ -10,7 +10,9 @@
 	"scripts": {
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
-		"lint": "composer lint"
+		"lint-php": "composer lint",
+		"lint-js": "eslint ./js/src",
+		"lint": "npm run lint-php && npm run lint-js"
 	},
 	"author": "XWP",
 	"license": "GPL-2.0+",
