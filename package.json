@@ -10,6 +10,7 @@
 	"scripts": {
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
+		"deploy": "npm run build && grunt deploy",
 		"lint-php": "composer lint",
 		"lint-js": "eslint js/src",
 		"lint-css": "stylelint css/src",
@@ -62,8 +63,8 @@
 		"grunt": "1.0.4",
 		"grunt-contrib-clean": "2.0.0",
 		"grunt-contrib-copy": "1.0.0",
-		"grunt-shell": "3.0.1",
 		"grunt-wp-deploy": "2.0.0",
+		"load-grunt-tasks": "5.1.0",
 		"lodash": "4.17.11",
 		"mini-css-extract-plugin": "0.7.0",
 		"moment": "2.24.0",
