@@ -1,0 +1,7 @@
+{
+	"name": "cloudinary/cloudinary-image-management-and-manipulation-in-the-cloud-cdn",
+	"homepage": "https://wordpress.org/plugins/cloudinary-image-management-and-manipulation-in-the-cloud-cdn/",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {}
+}
