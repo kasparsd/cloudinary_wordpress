@@ -46,8 +46,16 @@ module.exports = function( grunt ) {
 				build_dir: '<%= dist_dir %>',
 				assets_dir: 'assets',
 			},
-			default: {},
+			default: {
+				// Default deploy to trunk and a tag release.
+			},
+			assets: {
+				// Deploy only screenshots and icons.
+				deploy_trunk: false,
+				deploy_tag: false,
+			},
 		},
+
 	} );
 
 	grunt.registerTask(
@@ -62,6 +70,12 @@ module.exports = function( grunt ) {
 		'deploy', [
 			'build',
 			'wp_deploy',
+		]
+	);
+
+	grunt.registerTask(
+		'deploy-assets', [
+			'wp_deploy:assets',
 		]
 	);
 };
