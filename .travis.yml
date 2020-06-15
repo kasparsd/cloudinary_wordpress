@@ -6,7 +6,9 @@ install:
   - npm install
 
 jobs:
+
   include:
+
     - php: "5.6"
       script:
         - npm run lint || true
