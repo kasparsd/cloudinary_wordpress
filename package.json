@@ -16,7 +16,9 @@
 		"lint-php": "composer lint",
 		"lint-js": "eslint js/src",
 		"lint-css": "stylelint css/src",
-		"lint": "npm run lint-php && npm run lint-js && npm run lint-css"
+		"lint": "npm run lint-php && npm run lint-js && npm run lint-css",
+		"env": "wp-env",
+		"cli": "wp-env run cli"
 	},
 	"author": "XWP",
 	"license": "GPL-2.0+",
@@ -38,6 +40,7 @@
 		"@wordpress/edit-post": "3.4.0",
 		"@wordpress/editor": "9.3.0",
 		"@wordpress/element": "2.4.0",
+		"@wordpress/env": "1.4.0",
 		"@wordpress/eslint-plugin": "2.2.0",
 		"@wordpress/hooks": "2.3.0",
 		"@wordpress/i18n": "3.4.0",
