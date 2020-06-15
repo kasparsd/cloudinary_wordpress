@@ -17,6 +17,7 @@
 		"lint-js": "eslint js/src",
 		"lint-css": "stylelint css/src",
 		"lint": "npm run lint-php && npm run lint-js && npm run lint-css",
+		"test": "npm run lint",
 		"env": "wp-env",
 		"cli": "wp-env run cli"
 	},
@@ -70,6 +71,7 @@
 		"grunt-contrib-compress": "1.6.0",
 		"grunt-contrib-copy": "1.0.0",
 		"grunt-wp-deploy": "2.0.0",
+		"husky": "4.2.5",
 		"load-grunt-tasks": "5.1.0",
 		"lodash": "4.17.11",
 		"mini-css-extract-plugin": "0.7.0",
@@ -98,5 +100,10 @@
 	},
 	"dependencies": {
 		"@wordpress/i18n": "^1.2.1"
+	},
+	"husky": {
+		"hooks": {
+			"pre-push": "npm test"
+		}
 	}
 }
