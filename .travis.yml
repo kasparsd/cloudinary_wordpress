@@ -2,20 +2,38 @@ dist: xenial
 
 language: php
 
-php:
-  - "7.3"
-  - "5.6"
-
 install:
   - npm install
 
-script:
-  - npm run lint
+jobs:
+  include:
+    - php: "5.6"
+      script:
+        - npm run lint || true
+        - npm run build
 
-branches:
-  only:
-  - master
-  - develop
+    - php: "7.4"
+      script:
+        - npm run lint || true
+        - npm run build
+
+    - stage: deploy
+      php: "5.6"
+      name: Package
+      script:
+        - npm run build
+        - cp cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip "cloudinary-image-management-and-manipulation-in-the-cloud-cdn-$TRAVIS_TAG.zip"
+      deploy:
+        provider: releases
+        repo: kasparsd/cloudinary_wordpress
+        api_key:
+          secure: jtW/VR1zV7l9PfrD06ADuZjKUHFutFFMJWM7Tegrpf9H4V7iR+yTXCsQ/ffyhC4NnQN1bex0qfFZFgt6oWjGR/rZCTsgG2W+SSwKEqTPy1ekhBeN35str6japBlpm6NRDvUff7uJoPS/bBCJRFXsBLJ+cWuGxM0/cMINF39UxrikUAk5WiHPz8tuI/BlhrKTx7++5uEwZf7XiRVNxoHv2UmFUk18+cWU3S26QZZ2/5x8J1ydbQgqyydtUBp/5uG/8aPuEOvwrhxduh4zL9rdjY8Ie2uRY27W2ECtRDrhyjDLkJQnhANh/1F/hQgnBY8JdzMF71+SLtfEN8tt5JsydamJOEvXfHSYPUuvcLWBGdTVpJQdcsWrw1WXwm+DYTIwjagxZFoUegPFXzmqqtf6rTbSRgGmYOa49dciZsUboVZe3reegZWcxkZIRGGbbf1xom8QgHvLzMUtrvsS9mbshyueN+/tXRp4Mo2QoFFFszG7XPFvAJX8ohZdeQY4biopy+rCklRRmdXAtkP0lfhpPnhjo+qO91Q45CFBadb3+VRELn/61ayOEvmtUDagdu4Ie42WA7jwZOkJOCLM9DT2TJTtQxifE/ttofmQETWj0dgaPzKCmfCZn5TsOXqrKUWKKzwdorPShuq/iWF+9zLVned4JVMSDNYPJ3ob95++r9k=
+        overwrite: true
+        skip_cleanup: true
+        file:
+          - cloudinary-image-management-and-manipulation-in-the-cloud-cdn-$TRAVIS_TAG.zip
+        on:
+          tags: true
 
 notifications:
   email: false
@@ -23,4 +41,4 @@ notifications:
 cache:
   npm: true
   directories:
-    - $HOME/.composer/cache
+    - "$HOME/.composer/cache"
