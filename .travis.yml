@@ -2,6 +2,10 @@ dist: xenial
 
 language: php
 
+before_install:
+  - nvm install
+  - nvm use
+
 install:
   - npm install
 
