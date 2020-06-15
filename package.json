@@ -28,8 +28,8 @@
 	"author": "XWP",
 	"license": "GPL-2.0+",
 	"devDependencies": {
-		"@babel/cli": "7.4.4",
-		"@babel/core": "7.4.5",
+		"@babel/cli": "7.10.1",
+		"@babel/core": "7.10.2",
 		"@babel/plugin-proposal-object-rest-spread": "7.4.4",
 		"@babel/plugin-transform-react-jsx": "7.3.0",
 		"@wordpress/babel-preset-default": "4.2.0",
