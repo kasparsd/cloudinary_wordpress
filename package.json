@@ -19,7 +19,8 @@
 		"lint": "npm run lint-php && npm run lint-js && npm run lint-css",
 		"test": "npm run lint",
 		"env": "wp-env",
-		"cli": "wp-env run cli"
+		"env-cli": "wp-env run cli",
+		"env-logs": "wp-env logs"
 	},
 	"author": "XWP",
 	"license": "GPL-2.0+",
