@@ -7,7 +7,7 @@
 # Grunt
 /build/
 /node_modules/
-/cloudinary-image-management-and-manipulation-in-the-cloud-cdn/
+/cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip
 npm-debug.log
 
 # Composer
