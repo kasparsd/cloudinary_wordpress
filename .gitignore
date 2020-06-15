@@ -1,2 +1,17 @@
 .DS_Store
-/wordpress*
+
+# Allow local overrides.
+/phpcs.xml
+/phpunit.xml
+
+# Grunt
+/build/
+/node_modules/
+/cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip
+npm-debug.log
+
+# Composer
+/vendor/
+
+# ENV files
+.env
