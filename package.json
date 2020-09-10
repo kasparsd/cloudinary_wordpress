@@ -11,6 +11,7 @@
 		"node": ">=12"
 	},
 	"scripts": {
+		"postinstall": "composer install",
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
 		"lint": "composer lint",
