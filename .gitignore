@@ -24,12 +24,10 @@ wp-content/plugins/hello.php
 /node_modules/
 npm-debug.log
 
-# Composer
-composer.lock
-/vendor/
-
 # Dev
+/vendor/
 /dev-lib/
+phpcs.xml
 
 # Tests
 tests/data/
