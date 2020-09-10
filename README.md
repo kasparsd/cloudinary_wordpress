@@ -16,21 +16,34 @@ This Git repository is the development repository, while there's a mirror public
 
 Additional resources are available at:
 
-* [Website](http://cloudinary.com)
-* [Documentation](http://cloudinary.com/documentation)
-* [Knowledge Base](http://support.cloudinary.com/forums)
+* [Website](https://cloudinary.com)
+* [Documentation](https://cloudinary.com/documentation)
+* [Knowledge Base](https://support.cloudinary.com/forums)
 
 ## Support
 
 You can [open an issue through GitHub](https://github.com/cloudinary/cloudinary_wordpress/issues).
 
-Contact us [http://cloudinary.com/contact](http://cloudinary.com/contact)
+Contact us [https://cloudinary.com/contact](https://cloudinary.com/contact)
 
-Stay tuned for updates, tips and tutorials: [Blog](http://cloudinary.com/blog), [Twitter](https://twitter.com/cloudinary), [Facebook](http://www.facebook.com/Cloudinary).
+Stay tuned for updates, tips and tutorials: [Blog](https://cloudinary.com/blog), [Twitter](https://twitter.com/cloudinary), [Facebook](https://www.facebook.com/Cloudinary).
 
+## Development
 
-## License #######################################################################
+### Create a Plugin Release Package
 
-Released under the GPL license. 
+Run `npm run package` to create the plugin release in the `/build` directory and package it as `cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip` in the root directory.
 
+Files included in the release package are defined in the `gruntfile.js` under the `copy` task. Be sure to update this list of files and directories when you add new files to the project.
 
+### Deployment to WordPress.org
+
+1. Tag a release from the `master` branch on GitHub.
+
+2. Run `npm run deploy` to deploy the version referenced in the `cloudinary.php` file of the current branch.
+
+3. Run `npm run deploy-assets` to deploy just the WP.org plugin assets such as screenshots, icons and banners.
+
+## License
+
+Released under the GPL license.
