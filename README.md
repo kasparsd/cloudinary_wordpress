@@ -34,6 +34,8 @@ Stay tuned for updates, tips and tutorials: [Blog](https://cloudinary.com/blog),
 
 Run `npm run package` to create the plugin release in the `/build` directory and package it as `cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip` in the root directory.
 
+Files included in the release package are defined in the `gruntfile.js` under the `copy` task. Be sure to update this list of files and directories when you add new files to the project.
+
 ### Deployment to WordPress.org
 
 1. Tag a release from the `master` branch on GitHub.
