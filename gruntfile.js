@@ -59,7 +59,7 @@ module.exports = function( grunt ) {
 	} );
 
 	grunt.registerTask(
-		'build', [
+		'package', [
 			'clean',
 			'copy',
 			'compress',
@@ -68,7 +68,7 @@ module.exports = function( grunt ) {
 
 	grunt.registerTask(
 		'deploy', [
-			'build',
+			'package',
 			'wp_deploy',
 		]
 	);

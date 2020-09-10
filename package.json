@@ -10,6 +10,7 @@
 	"scripts": {
 		"dev": "cross-env webpack --mode=development --watch",
 		"build": "cross-env webpack --mode=production",
+		"package": "npm run build && grunt package",
 		"deploy": "npm run build && grunt deploy",
 		"deploy-assets": "grunt deploy-assets"
 	},
