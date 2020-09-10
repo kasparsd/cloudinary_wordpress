@@ -378,7 +378,11 @@ class Sync implements Setup, Assets {
 				'sync'     => array( $this->managers['upload'], 'upload_asset' ),
 				'state'    => 'info syncing',
 				'note'     => function () {
-					return sprintf( __( 'Copying to folder %s.', 'cloudinary' ), untrailingslashit( $this->managers['media']->get_cloudinary_folder() ) );
+					return sprintf(
+						/* translators: %s folder name */
+						__( 'Copying to folder %s.', 'cloudinary' ),
+						untrailingslashit( $this->managers['media']->get_cloudinary_folder() )
+					);
 				},
 				'required' => true, // Required to complete URL render flag.
 			),
