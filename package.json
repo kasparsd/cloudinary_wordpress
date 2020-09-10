@@ -9,7 +9,9 @@
 	},
 	"scripts": {
 		"dev": "cross-env webpack --mode=development --watch",
-		"build": "cross-env webpack --mode=production"
+		"build": "cross-env webpack --mode=production",
+		"deploy": "npm run build && grunt deploy",
+		"deploy-assets": "grunt deploy-assets"
 	},
 	"author": "XWP",
 	"license": "GPL-2.0+",
