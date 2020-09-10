@@ -8,8 +8,8 @@
 		"url": "https://github.com/cloudinary/cloudinary_wordpress.git"
 	},
 	"scripts": {
-		"dev": "cross-env webpack --mode=development --watch",
-		"build": "cross-env webpack --mode=production",
+		"dev": "webpack --mode=development --watch",
+		"build": "webpack --mode=production",
 		"package": "npm run build && grunt package",
 		"deploy": "npm run build && grunt deploy",
 		"deploy-assets": "grunt deploy-assets"
@@ -51,7 +51,6 @@
 		"babel-plugin-transform-react-remove-prop-types": "0.4.24",
 		"browserslist": "4.6.2",
 		"core-js": "3.1.3",
-		"cross-env": "5.2.0",
 		"css-loader": "3.0.0",
 		"cssnano": "4.1.10",
 		"enzyme": "3.10.0",
