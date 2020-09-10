@@ -44,8 +44,6 @@ Files included in the release package are defined in the `gruntfile.js` under th
 
 3. Run `npm run deploy-assets` to deploy just the WP.org plugin assets such as screenshots, icons and banners.
 
-## License #######################################################################
+## License
 
-Released under the GPL license. 
-
-
+Released under the GPL license.
