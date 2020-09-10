@@ -13,6 +13,7 @@
 	"scripts": {
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
+		"lint": "composer lint",
 		"package": "npm run build && grunt package",
 		"deploy": "npm run build && grunt deploy",
 		"deploy-assets": "grunt deploy-assets"
