@@ -16,17 +16,17 @@ This Git repository is the development repository, while there's a mirror public
 
 Additional resources are available at:
 
-* [Website](http://cloudinary.com)
-* [Documentation](http://cloudinary.com/documentation)
-* [Knowledge Base](http://support.cloudinary.com/forums)
+* [Website](https://cloudinary.com)
+* [Documentation](https://cloudinary.com/documentation)
+* [Knowledge Base](https://support.cloudinary.com/forums)
 
 ## Support
 
 You can [open an issue through GitHub](https://github.com/cloudinary/cloudinary_wordpress/issues).
 
-Contact us [http://cloudinary.com/contact](http://cloudinary.com/contact)
+Contact us [https://cloudinary.com/contact](https://cloudinary.com/contact)
 
-Stay tuned for updates, tips and tutorials: [Blog](http://cloudinary.com/blog), [Twitter](https://twitter.com/cloudinary), [Facebook](http://www.facebook.com/Cloudinary).
+Stay tuned for updates, tips and tutorials: [Blog](https://cloudinary.com/blog), [Twitter](https://twitter.com/cloudinary), [Facebook](https://www.facebook.com/Cloudinary).
 
 
 ## License #######################################################################
