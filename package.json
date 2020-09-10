@@ -1,6 +1,7 @@
 {
   "name": "cloudinary",
   "title": "Cloudinary",
+  "private": true,
   "homepage": "https://github.com/CloudinaryLtd/cloudinary_wordpress_v2",
   "repository": {
     "type": "git",
