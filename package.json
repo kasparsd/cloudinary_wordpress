@@ -2,10 +2,10 @@
   "name": "cloudinary",
   "title": "Cloudinary",
   "private": true,
-  "homepage": "https://github.com/CloudinaryLtd/cloudinary_wordpress_v2",
+  "homepage": "https://github.com/cloudinary/cloudinary_wordpress",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CloudinaryLtd/cloudinary_wordpress_v2.git"
+    "url": "https://github.com/cloudinary/cloudinary_wordpress.git"
   },
   "scripts": {
     "dev": "cross-env webpack --mode=development --watch",
