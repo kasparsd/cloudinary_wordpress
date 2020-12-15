@@ -366,7 +366,7 @@ class Media extends Settings_Component implements Setup {
 
 		if ( $as_sync_key ) {
 			$transformations = $this->get_transformations_from_string( $url );
-			$public_id      .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
+			$public_id       .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
 		}
 
 		return $public_id;
@@ -1343,14 +1343,14 @@ class Media extends Settings_Component implements Setup {
 		// Check for transformations.
 		$transformations = $this->get_transformations_from_string( $asset['url'] );
 		if ( ! empty( $transformations ) ) {
-			$asset['sync_key']       .= wp_json_encode( $transformations );
+			$asset['sync_key']        .= wp_json_encode( $transformations );
 			$asset['transformations'] = $transformations;
 		}
 
 		// Check Format.
 		$url_format = pathinfo( $asset['url'], PATHINFO_EXTENSION );
 		if ( strtolower( $url_format ) !== strtolower( $asset['format'] ) ) {
-			$asset['format']    = $url_format;
+			$asset['format']   = $url_format;
 			$asset['sync_key'] .= $url_format;
 		}
 
@@ -1960,26 +1960,119 @@ class Media extends Settings_Component implements Setup {
 			'type'       => 'page',
 			'menu_title' => __( 'Media Settings', 'cloudinary' ),
 			'tabs'       => array(
-				'media_desplay' => array(
+				'media_display' => array(
 					'page_title' => __( 'Media Display', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
 						'title' => __( 'Image - Global Settings', 'cloudinary' ),
+						'icon'  => $this->plugin->dir_url . 'css/image.svg',
 						array(
-							'type'    => 'radio',
-							'slug'    => 'sync_setting',
-							'title'   => __( 'About', 'cloudinary' ),
-							'inline'  => true,
-							'options' => array(
-								'auto'   => __( 'Auto Sync', 'cloudinary' ),
-								'manual' => __( 'Manual Sync', 'cloudinary' ),
+							'type'  => 'column',
+							array(
+								'type' => 'column',
+								array(
+									'type' => 'group',
+									array(
+										'type'        => 'on_off',
+										'slug'        => 'image_optimization',
+										'title'       => __( 'Image Optimization', 'cloudinary' ),
+										'description' => __( 'Optimize images on my site.', 'cloudinary' ),
+									),
+
+								),
+								array(
+									'type'        => 'group',
+									'title'       => __( 'Advanced Optimization', 'cloudinary' ),
+									'collapsible' => 'closed',
+									array(
+										'type'         => 'select',
+										'slug'         => 'image_format',
+										'title'        => __( 'Image format', 'cloudinary' ),
+										'tooltip_text' => __( 'Optimize images on my site.', 'cloudinary' ),
+										'default'      => 'auto',
+										'options'      => array(
+											'none' => __( 'Not Set', 'cloudinary' ),
+											'auto' => __( 'Auto', 'cloudinary' ),
+											'png'  => __( 'PNG', 'cloudinary' ),
+											'jpg'  => __( 'JPG', 'cloudinary' ),
+											'gif'  => __( 'GIF', 'cloudinary' ),
+											'webp' => __( 'WebP', 'cloudinary' ),
+										),
+									),
+									array(
+										'type'         => 'select',
+										'slug'         => 'image_quality',
+										'title'        => __( 'Image quality', 'cloudinary' ),
+										'tooltip_text' => __( 'Optimize images on my site.', 'cloudinary' ),
+										'default'      => 'auto',
+										'options'      => array(
+											'none'      => __( 'Not Set', 'cloudinary' ),
+											'auto'      => __( 'Auto', 'cloudinary' ),
+											'auto:best' => __( 'Auto Best', 'cloudinary' ),
+											'auto:good' => __( 'Auto Good', 'cloudinary' ),
+											'auto:eco'  => __( 'Auto Eco', 'cloudinary' ),
+											'auto:low'  => __( 'Auto Low', 'cloudinary' ),
+											'100'       => '100',
+											'80'        => '80',
+											'60'        => '60',
+											'40'        => '40',
+											'20'        => '20',
+										),
+									),
+
+								),
+								array(
+									'type' => 'group',
+									array(
+										'type'        => 'on_off',
+										'slug'        => 'image_breakpoints',
+										'title'       => __( 'Image Breakpoints', 'cloudinary' ),
+										'description' => __( 'Enable responsive images.', 'cloudinary' ),
+									),
+									array(
+										'type'      => 'group',
+										'title'     => __( 'Image Breakpoints', 'cloudinary' ),
+										'condition' => array(
+											'image_breakpoints' => true,
+										),
+										array(
+											'type'  => 'number',
+											'slug'  => 'max_breakpoints',
+											'title' => __( 'Max breakpoints', 'cloudinary' ),
+
+										),
+										array(
+											'type'  => 'number',
+											'slug'  => 'byte_step',
+											'title' => __( 'Byte step', 'cloudinary' ),
+
+										),
+										array(
+											'type'  => 'number',
+											'slug'  => 'max_width_limit',
+											'title' => __( 'Image width limit', 'cloudinary' ),
+
+										),
+										array(
+											'type' => 'number',
+											'slug' => 'min_width_limit',
+										),
+									),
+								),
+								array(
+									'type'  => 'text',
+									'slug'  => 'custom_transformations',
+									'title' => __( 'Custom Transformation', 'cloudinary' ),
+								),
 							),
-						),
-						array(
-							'type'        => 'on_off',
-							'slug'        => 'enable_sync',
-							'title'       => __( 'Syncing', 'cloudinary' ),
-							'description' => __( 'Enable syncing media', 'cloudinary' ),
+							array(
+								'type' => 'column',
+								array(
+									'type'  => 'image_preview',
+									'title' => __( 'Image Preview', 'cloudinary' ),
+								),
+							),
+
 						),
 					),
 					array(

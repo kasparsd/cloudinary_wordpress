@@ -34,6 +34,12 @@ class Test extends Settings_Component {
 							'type'  => 'group',
 							'title' => __( 'Checks and radios', 'cloudinary' ),
 							array(
+								'type'        => 'color',
+								'title'       => __( 'Thing', 'cloudinary' ),
+								'slug'        => 'sjkdhf',
+								'description' => __( 'Dome', 'cloudinary' ),
+							),
+							array(
 								'type'        => 'radio',
 								'title'       => __( 'Radio Group', 'cloudinary' ),
 								'slug'        => 'radio_test',

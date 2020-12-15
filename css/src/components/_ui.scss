@@ -33,6 +33,51 @@
 				display: none;
 			}
 		}
+
+		&-wrap {
+
+
+			&.cld-column {
+				display: flex;
+
+				width: 100%;
+
+				.cld-column {
+					display: block;
+
+					width: 45%;
+					margin: auto auto auto 0;
+				}
+			}
+		}
+	}
+
+	&-image {
+
+		&-preview {
+
+			background-color: rgba(216, 216, 216, 0.5);
+			padding: 7px;
+			border-radius: 5px;
+
+			.cld-ui-title {
+				margin: 0 0 0.4rem 0;
+				font-weight: 400;
+			}
+
+			.cld-transformations-url {
+				background-color: #333;
+				border-radius: 4px;
+				margin: 0.4rem 0;
+				padding: 4px;
+			}
+
+			img {
+				width: 100%;
+			}
+
+		}
+
 	}
 
 	&-page {
