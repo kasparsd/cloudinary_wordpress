@@ -21,7 +21,7 @@ class Text extends Component {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|icon/|div|label|title/|tooltip/|prefix/|/label|/div|input/|suffix/|description/|/wrap';
+	protected $blueprint = 'wrap|icon/|div|label|title|tooltip/|/title|/label|/div|prefix/|input/|suffix/|description/|/wrap';
 
 	/**
 	 * Flag if component is a capture type.
@@ -81,6 +81,14 @@ class Text extends Component {
 			$struct['attributes']['required'] = 'required';
 		}
 
+		if ( $this->setting->has_param( 'prefix' ) ) {
+			$struct['attributes']['class'][] = 'prefixed';
+		}
+
+		if ( $this->setting->has_param( 'suffix' ) ) {
+			$struct['attributes']['class'][] = 'suffixed';
+		}
+
 		return $struct;
 	}
 
@@ -116,6 +124,10 @@ class Text extends Component {
 	 * @return string
 	 */
 	public function sanitize_value( $value ) {
+		if ( 0 === strlen( $value ) && $this->setting->has_param( 'default' ) ) {
+			$value = $this->setting->get_param( 'default' );
+		}
+
 		return sanitize_text_field( $value );
 	}
 }

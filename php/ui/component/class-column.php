@@ -34,6 +34,9 @@ class Column extends Component {
 	protected function wrap( $struct ) {
 
 		$struct = parent::wrap( $struct );
+		if ( $this->setting->has_param( 'width' ) ) {
+			$struct['attributes']['style'] = 'width:' . $this->setting->get_param( 'width' ) . ';';
+		}
 
 		return $struct;
 	}

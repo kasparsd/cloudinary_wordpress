@@ -106,6 +106,14 @@ abstract class Component {
 
 			$this->blueprint = 'conditional|' . $this->blueprint . '|/conditional';
 		}
+		// Add scripts.
+		add_action( 'admin_init', array( $this, 'enqueue_scripts' ) );
+	}
+
+	/**
+	 * Enqueue scripts this component may use.
+	 */
+	public function enqueue_scripts() {
 	}
 
 	/**
@@ -135,6 +143,15 @@ abstract class Component {
 	 * Setup the components build parts.
 	 */
 	private function setup_component_parts() {
+
+		$default_input_atts = array(
+			'type'  => $this->type,
+			'class' => array(),
+		);
+		$input_atts         = $this->setting->get_param(
+			'attributes',
+			array()
+		);
 
 		$build_parts = array(
 			'wrap'        => array(
@@ -190,13 +207,7 @@ abstract class Component {
 			'input'       => array(
 				'element'    => 'input',
 				'render'     => 'true',
-				'attributes' => $this->setting->get_param(
-					'attributes',
-					array(
-						'type'  => $this->type,
-						'class' => array(),
-					)
-				),
+				'attributes' => wp_parse_args( $input_atts, $default_input_atts ),
 			),
 			'settings'    => array(
 				'element'    => 'div',
@@ -205,13 +216,13 @@ abstract class Component {
 				),
 			),
 			'prefix'      => array(
-				'element'    => 'div',
+				'element'    => 'span',
 				'attributes' => array(
 					'class' => array(),
 				),
 			),
 			'suffix'      => array(
-				'element'    => 'div',
+				'element'    => 'span',
 				'attributes' => array(
 					'class' => array(),
 				),

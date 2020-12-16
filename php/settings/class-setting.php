@@ -649,12 +649,18 @@ class Setting {
 	 * @return bool
 	 */
 	public function save_value() {
+
 		if ( $this->has_param( 'option_name' ) ) {
 			$slug = $this->get_option_name();
 
 			return update_option( $slug, $this->get_value() );
 		} elseif ( $this->has_parent() ) {
-			return $this->get_parent()->save_value();
+			$parent                     = $this->get_parent();
+			$value                      = (array) $parent->get_value();
+			$value[ $this->get_slug() ] = $this->get_value();
+			$parent->set_value( $value );
+
+			return $parent->save_value();
 		}
 
 		return false;
@@ -711,10 +717,29 @@ class Setting {
 	 */
 	public function get_value() {
 		if ( is_null( $this->value ) ) {
-			$this->value = $this->get_param( 'default' );
+			if ( $this->has_settings() ) {
+				// Build child values.
+				$this->value = $this->get_values_recursive();
+			} else {
+				$this->value = $this->get_param( 'default' );
+			}
 		}
 
 		return $this->value;
+	}
+
+	/**
+	 * Get the values of the settings recursively.
+	 *
+	 * @return array
+	 */
+	protected function get_values_recursive() {
+		$value = array();
+		foreach ( $this->get_settings() as $setting ) {
+			$value[ $setting->get_slug() ] = $setting->get_value();
+		}
+
+		return $value;
 	}
 
 	/**

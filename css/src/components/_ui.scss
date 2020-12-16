@@ -13,6 +13,15 @@
 
 	&-ui {
 
+		&-settings {
+
+			/* Small devices */
+			@media only screen and (max-width: 992px) {
+				margin: 0 -1px 0 -10px;
+			}
+
+		}
+
 		&-collapse {
 			align-self: center;
 			padding: 0 0.45rem;
@@ -36,23 +45,33 @@
 
 		&-wrap {
 
-
 			&.cld-column {
 				display: flex;
-
-				width: 100%;
+				flex-flow: row wrap;
+				justify-content: space-between;
 
 				.cld-column {
 					display: block;
-
-					width: 45%;
 					margin: auto auto auto 0;
+
+					/* Small devices */
+					@media only screen and (max-width: 992px) {
+						width: 100% !important;
+						margin: auto;
+					}
+				}
+
+
+				/* Small devices */
+				@media only screen and (max-width: 992px) {
+					display: block;
 				}
 			}
 		}
 	}
 
-	&-image {
+	&-image,
+	&-video {
 
 		&-preview {
 
@@ -60,16 +79,13 @@
 			padding: 7px;
 			border-radius: 5px;
 
+			&-wrapper {
+				position: relative;
+			}
+
 			.cld-ui-title {
 				margin: 0 0 0.4rem 0;
 				font-weight: 400;
-			}
-
-			.cld-transformations-url {
-				background-color: #333;
-				border-radius: 4px;
-				margin: 0.4rem 0;
-				padding: 4px;
 			}
 
 			img {
@@ -152,10 +168,10 @@
 
 		.regular-text,
 		.regular-number {
-			display: block;
 			border: 1px solid #d0d0d0;
 			border-radius: 3px;
 			padding: 0.1rem 0.5rem;
+			width: 100%;
 		}
 
 		.regular-text-small,
@@ -163,6 +179,15 @@
 			width: 40%;
 		}
 
+		.prefixed {
+			width: 40%;
+			margin-left: 6px;
+		}
+
+		.suffixed {
+			width: 40%;
+			margin-right: 6px;
+		}
 
 		.regular-select {
 			margin-top: 0.6rem;
@@ -258,7 +283,7 @@
 
 		/* Small devices */
 		@media only screen and (max-width: 992px) {
-			width: 100%;
+			width: auto;
 		}
 
 		/* Medium devices until large */
@@ -306,7 +331,7 @@
 
 			/* Small devices */
 			@media only screen and (max-width: 992px) {
-				width: 100%;
+				width: auto;
 			}
 
 			/* Medium devices until large */
@@ -328,7 +353,7 @@
 
 			/* Small devices */
 			@media only screen and (max-width: 992px) {
-				width: 100%;
+				width: auto;
 			}
 
 			/* Medium devices until large */

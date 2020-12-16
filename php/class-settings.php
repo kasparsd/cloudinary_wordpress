@@ -50,10 +50,34 @@ class Settings {
 	protected $current_tab;
 
 	/**
+	 * Option name for settings based internal data.
+	 *
+	 * @var string
+	 */
+	const SETTINGS_DATA = '_settings_version';
+
+	/**
 	 * Initiate the settings object.
 	 */
 	protected function __construct() {
 		add_action( 'admin_menu', array( $this, 'build_menus' ) );
+	}
+
+	/**
+	 * Check settings version to allow settings to update or upgrade.
+	 *
+	 * @param string $slug The slug for the settings set to check.
+	 */
+	protected static function check_version( $slug ) {
+		$key              = '_' . $slug . self::SETTINGS_DATA;
+		$settings_version = get_option( $key, 2.4 );
+		$plugin_version   = get_plugin_instance()->version;
+		if ( version_compare( $settings_version, $plugin_version, '<' ) ) {
+			// Allow for updating.
+			do_action( "{$slug}_settings_upgrade", $settings_version, $plugin_version );
+			// Update version.
+			update_option( $key, $plugin_version );
+		}
 	}
 
 	/**
@@ -178,6 +202,7 @@ class Settings {
 	 */
 	public static function init_setting( $slug ) {
 		if ( ! is_null( self::$instance ) && ! empty( self::$instance->settings[ $slug ] ) ) {
+			self::check_version( $slug );
 			$settings = self::$instance->settings[ $slug ];
 			$settings->register_settings();
 			$settings->setup_component();

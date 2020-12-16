@@ -13,22 +13,17 @@ const UI = {
 	_bind( element ) {
 		const condition = JSON.parse( element.dataset.condition );
 		const input = document.querySelector(
-			'input[data-bound="' + element.dataset.bind + '"]'
+			'input[data-bound="' +
+				element.dataset.bind +
+				'"],select[data-bound="' +
+				element.dataset.bind +
+				'"]'
 		);
 		input.addEventListener( 'change', function () {
-			const id = input.id;
-			let check = false;
-			let action = 'closed';
-			if ( input.type === 'checkbox' || input.type === 'radio' ) {
-				check = input.checked === condition[ id ];
-			} else {
-				check = input.value === condition[ id ];
-			}
-
-			if ( true === check ) {
-				action = 'open';
-			}
-			UI.toggle( element, input, action );
+			UI.compare( element, input, condition );
+		} );
+		input.addEventListener( 'input', function () {
+			UI.compare( element, input, condition );
 		} );
 	},
 	_alias( element ) {
@@ -47,6 +42,21 @@ const UI = {
 				: 'open';
 			UI.toggle( wrap, element, action );
 		} );
+	},
+	compare( element, input, condition ) {
+		const id = input.id;
+		let check = false;
+		let action = 'closed';
+		if ( input.type === 'checkbox' || input.type === 'radio' ) {
+			check = input.checked === condition[ id ];
+		} else {
+			check = input.value === condition[ id ];
+		}
+
+		if ( true === check ) {
+			action = 'open';
+		}
+		UI.toggle( element, input, action );
 	},
 	toggle( wrap, element, action ) {
 		if ( 'closed' === action ) {

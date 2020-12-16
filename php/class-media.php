@@ -121,18 +121,18 @@ class Media extends Settings_Component implements Setup {
 	private $in_downsize = false;
 
 	/**
-	 * Holds the max image width registered in WordPress.
-	 *
-	 * @var int
-	 */
-	private $max_width;
-
-	/**
 	 * Flag to determine if the Featured Image is currently being rendered.
 	 *
 	 * @var bool|int
 	 */
 	private $doing_featured_image = false;
+
+	/**
+	 * Holds the media settings slug.
+	 *
+	 * @var string
+	 */
+	const MEDIA_SETTINGS_SLUG = 'media_display';
 
 	/**
 	 * Media constructor.
@@ -714,7 +714,7 @@ class Media extends Settings_Component implements Setup {
 		$new_transformations['tax'] = $this->global_transformations->get_taxonomy_transformations( $type );
 		if ( ! $this->global_transformations->is_taxonomy_overwrite() ) {
 			// Get Lowest level.
-			$global  = $this->global_transformations->globals[ $type ];
+			$global  = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 			$default = array();
 			if ( 'video' === $type ) {
 				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
@@ -953,9 +953,9 @@ class Media extends Settings_Component implements Setup {
 			// @todo: Make this use the globals, overrides, and application conversion.
 			$extension = pathinfo( $file, PATHINFO_EXTENSION );
 			if ( wp_attachment_is_image( $attachment_id ) ) {
-				$settings = $this->global_transformations->globals['image'];
-				if ( ! in_array( $settings['image_format'], array( 'none', 'auto' ), true ) ) {
-					$extension = $settings['image_format'];
+				$image_format = $this->settings->find_setting( 'image_format' )->get_value();
+				if ( ! in_array( $image_format, array( 'none', 'auto' ), true ) ) {
+					$extension = $image_format;
 				}
 			}
 			$cloudinary_id = $public_id . '.' . $extension;
@@ -1102,7 +1102,7 @@ class Media extends Settings_Component implements Setup {
 
 		$image_meta['overwrite_transformations'] = ! empty( $image_meta['overwrite_transformations'] ) ? $image_meta['overwrite_transformations'] : false;
 
-		if ( 'on' === $this->plugin->config['settings']['global_transformations']['enable_breakpoints'] && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
+		if ( $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
 			$meta = $this->get_post_meta( $attachment_id, Sync::META_KEYS['breakpoints'], true );
 			if ( ! empty( $meta ) ) {
 				// Since srcset is primary and src is a fallback, we need to set the first srcset with the main image.
@@ -1528,32 +1528,35 @@ class Media extends Settings_Component implements Setup {
 	 *
 	 * @return int
 	 */
-	public function get_max_width() {
-		if ( empty( $this->max_width ) ) {
-			if ( ! empty( $this->plugin->config['settings']['global_transformations']['max_width'] ) ) {
-				$this->max_width = $this->plugin->config['settings']['global_transformations']['max_width'];
-			} else {
-				$core_sizes       = array( 'thumbnail', 'medium', 'large', 'medium_large', 'large' );
-				$additional_sizes = wp_get_additional_image_sizes();
-				foreach ( $core_sizes as $size ) {
-					$additional_sizes[ $size ] = get_option( $size . '_size_w' );
-				}
-				$sizes = array_map(
-					function ( $item ) {
-						if ( is_array( $item ) ) {
-							$item = $item['width'];
-						}
-
-						return intval( $item );
-					},
-					$additional_sizes
-				);
-				rsort( $sizes );
-				$this->max_width = array_shift( $sizes );
-			}
+	public function default_max_width() {
+		$core_sizes       = array( 'thumbnail', 'medium', 'large', 'medium_large', 'large' );
+		$additional_sizes = wp_get_additional_image_sizes();
+		foreach ( $core_sizes as $size ) {
+			$additional_sizes[ $size ] = get_option( $size . '_size_w' );
 		}
+		$sizes = array_map(
+			function ( $item ) {
+				if ( is_array( $item ) ) {
+					$item = $item['width'];
+				}
 
-		return $this->max_width;
+				return intval( $item );
+			},
+			$additional_sizes
+		);
+		rsort( $sizes );
+		$max_width = array_shift( $sizes );
+
+		return $max_width;
+	}
+
+	/**
+	 * Get the max image width registered in WordPress.
+	 *
+	 * @return int
+	 */
+	public function get_max_width() {
+		return $this->settings->get_setting( 'max_width' )->get_value();
 	}
 
 	/**
@@ -1665,9 +1668,9 @@ class Media extends Settings_Component implements Setup {
 	public function get_breakpoint_options( $attachment_id ) {
 		// Add breakpoints if we have an image.
 		$breakpoints = array();
-		$settings    = $this->plugin->config['settings']['global_transformations'];
+		$settings    = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 
-		if ( 'off' !== $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
+		if ( $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
 			$meta = wp_get_attachment_metadata( $attachment_id );
 			// Get meta image size if non exists.
 			if ( empty( $meta ) ) {
@@ -1909,6 +1912,7 @@ class Media extends Settings_Component implements Setup {
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
+
 		if ( $this->plugin->config['connect'] ) {
 
 			$this->base_url          = $this->plugin->components['connect']->api->cloudinary_url();
@@ -1956,132 +1960,55 @@ class Media extends Settings_Component implements Setup {
 	 * @return array
 	 */
 	public function settings() {
+
+		$image_settings      = array();
+		$video_settings      = array();
+		$image_settings_file = $this->plugin->dir_path . 'ui-definitions/settings-image.php';
+		$video_settings_file = $this->plugin->dir_path . 'ui-definitions/settings-video.php';
+
+		if ( file_exists( $image_settings_file ) ) {
+			$image_settings = include $image_settings_file; //phpcs:ignore
+		}
+
+		if ( file_exists( $video_settings_file ) ) {
+			$video_settings = include $video_settings_file; //phpcs:ignore
+		}
+
 		$args = array(
 			'type'       => 'page',
 			'menu_title' => __( 'Media Settings', 'cloudinary' ),
 			'tabs'       => array(
-				'media_display' => array(
+				self::MEDIA_SETTINGS_SLUG => array(
 					'page_title' => __( 'Media Display', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'Image - Global Settings', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/image.svg',
-						array(
-							'type'  => 'column',
-							array(
-								'type' => 'column',
-								array(
-									'type' => 'group',
-									array(
-										'type'        => 'on_off',
-										'slug'        => 'image_optimization',
-										'title'       => __( 'Image Optimization', 'cloudinary' ),
-										'description' => __( 'Optimize images on my site.', 'cloudinary' ),
-									),
-
-								),
-								array(
-									'type'        => 'group',
-									'title'       => __( 'Advanced Optimization', 'cloudinary' ),
-									'collapsible' => 'closed',
-									array(
-										'type'         => 'select',
-										'slug'         => 'image_format',
-										'title'        => __( 'Image format', 'cloudinary' ),
-										'tooltip_text' => __( 'Optimize images on my site.', 'cloudinary' ),
-										'default'      => 'auto',
-										'options'      => array(
-											'none' => __( 'Not Set', 'cloudinary' ),
-											'auto' => __( 'Auto', 'cloudinary' ),
-											'png'  => __( 'PNG', 'cloudinary' ),
-											'jpg'  => __( 'JPG', 'cloudinary' ),
-											'gif'  => __( 'GIF', 'cloudinary' ),
-											'webp' => __( 'WebP', 'cloudinary' ),
-										),
-									),
-									array(
-										'type'         => 'select',
-										'slug'         => 'image_quality',
-										'title'        => __( 'Image quality', 'cloudinary' ),
-										'tooltip_text' => __( 'Optimize images on my site.', 'cloudinary' ),
-										'default'      => 'auto',
-										'options'      => array(
-											'none'      => __( 'Not Set', 'cloudinary' ),
-											'auto'      => __( 'Auto', 'cloudinary' ),
-											'auto:best' => __( 'Auto Best', 'cloudinary' ),
-											'auto:good' => __( 'Auto Good', 'cloudinary' ),
-											'auto:eco'  => __( 'Auto Eco', 'cloudinary' ),
-											'auto:low'  => __( 'Auto Low', 'cloudinary' ),
-											'100'       => '100',
-											'80'        => '80',
-											'60'        => '60',
-											'40'        => '40',
-											'20'        => '20',
-										),
-									),
-
-								),
-								array(
-									'type' => 'group',
-									array(
-										'type'        => 'on_off',
-										'slug'        => 'image_breakpoints',
-										'title'       => __( 'Image Breakpoints', 'cloudinary' ),
-										'description' => __( 'Enable responsive images.', 'cloudinary' ),
-									),
-									array(
-										'type'      => 'group',
-										'title'     => __( 'Image Breakpoints', 'cloudinary' ),
-										'condition' => array(
-											'image_breakpoints' => true,
-										),
-										array(
-											'type'  => 'number',
-											'slug'  => 'max_breakpoints',
-											'title' => __( 'Max breakpoints', 'cloudinary' ),
-
-										),
-										array(
-											'type'  => 'number',
-											'slug'  => 'byte_step',
-											'title' => __( 'Byte step', 'cloudinary' ),
-
-										),
-										array(
-											'type'  => 'number',
-											'slug'  => 'max_width_limit',
-											'title' => __( 'Image width limit', 'cloudinary' ),
-
-										),
-										array(
-											'type' => 'number',
-											'slug' => 'min_width_limit',
-										),
-									),
-								),
-								array(
-									'type'  => 'text',
-									'slug'  => 'custom_transformations',
-									'title' => __( 'Custom Transformation', 'cloudinary' ),
-								),
-							),
-							array(
-								'type' => 'column',
-								array(
-									'type'  => 'image_preview',
-									'title' => __( 'Image Preview', 'cloudinary' ),
-								),
-							),
-
-						),
-					),
-					array(
-						'type' => 'submit',
-					),
+					$image_settings,
+					$video_settings,
 				),
 			),
 		);
 
 		return $args;
+	}
+
+	/**
+	 * Upgrade settings from 2.4 to 2.5.
+	 *
+	 * @param string $previous_version Previous version.
+	 * @param string $new_version      New version.
+	 */
+	public function upgrade_settings( $previous_version, $new_version ) {
+
+		if ( 2.4 === $previous_version ) {
+			// Setup new data from old.
+			$images = get_option( 'cloudinary_global_transformations', array() );
+			$video  = get_option( 'cloudinary_global_video_transformations', array() );
+			$media  = array_merge( $images, $video );
+			// Get the setting.
+			$setting = $this->settings->get_setting( 'media_display' );
+			// Update value.
+			$setting->set_value( $media );
+			// Save to DB.
+			$setting->save_value();
+		}
+
 	}
 }
