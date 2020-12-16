@@ -273,8 +273,22 @@
 		}
 	}
 
+	&-info-box {
 
-	&-panel {
+		display: flex;
+
+		img,
+		a.button {
+			align-self: center;
+		}
+
+		.cld-ui-body {
+			margin: 0 1.2rem;
+		}
+	}
+
+	&-panel,
+	&-info-box {
 		background-color: #fff;
 		border: 1px solid $color-light-grey;
 		padding: 0.5rem 1.75rem 0.4rem;
