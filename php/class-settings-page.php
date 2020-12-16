@@ -825,6 +825,11 @@ class Settings_Page implements Component\Assets, Component\Config, Component\Set
 	public function enqueue_assets() {
 		wp_enqueue_script( 'cloudinary-settings' );
 		wp_enqueue_style( 'cloudinary-settings' );
+		wp_enqueue_script( 'wp-edit-site' );
+		wp_enqueue_script( 'wp-format-library' );
+		wp_enqueue_style( 'wp-edit-site' );
+		wp_enqueue_style( 'wp-format-library' );
+		wp_enqueue_style( 'cloudinary-settings-stuff', 'http://cloudinary.local/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,admin-bar,buttons,media-views,editor-buttons,wp-components,wp-block-editor,wp-nux,wp-editor,wp-block-library,wp-block-&load%5Bchunk_1%5D=library-theme,wp-edit-blocks,wp-edit-post,wp-format-library,wp-block-directory,common,forms,admin-menu,dashboard,list-tables,edi&load%5Bchunk_2%5D=t,revisions,media,themes,about,nav-menus,wp-pointer,widgets,site-icon,l10n,wp-auth-check,wp-color-picker&ver=5.5.3', array(), 'sdfdsfdf' );
 		// Enqueue current tabs assets.
 		$this->enqueue_active_page();
 	}

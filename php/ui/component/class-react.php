@@ -91,12 +91,29 @@ class React extends Text {
 				'ver'       => $this->setting->get_root_setting()->get_param( 'version' ),
 				'in_footer' => true,
 			);
-			$script         = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
+
+			$script = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
+			$asset  = $this->get_asset();
+
 			// @todo Perhaps make the script param be an array or scripts to allow for multiples.
-			wp_enqueue_script( $script['slug'], $script['src'], $script['depts'], $script['ver'], $script['in_footer'] );
+			wp_enqueue_style( $script['slug'], '/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,admin-bar,buttons,media-views,editor-buttons,wp-components,wp-block-editor,wp-nux,wp-editor,wp-block-library,wp-block-&load%5Bchunk_1%5D=library-theme,wp-edit-blocks,wp-edit-post,wp-format-library,wp-block-directory,common,forms,admin-menu,dashboard,list-tables,edi&load%5Bchunk_2%5D=t,revisions,media,themes,about,nav-menus,wp-pointer,widgets,site-icon,l10n,wp-auth-check,wp-color-picker&ver=5.5.3', array(), $asset['version'] );
+			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
 		}
 
 		return $struct;
 
+	}
+
+	private function get_asset() {
+		$asset = require __DIR__ . '/../../../js/gallery.asset.php';
+
+		$asset['dependencies'] = array_filter(
+			$asset['dependencies'],
+			static function ( $dependency ) {
+				return false === strpos( $dependency, '/' );
+			}
+		);
+
+		return $asset;
 	}
 }

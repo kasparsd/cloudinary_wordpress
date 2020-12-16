@@ -13,7 +13,7 @@
     .radio-select--active g {
       fill: #007cba !important; }
   .radio-select__label {
-    margin-right: 7px;
+    margin-left: 7px;
     font-size: 14px; }
 
 /* stylelint-disable selector-class-pattern */
@@ -38,3 +38,6 @@
 
 .wp-block-cloudinary-gallery .block-editor-media-placeholder .components-button {
   margin-bottom: 0; }
+
+
+/*# sourceMappingURL=gallery.css.map*/

@@ -954,7 +954,7 @@ class Media extends Settings_Component implements Setup {
 			$extension = pathinfo( $file, PATHINFO_EXTENSION );
 			if ( wp_attachment_is_image( $attachment_id ) ) {
 				$settings = $this->global_transformations->globals['image'];
-				if ( ! in_array( $settings['image_format'], array( 'none', 'auto' ), true ) ) {
+				if ( ! empty( $settings['image_format'] ) && ! in_array( $settings['image_format'], array( 'none', 'auto' ), true ) ) {
 					$extension = $settings['image_format'];
 				}
 			}

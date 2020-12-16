@@ -1,3 +1,4 @@
+import React from 'react';
 import { dispatch } from '@wordpress/data';
 
 export const showNotice = ( { status, message, options = {} } ) => {
