@@ -730,11 +730,33 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				'about'   => array(
 					'page_title' => __( 'About', 'cloudinary' ),
 					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'text',
-							'title' => __( 'About', 'cloudinary' ),
-						),
+						'type'      => 'info_box',
+						'title'     => __( 'Welcome to Cloudinary.', 'cloudinary' ),
+						'text'      => __( 'Cloudinary supercharges your application media! It enables you to easily upload images and videos to the cloud and deliver them optimized, via a lightning-fast CDN, using industry best practices. Perform smart resizing, add watermarks, apply effects, and much more without leaving your WordPress console or installing any software.', 'cloudinary' ),
+					),
+					array(
+						'type'      => 'info_box',
+						'icon'      => $this->plugin->dir_url . 'css/crop.svg',
+						'title'     => __( 'Image Delivery Settings', 'cloudinary' ),
+						'text'      => __( 'Configure how your images are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as responsive images.', 'cloudinary' ),
+						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
+						'link_text' => __( 'See Examples', 'cloudinary' ),
+					),
+					array(
+						'type'      => 'info_box',
+						'icon'      => $this->plugin->dir_url . 'css/video.svg',
+						'title'     => __( 'Video Settings', 'cloudinary' ),
+						'text'      => __( 'Configure how your videos are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as whether to use the Cloudinary video player.', 'cloudinary' ),
+						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
+						'link_text' => __( 'See Examples', 'cloudinary' ),
+					),
+					array(
+						'type'      => 'info_box',
+						'icon'      => $this->plugin->dir_url . 'css/transformation.svg',
+						'title'     => __( 'Learn More', 'cloudinary' ),
+						'text'      => __( 'You can upload and manage your images in Cloudinary directly from your WordPress interface. The plugin also supports automated (single-click) migration of all images from your existing posts to Cloudinary. Once your WordPress images are stored in Cloudinary, you can take advantage of Cloudinary\'s transformation, optimization, and responsive image features as well as fast CDN delivery.', 'cloudinary' ),
+						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
+						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),
 				),
 				'connect' => array(

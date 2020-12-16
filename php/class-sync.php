@@ -849,11 +849,33 @@ class Sync extends Settings_Component implements Setup, Assets {
 				array(
 					'type'    => 'radio',
 					'title'   => __( 'Sync Method', 'cloudinary' ),
-					'slug'    => 'sync_method',
-					'default' => 'manual',
+					'slug'    => 'auto_sync',
+					'default' => 'off',
 					'options' => array(
-						'auto'   => __( 'Auto Sync', 'cloudinary' ),
-						'manual' => __( 'Manual Sync', 'cloudinary' ),
+						'on'   => __( 'Auto Sync', 'cloudinary' ),
+						'off' => __( 'Manual Sync', 'cloudinary' ),
+					),
+				),
+				array(
+					'type'              => 'text',
+					'slug'              => 'cloudinary_folder',
+					'title'             => __( 'Cloudinary folder path', 'cloudinary' ),
+					'attributes'        => array(
+						'placeholder' => __( 'e.g.: wordpress_assets/', 'cloudinary' ),
+					),
+					'tooltip_text'      => __( 'Specify the folder in your Cloudinary account where WordPress assets are uploaded to. All assets uploaded to WordPress from this point on will be synced to the specified folder in Cloudinary. Leave blank to use the root of your Cloudinary library.', 'cloudinary' ),
+					'sanitize_callback' => array( '\Cloudinary\Media', 'sanitize_cloudinary_folder' ),
+				),
+				array(
+					'type'         => 'select',
+					'slug'         => 'offload',
+					'title'        => __( 'Storage', 'cloudinary' ),
+					'tooltip_text' => __( 'Choose where to store your assets. Assets stored in both Cloudinary and WordPress will enable local WordPress delivery if the Cloudinary plugin is disabled or uninstalled. Storing assets with WordPress in lower resolution will save on local WordPress storage and enable low resolution local WordPress delivery if the plugin is disabled. Storing assets with Cloudinary only will require additional steps to enable backwards compatibility.', 'cloudinary' ),
+					'default'      => 'dual_full',
+					'options'      => array(
+						'dual_full' => __( 'Cloudinary and WordPress', 'cloudinary' ),
+						'dual_low'  => __( 'Cloudinary and WordPress (low resolution)', 'cloudinary' ),
+						'cld'       => __( 'Cloudinary only', 'cloudinary' ),
 					),
 				),
 			),

@@ -378,3 +378,9 @@
 	}
 
 }
+
+.tippy-box[data-theme~="cloudinary"] {
+	background-color: rgba(0, 0, 0, 0.8);
+	color: $color-white;
+	font-size: 0.8em;
+}

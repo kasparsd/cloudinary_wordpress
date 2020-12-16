@@ -1,14 +1,32 @@
 /* global */
 
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+
 const UI = {
 	_init() {
 		const conditions = document.querySelectorAll( '[data-bind]' );
 		const toggles = document.querySelectorAll( '[data-toggle]' );
 		const aliases = document.querySelectorAll( '[data-for]' );
+		const tooltips = document.querySelectorAll( '[data-tooltip]' );
 		const self = this;
 		conditions.forEach( self._bind );
 		toggles.forEach( self._toggle );
 		aliases.forEach( self._alias );
+
+		tippy( tooltips, {
+			theme: 'cloudinary',
+			arrow: false,
+			placement: 'bottom-start',
+			aria: {
+				content: 'auto',
+				expanded: 'auto',
+			},
+			content: ( reference ) =>
+				document.getElementById(
+					reference.getAttribute( 'data-tooltip' )
+				).innerHTML,
+		} );
 	},
 	_bind( element ) {
 		const condition = JSON.parse( element.dataset.condition );

@@ -41,6 +41,19 @@ class Info_Box extends Panel {
 		return $struct;
 	}
 
+	/**
+	 * Filter the wrap parts structure.
+	 *
+	 * @param array $struct The array structure.
+	 *
+	 * @return array
+	 */
+	protected function wrap( $struct ) {
+		$struct = parent::wrap( $struct );
+		unset( $struct['attributes']['class'][ array_search( 'has-heading', $struct['attributes']['class'] ) ] );
+
+		return $struct;
+	}
 
 	/**
 	 * Filter the text parts structure.
