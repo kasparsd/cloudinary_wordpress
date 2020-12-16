@@ -7,6 +7,9 @@
 
 namespace Cloudinary\UI\Component;
 
+use Cloudinary\Media\Gallery;
+use function Cloudinary\get_plugin_instance;
+
 /**
  * Frame Component to render components only.
  *
@@ -96,7 +99,8 @@ class React extends Text {
 			$asset  = $this->get_asset();
 
 			// @todo Perhaps make the script param be an array or scripts to allow for multiples.
-			wp_enqueue_style( $script['slug'], '/wp-admin/load-styles.php?c=1&dir=ltr&load%5Bchunk_0%5D=dashicons,admin-bar,buttons,media-views,editor-buttons,wp-components,wp-block-editor,wp-nux,wp-editor,wp-block-library,wp-block-&load%5Bchunk_1%5D=library-theme,wp-edit-blocks,wp-edit-post,wp-format-library,wp-block-directory,common,forms,admin-menu,dashboard,list-tables,edi&load%5Bchunk_2%5D=t,revisions,media,themes,about,nav-menus,wp-pointer,widgets,site-icon,l10n,wp-auth-check,wp-color-picker&ver=5.5.3', array(), $asset['version'] );
+			$gallery = new Gallery( get_plugin_instance()->get_component( 'media' ) );
+			$gallery->block_editor_scripts_styles();
 			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
 		}
 

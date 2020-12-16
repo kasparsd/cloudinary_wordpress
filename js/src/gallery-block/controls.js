@@ -66,7 +66,10 @@ const Controls = ( { attributes, setAttributes } ) => (
 				</Radio>
 			) ) }
 		</PanelBody>
-		<PanelBody title={ __( 'Color Palette', 'cloudinary' ) }>
+		<PanelBody
+			title={ __( 'Color Palette', 'cloudinary' ) }
+			initialOpen={ false }
+		>
 			<ColorPaletteLabel value={ attributes.themeProps_primary }>
 				{ __( 'Primary', 'cloudinary' ) }
 			</ColorPaletteLabel>
@@ -96,7 +99,10 @@ const Controls = ( { attributes, setAttributes } ) => (
 			/>
 		</PanelBody>
 		{ attributes.displayProps_mode === 'classic' && (
-			<PanelBody title={ __( 'Fade Transition', 'cloudinary' ) }>
+			<PanelBody
+				title={ __( 'Fade Transition', 'cloudinary' ) }
+				initialOpen={ false }
+			>
 				<SelectControl
 					value={ attributes.transition }
 					options={ FADE_TRANSITIONS }
@@ -106,7 +112,10 @@ const Controls = ( { attributes, setAttributes } ) => (
 				/>
 			</PanelBody>
 		) }
-		<PanelBody title={ __( 'Main Viewer Parameters', 'cloudinary' ) }>
+		<PanelBody
+			title={ __( 'Main Viewer Parameters', 'cloudinary' ) }
+			initialOpen={ false }
+		>
 			<SelectControl
 				label={ __( 'Aspect Ratio', 'cloudinary' ) }
 				value={ attributes.aspectRatio }
@@ -216,7 +225,10 @@ const Controls = ( { attributes, setAttributes } ) => (
 				) }
 			</div>
 		</PanelBody>
-		<PanelBody title={ __( 'Carousel Parameters', 'cloudinary' ) }>
+		<PanelBody
+			title={ __( 'Carousel Parameters', 'cloudinary' ) }
+			initialOpen={ false }
+		>
 			<p>{ __( 'Carousel Location', 'cloudinary' ) }</p>
 			<p>
 				<ButtonGroup>
