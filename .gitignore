@@ -30,6 +30,7 @@ npm-debug.log
 phpcs.xml
 css/*.map
 js/*.map
+/bin
 
 # Tests
 tests/data/
