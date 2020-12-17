@@ -262,6 +262,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			return false;
 		}
 
+		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
+			return false;
+		}
 
 		return true;
 	}
