@@ -760,28 +760,71 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				),
 				'connect' => array(
 					'page_title' => __( 'Connect', 'cloudinary' ),
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'html',
-							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
-							'body'  => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
-						),
-						array(
-							'type'  => 'text',
-							'slug'  => 'cloudinary_url',
-							'title' => __( 'Connect', 'cloudinary' ),
-						),
-						array(
-							'type'      => 'submit',
-							'label'     => __( 'Connect', 'cloudinary' ),
-							'blueprint' => 'p|submit_button|/p',
-						),
-					),
 				),
 			),
 		);
 
+		if ( $this->is_connected() ) {
+			$args['tabs']['connect'][] = array(
+				array(
+					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+					'type'  => 'panel',
+					array(
+						'type' => 'connect',
+					),
+				),
+				array(
+					'type' => 'switch_cloud',
+				),
+			);
+		} else {
+			$args['tabs']['connect'][] = array(
+				array(
+					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+					'type'  => 'panel',
+					array(
+						'content' => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
+					),
+					array(
+						'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
+						'slug'         => 'cloudinary_url',
+						'title'        => __( 'Connection string', 'cloudinary' ),
+						'tooltip_text' => __( 'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.', 'cloudinary' ),
+						'type'         => 'text',
+						'attributes'   => array(
+							'class' => array(
+								'connection-string',
+							),
+						),
+					),
+				),
+				array(
+					'label' => __( 'Connect', 'cloudinary' ),
+					'type'  => 'submit',
+				),
+				array(
+					'collapsible' => 'open',
+					'title'       => __( 'Where to find my Connection string?', 'cloudinary' ),
+					'type'        => 'panel',
+					array(
+						'content' => $this->get_connection_string_content(),
+					),
+				),
+			);
+		}
+
 		return $args;
+	}
+
+	/**
+	 * Get Connection String content for old settings.
+	 *
+	 * @return string
+	 */
+	protected function get_connection_string_content() {
+		ob_start();
+		include $this->plugin->dir_path . 'ui-definitions/tabs/connection-string.php';
+
+		return ob_get_clean();
 	}
 }
