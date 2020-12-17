@@ -105,6 +105,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		$this->settings_slug = 'dashboard';
 		add_filter( 'pre_update_option_cloudinary_connect', array( $this, 'verify_connection' ) );
 		add_filter( 'cron_schedules', array( $this, 'get_status_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval
+		add_action( 'update_option_cloudinary_connect', array( $this, 'updated_option' ) );
 		add_action( 'cloudinary_status', array( $this, 'check_status' ) );
 		add_action( 'cloudinary_version_upgrade', array( $this, 'upgrade_connection' ) );
 	}
@@ -322,6 +323,22 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * After updating the cloudinary_connect option, remove flag.
+	 */
+	public function updated_option() {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page' => 'dashboard',
+					'tab'  => 'connect',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	/**
