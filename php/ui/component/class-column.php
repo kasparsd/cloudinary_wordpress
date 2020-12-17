@@ -7,22 +7,12 @@
 
 namespace Cloudinary\UI\Component;
 
-use Cloudinary\UI\Component;
-
 /**
  * Column Component to render components only.
  *
  * @package Cloudinary\UI
  */
-class Column extends Component {
-
-	/**
-	 * Holds the components build blueprint.
-	 *
-	 * @var string
-	 */
-	protected $blueprint = 'wrap|settings/|/wrap';
-
+class Column extends Row {
 
 	/**
 	 * Filter the Wrap parts structure.

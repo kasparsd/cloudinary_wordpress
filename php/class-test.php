@@ -173,6 +173,37 @@ class Test extends Settings_Component {
 						'type' => 'submit',
 					),
 				),
+				'col_test'   => array(
+					'type'       => 'page',
+					'page_title' => __( 'Columns', 'cloudinary ' ),
+					array(
+						'type'  => 'panel',
+						'title' => __( 'Columns example', 'cloudinary ' ),
+						'icon'  => $this->plugin->dir_url . 'css/crop.svg',
+						array(
+							'type' => 'row',
+							array(
+								'type'  => 'column',
+								'width' => '50%',
+								array(
+									'type'  => 'text',
+									'title' => 'Firstname',
+								),
+							),
+							array(
+								'type'  => 'column',
+								'width' => '50%',
+								array(
+									'type'  => 'text',
+									'title' => 'last name',
+								),
+							),
+						),
+					),
+					array(
+						'type' => 'submit',
+					),
+				),
 			),
 		);
 

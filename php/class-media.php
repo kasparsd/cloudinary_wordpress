@@ -1157,7 +1157,12 @@ class Media extends Settings_Component implements Setup {
 		// Use current sources, but convert the URLS.
 		foreach ( $sources as &$source ) {
 			if ( ! $this->is_cloudinary_url( $source['url'] ) ) {
-				$source['url'] = $this->convert_url( $source['url'], $attachment_id, $transformations, $image_meta['overwrite_transformations'] ); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
+				$source['url'] = $this->convert_url(
+					$source['url'],
+					$attachment_id,
+					$transformations,
+					$image_meta['overwrite_transformations']
+				); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
 			}
 		}
 
@@ -1984,7 +1989,10 @@ class Media extends Settings_Component implements Setup {
 						'type'      => 'info_box',
 						'icon'      => $this->plugin->dir_url . 'css/transformation.svg',
 						'title'     => __( 'Transformations', 'cloudinary' ),
-						'text'      => __( 'Cloudinary allows you to easily transform your images on-the-fly to any required format, style and dimension, and also optimizes images for minimal file size alongside high visual quality for an improved user experience and minimal bandwidth. You can do all of this by implementing dynamic image transformation and delivery URLs.', 'cloudinary' ),
+						'text'      => __(
+							'Cloudinary allows you to easily transform your images on-the-fly to any required format, style and dimension, and also optimizes images for minimal file size alongside high visual quality for an improved user experience and minimal bandwidth. You can do all of this by implementing dynamic image transformation and delivery URLs.',
+							'cloudinary'
+						),
 						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
 						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),

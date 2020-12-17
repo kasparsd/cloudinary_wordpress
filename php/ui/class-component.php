@@ -594,7 +594,7 @@ abstract class Component {
 			$struct['render']                     = true;
 			$struct['attributes']['class']        = array(
 				'dashicons',
-				'dashicons-editor-help',
+				'dashicons-info',
 			);
 			$tooltip_id                           = 'tooltip_' . $this->setting->get_slug();
 			$struct['attributes']['data-tooltip'] = $tooltip_id;

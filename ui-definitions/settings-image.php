@@ -11,10 +11,10 @@ $settings = array(
 		'title' => __( 'Image - Global Settings', 'cloudinary' ),
 		'icon'  => $this->plugin->dir_url . 'css/image.svg',
 		array(
-			'type' => 'column',
+			'type' => 'row',
 			array(
 				'type'  => 'column',
-				'width' => '40%',
+				'width' => '45%',
 				array(
 					'type' => 'group',
 					array(
