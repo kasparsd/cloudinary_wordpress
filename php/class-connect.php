@@ -424,7 +424,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 * @return string|null
 	 */
 	public function get_cloud_name() {
-		return $this->credentials['cloud_name'] ? $this->credentials['cloud_name'] : null;
+		return ! empty( $this->credentials['cloud_name'] ) ? $this->credentials['cloud_name'] : null;
 	}
 
 	/**
@@ -488,7 +488,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public function setup() {
 		// Get the cloudinary url from plugin config.
-		$config = $this->plugin->config['settings']['connect'];
+		$config = ! empty( $this->plugin->config['settings']['connect'] ) ? $this->plugin->config['settings']['connect'] : '';
 		if ( ! empty( $config['cloudinary_url'] ) ) {
 			$this->config_from_url( $config['cloudinary_url'] );
 			$this->api = new Connect\Api( $this, $this->plugin->version );
