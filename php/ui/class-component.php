@@ -484,7 +484,7 @@ abstract class Component {
 	}
 
 	/**
-	 * Check if an element type is a void element.s
+	 * Check if an element type is a void elements.
 	 *
 	 * @param string $element The element to check.
 	 *

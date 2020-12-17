@@ -563,9 +563,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	/**
 	 * Gets the config of a connection.
 	 *
-	 * @since  0.1
-	 *
 	 * @return array The array of the config options stored.
+	 *
+	 * @since  0.1
 	 */
 	public function get_config() {
 		$old_version = get_option( self::META_KEYS['version'] );
@@ -573,10 +573,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			/**
 			 * Do action to allow upgrading of different areas.
 			 *
-			 * @since 2.3.1
-			 *
 			 * @param string $old_version The version upgrading from.
 			 * @param string $new_version The version upgrading to.
+			 *
+			 * @since 2.3.1
 			 */
 			do_action( 'cloudinary_version_upgrade', $old_version, $this->plugin->version );
 		}
@@ -618,7 +618,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 
 				// translators: Placeholders are URLS and percentage values.
 				$message = sprintf(
-					/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
+				/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
 					__(
 						'<span class="dashicons dashicons-cloudinary"></span> You are %2$s of the way through your monthly quota for %1$s on your Cloudinary account. If you exceed your quota, the Cloudinary plugin will be deactivated until your next billing cycle and your media assets will be served from your WordPress Media Library. You may wish to <a href="%3$s" target="_blank">%4$s</a> and increase your quota to ensure you maintain full functionality.',
 						'cloudinary'
@@ -628,6 +628,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 					$link,
 					$link_text
 				);
+
 				$this->notices[] = array(
 					'message'     => $message,
 					'type'        => $level,
