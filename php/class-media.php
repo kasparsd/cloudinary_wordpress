@@ -1157,7 +1157,12 @@ class Media extends Settings_Component implements Setup {
 		// Use current sources, but convert the URLS.
 		foreach ( $sources as &$source ) {
 			if ( ! $this->is_cloudinary_url( $source['url'] ) ) {
-				$source['url'] = $this->convert_url( $source['url'], $attachment_id, $transformations, $image_meta['overwrite_transformations'] ); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
+				$source['url'] = $this->convert_url(
+					$source['url'],
+					$attachment_id,
+					$transformations,
+					$image_meta['overwrite_transformations']
+				); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
 			}
 		}
 
@@ -1906,6 +1911,27 @@ class Media extends Settings_Component implements Setup {
 	}
 
 	/**
+	 * Checks if local URLS can be filtered out.
+	 *
+	 * @return bool
+	 */
+	public function can_filter_out_local() {
+		$can = true;
+		if ( 'cld' !== $this->plugin->settings->find_setting( 'offload' )->get_value() ) {
+			/**
+			 * Filter to allow stopping filtering out local.
+			 *
+			 * @param bool $can True as default.
+			 *
+			 * @return bool
+			 */
+			$can = apply_filters( 'cloudinary_filter_out_local', true );
+		}
+
+		return $can;
+	}
+
+	/**
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
@@ -1936,17 +1962,17 @@ class Media extends Settings_Component implements Setup {
 			add_filter( 'upload_dir', array( $this, 'upload_dir' ) );
 
 			// Filter live URLS. (functions that return a URL).
-			add_filter( 'wp_calculate_image_srcset', array( $this, 'image_srcset' ), 10, 5 );
-			add_filter( 'wp_get_attachment_url', array( $this, 'attachment_url' ), 10, 2 );
-			add_filter( 'image_downsize', array( $this, 'filter_downsize' ), 10, 3 );
-
+			if ( $this->can_filter_out_local() ) {
+				add_filter( 'wp_calculate_image_srcset', array( $this, 'image_srcset' ), 10, 5 );
+				add_filter( 'wp_get_attachment_url', array( $this, 'attachment_url' ), 10, 2 );
+				add_filter( 'image_downsize', array( $this, 'filter_downsize' ), 10, 3 );
+				// Hook into Featured Image cycle.
+				add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
+				add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
+			}
 			// Filter and action the custom column.
 			add_filter( 'manage_media_columns', array( $this, 'media_column' ) );
 			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
-
-			// Hook into Featured Image cycle.
-			add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
-			add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
 		}
 	}
 
