@@ -81,6 +81,10 @@ class Text extends Component {
 			$struct['attributes']['required'] = 'required';
 		}
 
+		if ( $this->setting->has_param( 'placeholder' ) ) {
+			$struct['attributes']['placeholder'] = $this->setting->get_param( 'placeholder' );
+		}
+
 		return $struct;
 	}
 
