@@ -823,7 +823,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	protected function get_connection_string_content() {
 		ob_start();
-		include $this->plugin->dir_path . 'ui-definitions/tabs/connection-string.php';
+		include $this->plugin->dir_path . 'php/templates/connection-string.php';
 
 		return ob_get_clean();
 	}
