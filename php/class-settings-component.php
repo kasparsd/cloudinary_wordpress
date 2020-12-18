@@ -61,6 +61,8 @@ abstract class Settings_Component implements Settings {
 		}
 
 		$this->settings = $setting->get_setting( $this->settings_slug );
+		// Add enabling filter.
+		add_filter( "settings_enabled_{$this->settings_slug}", array( $this, 'is_enabled' ) );
 	}
 
 	/**
@@ -76,7 +78,10 @@ abstract class Settings_Component implements Settings {
 	 * Setup Settings.
 	 */
 	public function register_settings() {
-		$this->settings->setup_setting( $this->settings() );
+		$params = $this->settings();
+		if ( ! empty( $params ) ) {
+			$this->settings->setup_setting( $params );
+		}
 	}
 
 	/**
@@ -86,6 +91,17 @@ abstract class Settings_Component implements Settings {
 	 * @param string $new_version      The New version number.
 	 */
 	public function upgrade_settings( $previous_version, $new_version ) {
+	}
+
+	/**
+	 * Enabled method for version if settings are enabled.
+	 *
+	 * @param bool $enabled Flag to enable.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled( $enabled ) {
+		return $enabled;
 	}
 
 	/**

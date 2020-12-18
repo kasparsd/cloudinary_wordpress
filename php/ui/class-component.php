@@ -495,7 +495,7 @@ abstract class Component {
 	}
 
 	/**
-	 * Check if an element type is a void element.s
+	 * Check if an element type is a void element.
 	 *
 	 * @param string $element The element to check.
 	 *
@@ -554,7 +554,7 @@ abstract class Component {
 	public function get_part( $part ) {
 		$struct = array(
 			'element'    => $part,
-			'attributes' => $this->setting->get_param( 'attributes', array() ),
+			'attributes' => array(),
 			'children'   => array(),
 			'state'      => null,
 			'content'    => null,
@@ -665,7 +665,7 @@ abstract class Component {
 	 */
 	protected function settings( $struct ) {
 		$struct['element'] = '';
-		if ( $this->setting->has_settings() ) {
+		if ( $this->setting->has_parent() && $this->setting->has_settings() ) {
 			$html = array();
 			foreach ( $this->setting->get_settings() as $setting ) {
 				$html[] = $setting->get_component()->render();
@@ -688,7 +688,11 @@ abstract class Component {
 		$return = array();
 		foreach ( $attributes as $attribute => $value ) {
 			if ( is_array( $value ) ) {
-				$value = implode( ' ', $value );
+				if ( count( $value ) !== count( $value, COUNT_RECURSIVE ) ) {
+					$value = wp_json_encode( $value );
+				} else {
+					$value = implode( ' ', $value );
+				}
 			}
 			$return[] = esc_attr( $attribute ) . '="' . esc_attr( $value ) . '"';
 		}

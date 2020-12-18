@@ -10,6 +10,7 @@ $settings = array(
 		'type'  => 'panel',
 		'title' => __( 'Image - Global Settings', 'cloudinary' ),
 		'icon'  => $this->plugin->dir_url . 'css/image.svg',
+		'slug'  => 'image_settings',
 		array(
 			'type' => 'row',
 			array(

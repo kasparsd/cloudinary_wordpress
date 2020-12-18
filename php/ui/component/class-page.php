@@ -133,7 +133,7 @@ class Page extends Panel {
 				'cld-page-tabs-tab',
 			);
 
-			if ( $this->get_active_setting() === $setting ) {
+			if ( $setting->has_param( 'is_active' ) ) {
 				$tab['attributes']['class'][] = 'is-active';
 			}
 
@@ -193,8 +193,8 @@ class Page extends Panel {
 	 */
 	protected function settings( $struct ) {
 
-		if ( $this->setting->has_param( 'has_tabs' ) ) {
-			$struct['content'] = $this->get_active_setting()->render_component();
+		if ( $this->setting->has_param( 'active_tab' ) ) {
+			$struct['content'] = $this->setting->get_param( 'active_tab' )->render_component();
 
 			return $struct;
 		}

@@ -75,7 +75,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public $disabled = false;
 
-
 	/**
 	 * Holds the meta keys for connect meta to maintain consistency.
 	 */
@@ -85,8 +84,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		'signature'  => 'cloudinary_connection_signature',
 		'version'    => 'cloudinary_version',
 		'url'        => 'cloudinary_url',
-		'connect'    => 'cloudinary_connect',
-		'cache'      => 'cloudinary_settings_cache',
 		'status'     => 'cloudinary_status',
 	);
 
@@ -202,7 +199,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			'updated'
 		);
 
-		update_option( self::META_KEYS['signature'], md5( $data['cloudinary_url'] ) );
+		$this->settings->get_setting( 'signature' )->set_value( md5( $data['cloudinary_url'] ) )->save_value();
 
 		return $data;
 	}
@@ -213,13 +210,13 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 * @return boolean
 	 */
 	public function is_connected() {
-		$signature = get_option( self::META_KEYS['signature'], null );
+		$signature = $this->settings->get_value( 'signature' );
 
 		if ( null === $signature ) {
 			return false;
 		}
 
-		$connect_data = get_option( self::META_KEYS['connect'], array() );
+		$connect_data = $this->settings->get_value( 'connect' );
 		$current_url  = isset( $connect_data['cloudinary_url'] ) ? $connect_data['cloudinary_url'] : null;
 
 		if ( null === $current_url ) {
@@ -230,7 +227,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			return false;
 		}
 
-		$status = get_option( self::META_KEYS['status'], null );
+		$status = $this->settings->get_value( 'status' );
 		if ( is_wp_error( $status ) ) {
 			// Error, we stop here.
 			if ( ! isset( $this->notices['__status'] ) ) {
@@ -260,7 +257,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 
 			return false;
 		}
-
 
 		return true;
 	}
@@ -331,7 +327,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public function check_status() {
 		$status = $this->test_ping();
-		update_option( self::META_KEYS['status'], $status );
+		$this->settings->get_setting( 'status' )->save_value( $status );
 
 		return $status;
 	}
@@ -467,10 +463,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 * @since  0.1
 	 */
 	public function setup() {
-		// Get the cloudinary url from plugin config.
-		$config = $this->plugin->config['settings']['connect'];
-		if ( ! empty( $config['cloudinary_url'] ) ) {
-			$this->config_from_url( $config['cloudinary_url'] );
+		// Get the cloudinary url from settings.
+		$cloudinary_url = $this->settings->get_value( 'cloudinary_url' );
+		if ( ! empty( $cloudinary_url ) ) {
+			$this->config_from_url( $cloudinary_url );
 			$this->api = new Connect\Api( $this, $this->plugin->version );
 			$this->usage_stats();
 			$this->setup_status_cron();
@@ -511,17 +507,18 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	public function usage_stats( $refresh = false ) {
 		$stats = get_transient( self::META_KEYS['usage'] );
 		if ( empty( $stats ) || true === $refresh ) {
+			$last_usage = $this->settings->get_setting( 'last_usage' );
 			// Get users plan.
 			$stats = $this->api->usage();
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
 				set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
-				update_option( self::META_KEYS['last_usage'], $stats );// Save the last successful call to prevent crashing.
+				$last_usage->save_value( $stats );// Save the last successful call to prevent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.
-				$stats = get_option( self::META_KEYS['last_usage'] );
+				$stats = $last_usage->get_value();
 			}
 		}
 		$this->usage = $stats;
@@ -561,14 +558,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	}
 
 	/**
-	 * Gets the config of a connection.
-	 *
-	 * @since  0.1
-	 *
-	 * @return array The array of the config options stored.
+	 * Get upgrade action on config hook.
 	 */
 	public function get_config() {
-		$old_version = get_option( self::META_KEYS['version'] );
+		$old_version = $this->settings->get_value( 'version' );
 		if ( version_compare( $this->plugin->version, $old_version, '>' ) ) {
 			/**
 			 * Do action to allow upgrading of different areas.
@@ -580,9 +573,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			 */
 			do_action( 'cloudinary_version_upgrade', $old_version, $this->plugin->version );
 		}
-
-		// We get the signature here since the upgrade action, may change the signature.
-		return get_option( self::META_KEYS['signature'], null );
 	}
 
 	/**
@@ -710,7 +700,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			update_option( self::META_KEYS['connect'], $data );
 			update_option( self::META_KEYS['signature'], $signature );
 			update_option( self::META_KEYS['version'], $this->plugin->version );
-			delete_option( self::META_KEYS['cache'] ); // remove the cache.
 			$this->plugin->config['settings']['connect'] = $data; // Set the connection url for this round.
 		}
 	}
@@ -730,15 +719,21 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				'about'   => array(
 					'page_title' => __( 'About', 'cloudinary' ),
 					array(
-						'type'      => 'info_box',
-						'title'     => __( 'Welcome to Cloudinary.', 'cloudinary' ),
-						'text'      => __( 'Cloudinary supercharges your application media! It enables you to easily upload images and videos to the cloud and deliver them optimized, via a lightning-fast CDN, using industry best practices. Perform smart resizing, add watermarks, apply effects, and much more without leaving your WordPress console or installing any software.', 'cloudinary' ),
+						'type'  => 'info_box',
+						'title' => __( 'Welcome to Cloudinary.', 'cloudinary' ),
+						'text'  => __(
+							'Cloudinary supercharges your application media! It enables you to easily upload images and videos to the cloud and deliver them optimized, via a lightning-fast CDN, using industry best practices. Perform smart resizing, add watermarks, apply effects, and much more without leaving your WordPress console or installing any software.',
+							'cloudinary'
+						),
 					),
 					array(
 						'type'      => 'info_box',
 						'icon'      => $this->plugin->dir_url . 'css/crop.svg',
 						'title'     => __( 'Image Delivery Settings', 'cloudinary' ),
-						'text'      => __( 'Configure how your images are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as responsive images.', 'cloudinary' ),
+						'text'      => __(
+							'Configure how your images are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as responsive images.',
+							'cloudinary'
+						),
 						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
 						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),
@@ -746,7 +741,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 						'type'      => 'info_box',
 						'icon'      => $this->plugin->dir_url . 'css/video.svg',
 						'title'     => __( 'Video Settings', 'cloudinary' ),
-						'text'      => __( 'Configure how your videos are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as whether to use the Cloudinary video player.', 'cloudinary' ),
+						'text'      => __(
+							'Configure how your videos are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as whether to use the Cloudinary video player.',
+							'cloudinary'
+						),
 						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
 						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),
@@ -754,7 +752,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 						'type'      => 'info_box',
 						'icon'      => $this->plugin->dir_url . 'css/transformation.svg',
 						'title'     => __( 'Learn More', 'cloudinary' ),
-						'text'      => __( 'You can upload and manage your images in Cloudinary directly from your WordPress interface. The plugin also supports automated (single-click) migration of all images from your existing posts to Cloudinary. Once your WordPress images are stored in Cloudinary, you can take advantage of Cloudinary\'s transformation, optimization, and responsive image features as well as fast CDN delivery.', 'cloudinary' ),
+						'text'      => __(
+							'You can upload and manage your images in Cloudinary directly from your WordPress interface. The plugin also supports automated (single-click) migration of all images from your existing posts to Cloudinary. Once your WordPress images are stored in Cloudinary, you can take advantage of Cloudinary\'s transformation, optimization, and responsive image features as well as fast CDN delivery.',
+							'cloudinary'
+						),
 						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
 						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),
@@ -782,6 +783,15 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				),
 			),
 		);
+
+		// Add data storage.
+		foreach ( self::META_KEYS as $slug => $option_name ) {
+			$args[] = array(
+				'slug'        => $slug,
+				'option_name' => $option_name,
+				'type'        => 'data',
+			);
+		}
 
 		return $args;
 	}

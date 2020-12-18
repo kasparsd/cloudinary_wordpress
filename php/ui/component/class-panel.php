@@ -56,7 +56,6 @@ class Panel extends Component {
 		return $struct;
 	}
 
-
 	/**
 	 * Filter the collapsible parts structure.
 	 *
@@ -106,19 +105,7 @@ class Panel extends Component {
 	 * @return Setting
 	 */
 	protected function get_active_setting() {
-		$active_setting = '_tmp_fallback';
-		if ( $this->setting->has_settings() ) {
-			$active_setting = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
-			if ( ! $this->setting->has_setting( $active_setting ) ) { // Tab is invalid or not set, check if in a POST.
-				$active_setting = filter_input( INPUT_POST, 'tab', FILTER_SANITIZE_STRING );
-				if ( ! $this->setting->has_setting( $active_setting ) ) { // Tab is invalid or not set, load the default/first tab.
-					$settings       = $this->setting->get_setting_slugs();
-					$active_setting = array_shift( $settings );
-				}
-			}
-		}
-
-		return $this->setting->get_setting( $active_setting );
+		return $this->setting->get_root_setting()->get_param( 'active_tab' );
 	}
 
 	/**
