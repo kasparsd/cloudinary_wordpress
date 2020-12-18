@@ -77,8 +77,9 @@ class Test extends Settings_Component {
 							),
 						),
 						array(
-							'type'  => 'group',
-							'title' => __( 'Toggles', 'cloudinary' ),
+							'type'        => 'group',
+							'title'       => __( 'Toggles', 'cloudinary' ),
+							'collapsible' => 'open',
 							array(
 								'type'         => 'on_off',
 								'title'        => __( 'Toggle - default off', 'cloudinary' ),
@@ -95,8 +96,11 @@ class Test extends Settings_Component {
 							),
 						),
 						array(
-							'type'  => 'group',
-							'title' => __( 'Text', 'cloudinary' ),
+							'type'      => 'group',
+							'title'     => __( 'Text', 'cloudinary' ),
+							'condition' => array(
+								'toggle_on' => true,
+							),
 							array(
 								'type'        => 'text',
 								'title'       => __( 'Single text field', 'cloudinary' ),
@@ -139,6 +143,7 @@ class Test extends Settings_Component {
 						'icon'  => $this->plugin->dir_url . 'css/video.svg',
 						array(
 							'content' => $this->get_content(),
+							'clear'   => '',
 						),
 					),
 				),

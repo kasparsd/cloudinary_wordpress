@@ -742,9 +742,19 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 					array(
 						'type' => 'panel',
 						array(
+							'type'  => 'html',
+							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+							'body'  => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
+						),
+						array(
 							'type'  => 'text',
 							'slug'  => 'cloudinary_url',
 							'title' => __( 'Connect', 'cloudinary' ),
+						),
+						array(
+							'type'      => 'submit',
+							'label'     => __( 'Connect', 'cloudinary' ),
+							'blueprint' => 'p|submit_button|/p',
 						),
 					),
 				),
