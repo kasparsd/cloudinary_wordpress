@@ -35,26 +35,9 @@ class Gallery {
 	/**
 	 * The default config in case no settings are saved.
 	 *
-	 * @var array
+	 * @var string
 	 */
-	public static $default_config = array(
-		'enable_gallery'                    => 'on',
-		'primary_color'                     => '#000000',
-		'on_primary_color'                  => '#000000',
-		'active_color'                      => '#777777',
-		'aspect_ratio'                      => '1:1',
-		'zoom_trigger'                      => 'click',
-		'zoom_type'                         => 'popup',
-		'zoom_viewer_position'              => 'bottom',
-		'carousel_location'                 => 'top',
-		'carousel_offset'                   => 5,
-		'carousel_style'                    => 'thumbnails',
-		'carousel_thumbnail_width'          => 64,
-		'carousel_thumbnail_height'         => 64,
-		'carousel_button_shape'             => 'radius',
-		'carousel_thumbnail_selected_style' => 'gradient',
-		'custom_settings'                   => array(),
-	);
+	public static $default_config = '{"mediaAssets":[],"container":".woocommerce-product-gallery","transition":"fade","aspectRatio":"3:4","navigation":"always","zoom":true,"carouselLocation":"top","carouselOffset":5,"carouselStyle":"thumbnails","displayProps":{"mode":"classic"},"themeProps":{"primary":"#cf2e2e","onPrimary":"#000000","active":"#777777"},"zoomProps":{"type":"popup","viewerPosition":"bottom","trigger":"click"},"thumbnailProps":{"width":64,"height":64,"navigationShape":"radius","selectedStyle":"gradient","selectedBorderPosition":"all","selectedBorderWidth":4,"mediaSymbolShape":"round"},"indicatorProps":{"shape":"round"}}';
 
 	/**
 	 * Holds instance of the Media class.
@@ -71,13 +54,6 @@ class Gallery {
 	protected $config = array();
 
 	/**
-	 * Holds the original, unparsed config.
-	 *
-	 * @var array
-	 */
-	protected $original_config = array();
-
-	/**
 	 * Init gallery.
 	 *
 	 * @param Media $media Media class instance.
@@ -85,11 +61,9 @@ class Gallery {
 	public function __construct( Media $media ) {
 		$this->media = $media;
 
-		if ( isset( $media->plugin->config['settings']['gallery'] ) && count( $media->plugin->config['settings']['gallery'] ) ) {
-			$this->original_config = $media->plugin->config['settings']['gallery'];
-		} else {
-			$this->original_config = self::$default_config;
-		}
+		$config = ! empty( $media->plugin->config['settings']['gallery'] ) ? $media->plugin->config['settings']['gallery'] : self::$default_config;
+
+		$this->config = json_decode( $config, true );
 
 		$this->setup_hooks();
 	}
@@ -100,67 +74,16 @@ class Gallery {
 	 * @return array
 	 */
 	public function get_config() {
-		if ( count( $this->config ) ) {
-			return $this->config;
-		}
+		$config = Utils::array_filter_recursive( $this->config ); // Remove empty values.
 
-		$config        = $this->original_config;
-		$custom_config = $config['custom_settings'];
+		$config['cloudName'] = $this->media->plugin->components['connect']->get_cloud_name();
 
-		// unset things that don't need to be in the final json.
-		unset( $config['enable_gallery'], $config['custom_settings'] );
-
-		$config = $this->prepare_config( $config );
-		$config = Utils::expand_dot_notation( $config );
-		$config = Utils::array_filter_recursive(
-			$config,
-			function ( $item ) {
-				return ! empty( $item );
-			}
-		);
-
-		$config['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
-		$config['container']   = '.woocommerce-product-gallery';
-		$config['mediaAssets'] = array();
-
-		if ( ! empty( $custom_config ) ) {
-			$custom_config = json_decode( $custom_config, true );
-
-			if ( ! empty( $custom_config ) ) {
-				$config = array_merge( $config, $custom_config );
-			}
-		}
-
-		$this->config = apply_filters( 'cloudinary_gallery_config', $config );
-
-		return $this->config;
-	}
-
-	/**
-	 * Convert an array's keys to camelCase and transform booleans.
-	 * This is used for Cloudinary's gallery widget lib.
-	 *
-	 * @param array $input The array input that will have its keys camelcase-d.
-	 *
-	 * @return array
-	 */
-	public function prepare_config( array $input ) {
-		foreach ( $input as $key => $val ) {
-			if ( 'on' === $val || 'off' === $val ) {
-				$val = 'on' === $val;
-			} elseif ( is_numeric( $val ) ) {
-				$val = (int) $val;
-			}
-
-			if ( 'none' !== $val ) {
-				$new_key           = lcfirst( implode( '', array_map( 'ucfirst', explode( '_', $key ) ) ) );
-				$input[ $new_key ] = $val;
-			}
-
-			unset( $input[ $key ] );
-		}
-
-		return $input;
+		/**
+		 * Filter the gallery configuration.
+		 *
+		 * @param array $config The current gallery config.
+		 */
+		return apply_filters( 'cloudinary_gallery_config', $config );
 	}
 
 	/**
@@ -224,7 +147,8 @@ class Gallery {
 	 * @return bool
 	 */
 	public function gallery_enabled() {
-		return isset( $this->original_config['enable_gallery'] ) && 'on' === $this->original_config['enable_gallery'];
+		// return isset( $this->config['enable_gallery'] ) && 'on' === $this->config['enable_gallery'];
+		return true; // @TODO: reimplement this.
 	}
 
 	/**

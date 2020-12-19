@@ -7,6 +7,9 @@ import GalleryControls from '../gallery-block/controls';
 
 const dot = new Dot( '_' );
 
+delete attributes.cloudName;
+delete attributes.mediaAssets;
+
 const StatefulGalleryControls = () => {
 	const [ statefulAttrs, setStatefulAttrs ] = useState( {} );
 
@@ -33,6 +36,8 @@ const StatefulGalleryControls = () => {
 			delete config.displayProps.columns;
 		}
 
+		delete config.selectedImages;
+
 		const gallery = cloudinary.galleryWidget( {
 			cloudName: 'demo',
 			mediaAssets: [
@@ -46,6 +51,12 @@ const StatefulGalleryControls = () => {
 		} );
 
 		gallery.render();
+
+		const hiddenField = document.getElementById( 'gallery_settings_input' );
+
+		if ( hiddenField ) {
+			hiddenField.value = JSON.stringify( config );
+		}
 
 		return () => gallery.destroy();
 	} );

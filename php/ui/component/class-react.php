@@ -22,8 +22,7 @@ class React extends Text {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'input/|app/|template/|scripts/';
-
+	protected $blueprint = 'input/|app/|scripts/';
 
 	/**
 	 * Filter the app part structure.
@@ -47,33 +46,14 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function input( $struct ) {
+		$struct                       = parent::input( $struct );
+		$struct['attributes']['id']   = 'gallery_settings_input';
+		$struct['attributes']['name'] = 'test_settings_gallery';
+		$struct['attributes']['type'] = 'hidden';
 
-		$struct                        = parent::input( $struct );
-		$struct['attributes']['type']  = 'hidden';
 		$struct['attributes']['value'] = $this->setting->get_value();
 
-		// @todo Complete value output.
-
 		return $struct;
-
-	}
-
-	/**
-	 * Filter the template part structure.
-	 *
-	 * @param array $struct The array structure.
-	 *
-	 * @return array
-	 */
-	protected function template( $struct ) {
-
-		$struct['element'] = 'script';
-		$struct['content'] = $this->setting->get_value();
-
-		// @todo Complete template structures..
-
-		return $struct;
-
 	}
 
 	/**
@@ -84,7 +64,6 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function scripts( $struct ) {
-
 		$struct['element'] = null;
 		if ( $this->setting->has_param( 'script' ) ) {
 			$script_default = array(
@@ -98,16 +77,19 @@ class React extends Text {
 			$script = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
 			$asset  = $this->get_asset();
 
-			// @todo Perhaps make the script param be an array or scripts to allow for multiples.
 			$gallery = new Gallery( get_plugin_instance()->get_component( 'media' ) );
 			$gallery->block_editor_scripts_styles();
 			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
 		}
 
 		return $struct;
-
 	}
 
+	/**
+	 * Retrieve asset dependencies.
+	 *
+	 * @return array
+	 */
 	private function get_asset() {
 		$asset = require __DIR__ . '/../../../js/gallery.asset.php';
 

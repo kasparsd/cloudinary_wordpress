@@ -11,6 +11,8 @@ import edit from './edit';
 import save from './save';
 import attributes from './attributes';
 
+attributes.container = { type: 'string' };
+
 registerBlockType( 'cloudinary/gallery', {
 	title: __( 'Cloudinary Gallery', 'cloudinary' ),
 	description: __(

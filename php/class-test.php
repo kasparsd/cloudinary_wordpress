@@ -23,12 +23,12 @@ class Test extends Settings_Component {
 			'menu_title'  => __( 'Settings test', 'cloudinary' ),
 			'option_name' => 'test_settings',
 			'tabs'        => array(
-				'fields'     => array(
+				'fields'   => array(
 					'type'       => 'page',
-					'page_title' => __( 'Input Settings', 'cloudinary ' ),
+					'page_title' => __( 'Input Settings', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'Settings with inputs', 'cloudinary ' ),
+						'title' => __( 'Settings with inputs', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/gallery.svg',
 						array(
 							'type'  => 'group',
@@ -130,25 +130,25 @@ class Test extends Settings_Component {
 						'type' => 'submit',
 					),
 				),
-				'contents'   => array(
+				'contents' => array(
 					'type'       => 'page',
-					'page_title' => __( 'Content Settings', 'cloudinary ' ),
+					'page_title' => __( 'Content Settings', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'Settings with content', 'cloudinary ' ),
+						'title' => __( 'Settings with content', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/video.svg',
 						array(
 							'content' => $this->get_content(),
 						),
 					),
 				),
-				'react_test' => array(
+				'gallery'  => array(
 					'type'       => 'page',
-					'page_title' => __( 'React', 'cloudinary ' ),
+					'page_title' => __( 'Gallery Settings', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'React example', 'cloudinary ' ),
-						'icon'  => $this->plugin->dir_url . 'css/video.svg',
+						'title' => __( 'Gallery Settings', 'cloudinary' ),
+						'icon'  => $this->plugin->dir_url . 'css/gallery.svg',
 						array(
 							'type'   => 'react',
 							'slug'   => 'gallery',

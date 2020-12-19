@@ -14,33 +14,6 @@ namespace Cloudinary;
  */
 class Utils {
 	/**
-	 * Detects array keys with dot notation and expands them to form a new multi-dimensional array.
-	 *
-	 * @param  array $input The array that will be processed.
-	 *
-	 * @return array
-	 */
-	public static function expand_dot_notation( array $input ) {
-		$result = array();
-		foreach ( $input as $key => $value ) {
-			if ( is_array( $value ) ) {
-				$value = self::expand_dot_notation( $value );
-			}
-
-			foreach ( array_reverse( explode( '.', $key ) ) as $inner_key ) {
-				$value = array( $inner_key => $value );
-			}
-
-			// phpcs:disable Generic.Commenting.DocComment.MissingShort
-			/** @noinspection SlowArrayOperationsInLoopInspection */
-			// phpcs:enable Generic.Commenting.DocComment.MissingShort
-			$result = array_merge_recursive( $result, $value );
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Filter an array recursively
 	 *
 	 * @param array         $input    The array to filter.
@@ -49,6 +22,13 @@ class Utils {
 	 * @return array
 	 */
 	public static function array_filter_recursive( array $input, $callback = null ) {
+		// PHP array_filter does this, so we'll do it too.
+		if ( null === $callback ) {
+			$callback = static function ( $item ) {
+				return ! empty( $item );
+			};
+		}
+
 		foreach ( $input as &$value ) {
 			if ( is_array( $value ) ) {
 				$value = self::array_filter_recursive( $value, $callback );

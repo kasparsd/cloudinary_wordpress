@@ -25,8 +25,8 @@ const Save = ( { attributes } ) => {
 
 		configString = JSON.stringify( {
 			cloudName: CLDN.mloptions.cloud_name,
-			mediaAssets: selectedImages,
 			...config,
+			mediaAssets: selectedImages,
 		} );
 	}
 

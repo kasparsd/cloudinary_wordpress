@@ -79,8 +79,8 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 
 			const gallery = cloudinary.galleryWidget( {
 				cloudName: CLDN.mloptions.cloud_name,
-				mediaAssets: selectedImages,
 				...config,
+				mediaAssets: selectedImages,
 				container: '.' + attributes.container,
 				zoom: false,
 			} );
@@ -105,7 +105,7 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 								__( 'Cloudinary Gallery', 'cloudinary' ),
 							instructions: ! hasImages && PLACEHOLDER_TEXT,
 						} }
-						icon={ ! hasImages && 'format-gallery' }
+						icon="format-gallery"
 						disableMediaButtons={ hasImages && ! isSelected }
 						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						addToGallery={ hasImages }
