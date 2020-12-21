@@ -35,9 +35,39 @@ class Gallery {
 	/**
 	 * The default config in case no settings are saved.
 	 *
-	 * @var string
+	 * @var array
 	 */
-	public static $default_config = '{"mediaAssets":[],"container":".woocommerce-product-gallery","transition":"fade","aspectRatio":"3:4","navigation":"always","zoom":true,"carouselLocation":"top","carouselOffset":5,"carouselStyle":"thumbnails","displayProps":{"mode":"classic"},"themeProps":{"primary":"#cf2e2e","onPrimary":"#000000","active":"#777777"},"zoomProps":{"type":"popup","viewerPosition":"bottom","trigger":"click"},"thumbnailProps":{"width":64,"height":64,"navigationShape":"radius","selectedStyle":"gradient","selectedBorderPosition":"all","selectedBorderWidth":4,"mediaSymbolShape":"round"},"indicatorProps":{"shape":"round"}}';
+	public static $default_config = array(
+		'mediaAssets'      => array(),
+		'transition'       => 'fade',
+		'aspectRatio'      => '3:4',
+		'navigation'       => 'always',
+		'zoom'             => true,
+		'carouselLocation' => 'top',
+		'carouselOffset'   => 5,
+		'carouselStyle'    => 'thumbnails',
+		'displayProps'     => array( 'mode' => 'classic' ),
+		'indicatorProps'   => array( 'shape' => 'round' ),
+		'themeProps'       => array(
+			'primary'   => '#cf2e2e',
+			'onPrimary' => '#000000',
+			'active'    => '#777777',
+		),
+		'zoomProps'        => array(
+			'type'           => 'popup',
+			'viewerPosition' => 'bottom',
+			'trigger'        => 'click',
+		),
+		'thumbnailProps'   => array(
+			'width'                  => 64,
+			'height'                 => 64,
+			'navigationShape'        => 'radius',
+			'selectedStyle'          => 'gradient',
+			'selectedBorderPosition' => 'all',
+			'selectedBorderWidth'    => 4,
+			'mediaSymbolShape'       => 'round',
+		),
+	);
 
 	/**
 	 * Holds instance of the Media class.
@@ -61,7 +91,7 @@ class Gallery {
 	public function __construct( Media $media ) {
 		$this->media = $media;
 
-		$config = ! empty( $media->plugin->config['settings']['gallery'] ) ? $media->plugin->config['settings']['gallery'] : self::$default_config;
+		$config = ! empty( $media->plugin->config['settings']['gallery'] ) ? $media->plugin->config['settings']['gallery'] : wp_json_encode( self::$default_config );
 
 		$this->config = json_decode( $config, true );
 
@@ -77,6 +107,13 @@ class Gallery {
 		$config = Utils::array_filter_recursive( $this->config ); // Remove empty values.
 
 		$config['cloudName'] = $this->media->plugin->components['connect']->get_cloud_name();
+
+		/**
+		 * Filter the gallery HTML container.
+		 *
+		 * @param string $selector The target HTML selector.
+		 */
+		$config['container'] = apply_filters( 'cloudinary_gallery_html_container', '' );
 
 		/**
 		 * Filter the gallery configuration.
@@ -147,7 +184,6 @@ class Gallery {
 	 * @return bool
 	 */
 	public function gallery_enabled() {
-		// return isset( $this->config['enable_gallery'] ) && 'on' === $this->config['enable_gallery'];
 		return true; // @TODO: reimplement this.
 	}
 

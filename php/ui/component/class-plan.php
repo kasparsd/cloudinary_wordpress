@@ -81,11 +81,11 @@ class Plan extends Component {
 		$detail['content'] = __( '1 Credit =', 'cloudinary' );
 
 
-		$struct['children']['title']   = $summary;
-		$struct['children']['more']   = $another;
-		$struct['children']['span'] = $detail;
-		$struct['children']['ul']   = $this->content();
-		$struct['element']          = 'div';
+		$struct['children']['title'] = $summary;
+		$struct['children']['more']  = $another;
+		$struct['children']['span']  = $detail;
+		$struct['children']['ul']    = $this->content();
+		$struct['element']           = 'div';
 
 		return $struct;
 	}

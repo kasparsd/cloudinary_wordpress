@@ -61,6 +61,13 @@ class WooCommerceGallery {
 	public function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
 
+		add_action(
+			'cloudinary_gallery_html_container',
+			static function () {
+				return '.woocommerce-product-gallery';
+			}
+		);
+
 		if ( ! is_admin() && $this->woocommerce_active() ) {
 			add_filter( 'woocommerce_single_product_image_thumbnail_html', '__return_empty_string' );
 		}
