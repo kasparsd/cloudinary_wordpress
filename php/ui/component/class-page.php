@@ -193,7 +193,7 @@ class Page extends Panel {
 	 */
 	protected function settings( $struct ) {
 
-		if ( $this->setting->has_param( 'active_tab' ) ) {
+		if ( $this->setting->has_param( 'has_tabs' ) && $this->setting->has_param( 'active_tab' ) ) {
 			$struct['content'] = $this->setting->get_param( 'active_tab' )->render_component();
 
 			return $struct;
