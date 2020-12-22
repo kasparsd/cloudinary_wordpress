@@ -102,6 +102,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		$this->settings_slug = 'dashboard';
 		add_filter( 'pre_update_option_cloudinary_connect', array( $this, 'verify_connection' ) );
 		add_filter( 'cron_schedules', array( $this, 'get_status_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval
+		add_action( 'update_option_cloudinary_connect', array( $this, 'updated_option' ) );
 		add_action( 'cloudinary_status', array( $this, 'check_status' ) );
 		add_action( 'cloudinary_version_upgrade', array( $this, 'upgrade_connection' ) );
 	}
@@ -258,6 +259,10 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			return false;
 		}
 
+		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -318,6 +323,22 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * After updating the cloudinary_connect option, remove flag.
+	 */
+	public function updated_option() {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page' => 'dashboard',
+					'tab'  => 'connect',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	/**
@@ -400,7 +421,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 * @return string|null
 	 */
 	public function get_cloud_name() {
-		return $this->credentials['cloud_name'] ? $this->credentials['cloud_name'] : null;
+		return ! empty( $this->credentials['cloud_name'] ) ? $this->credentials['cloud_name'] : null;
 	}
 
 	/**
@@ -558,7 +579,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	}
 
 	/**
-	 * Get upgrade action on config hook.
+	 * Gets the config of a connection.
 	 */
 	public function get_config() {
 		$old_version = $this->settings->get_value( 'version' );
@@ -568,8 +589,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			 *
 			 * @since 2.3.1
 			 *
-			 * @param string $old_version The version upgrading from.
 			 * @param string $new_version The version upgrading to.
+			 *
+			 * @param string $old_version The version upgrading from.
 			 */
 			do_action( 'cloudinary_version_upgrade', $old_version, $this->plugin->version );
 		}
@@ -618,6 +640,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 					$link,
 					$link_text
 				);
+
 				$this->notices[] = array(
 					'message'     => $message,
 					'type'        => $level,
@@ -762,27 +785,61 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				),
 				'connect' => array(
 					'page_title' => __( 'Connect', 'cloudinary' ),
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'html',
-							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
-							'body'  => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
-						),
-						array(
-							'type'  => 'text',
-							'slug'  => 'cloudinary_url',
-							'title' => __( 'Connect', 'cloudinary' ),
-						),
-						array(
-							'type'      => 'submit',
-							'label'     => __( 'Connect', 'cloudinary' ),
-							'blueprint' => 'p|submit_button|/p',
-						),
-					),
 				),
 			),
 		);
+
+		if ( $this->is_connected() ) {
+			$args['tabs']['connect'][] = array(
+				array(
+					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+					'type'  => 'panel',
+					array(
+						'type' => 'connect',
+					),
+				),
+				array(
+					'type' => 'switch_cloud',
+				),
+			);
+		} else {
+			$args['tabs']['connect'][] = array(
+				array(
+					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+					'type'  => 'panel',
+					array(
+						'content' => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
+					),
+					array(
+						'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
+						'slug'         => 'cloudinary_url',
+						'title'        => __( 'Connection string', 'cloudinary' ),
+						'tooltip_text' => __(
+							'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.',
+							'cloudinary'
+						),
+						'type'         => 'text',
+						'attributes'   => array(
+							'class' => array(
+								'connection-string',
+							),
+						),
+					),
+				),
+				array(
+					'label' => __( 'Connect', 'cloudinary' ),
+					'type'  => 'submit',
+				),
+				array(
+					'collapsible' => 'open',
+					'title'       => __( 'Where to find my Connection string?', 'cloudinary' ),
+					'type'        => 'panel',
+					array(
+						'content' => $this->get_connection_string_content(),
+					),
+				),
+			);
+		}
 
 		// Add data storage.
 		foreach ( self::META_KEYS as $slug => $option_name ) {
@@ -794,5 +851,17 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Get Connection String content for old settings.
+	 *
+	 * @return string
+	 */
+	protected function get_connection_string_content() {
+		ob_start();
+		include $this->plugin->dir_path . 'php/templates/connection-string.php';
+
+		return ob_get_clean();
 	}
 }

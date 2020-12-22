@@ -365,9 +365,31 @@
 			}
 		}
 
+		.notification-success {
+			background-color: transparentize($color-notification-success, 0.8);
+			border: 2px solid $color-notification-success;
+			font-weight: 700;
+			padding: 1.5rem;
+			display: inline-flex;
+
+			&::before {
+				color: $color-notification-success;
+				margin-right: 0.5em;
+			}
+		}
+
+		.img-connection-string {
+			max-width: 607px;
+		}
+
+		.connection-string {
+			max-width: 40em;
+			width: 100%;
+		}
 	}
 
-	&-submit {
+	&-submit,
+	&-switch-cloud {
 
 		&.cld-ui-wrap {
 			background-color: #fff;
@@ -387,7 +409,6 @@
 			}
 		}
 	}
-
 }
 
 .tippy-box[data-theme~="cloudinary"] {
