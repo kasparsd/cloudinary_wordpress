@@ -285,13 +285,31 @@ abstract class Component {
 	}
 
 	/**
+	 * Check if component is enabled.
+	 *
+	 * @return bool
+	 */
+	protected function is_enabled() {
+		$enabled = $this->setting->get_param( 'enabled', true );
+		if ( is_callable( $enabled ) ) {
+			$enabled = call_user_func( $enabled, $this );
+		}
+
+		return $enabled;
+	}
+
+	/**
 	 * Renders the component.
 	 */
 	public function render() {
-
 		// Setup the component.
 		$this->pre_render();
 
+		// Check if component is enabled.
+		$enabled = $this->is_enabled();
+		if ( false === $enabled ) {
+			return null;
+		}
 		// Build the blueprint parts list.
 		$blueprint   = $this->setting->get_param( 'blueprint', $this->blueprint );
 		$build_parts = explode( '|', $blueprint );
