@@ -356,9 +356,10 @@ class Setting {
 	 * @return array
 	 */
 	public function prepare_sanitizer( $data ) {
-		$slug = $this->get_slug();
-		if ( isset( $data[ $slug ] ) ) {
-			$data[ $slug ] = $this->get_component()->sanitize_value( $data[ $slug ] );
+
+		foreach ( $data as $slug => $value ) {
+			$setting       = $this->find_setting( $slug );
+			$data[ $slug ] = $setting->get_component()->sanitize_value( $value );
 		}
 
 		return $data;

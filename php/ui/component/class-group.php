@@ -22,7 +22,7 @@ class Group extends Panel {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|header|icon/|title/|collapse/|/header|settings/|hr/|/wrap';
+	protected $blueprint = 'header|icon/|title/|collapse/|/header|wrap|settings/|hr/|/wrap';
 
 
 	/**
@@ -48,6 +48,7 @@ class Group extends Panel {
 	 */
 	protected function title( $struct ) {
 
+		$struct            = parent::title( $struct );
 		$struct['element'] = 'h3';
 
 		return $struct;
