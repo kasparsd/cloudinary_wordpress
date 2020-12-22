@@ -77,6 +77,7 @@ class Text extends Component {
 		$struct['attributes']['value']   = $this->setting->get_value();
 		$struct['attributes']['class'][] = 'regular-' . $this->type;
 		$struct['render']                = true;
+		
 		if ( $this->setting->has_param( 'required' ) ) {
 			$struct['attributes']['required'] = 'required';
 		}
@@ -87,6 +88,10 @@ class Text extends Component {
 
 		if ( $this->setting->has_param( 'suffix' ) ) {
 			$struct['attributes']['class'][] = 'suffixed';
+		}
+
+		if ( $this->setting->has_param( 'placeholder' ) ) {
+			$struct['attributes']['placeholder'] = $this->setting->get_param( 'placeholder' );
 		}
 
 		return $struct;
