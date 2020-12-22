@@ -22,6 +22,7 @@ class Test extends Settings_Component {
 			'type'        => 'page',
 			'menu_title'  => __( 'Settings test', 'cloudinary' ),
 			'option_name' => 'test_settings',
+			'priority'    => 20,
 			'tabs'        => array(
 				'fields'     => array(
 					'type'       => 'page',

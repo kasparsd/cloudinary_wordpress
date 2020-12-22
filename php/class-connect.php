@@ -733,7 +733,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 * @return array
 	 */
 	public function settings() {
-
+		$self = $this;
 		$args = array(
 			'menu_title' => __( 'Getting Started', 'cloudinary' ),
 			'page_title' => __( 'Getting Started', 'cloudinary' ),
@@ -785,60 +785,66 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				),
 				'connect' => array(
 					'page_title' => __( 'Connect', 'cloudinary' ),
+					array(
+						'enabled' => array( $this, 'is_connected' ),
+						array(
+							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+							'type'  => 'panel',
+							array(
+								'type' => 'connect',
+							),
+						),
+						array(
+							'type' => 'switch_cloud',
+						),
+					),
+					array(
+						'enabled' => function () use ( $self ) {
+							return ! $self->is_connected();
+						},
+						array(
+							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
+							'type'  => 'panel',
+							array(
+								'content' => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
+							),
+							array(
+								'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
+								'slug'         => 'cloudinary_url',
+								'title'        => __( 'Connection string', 'cloudinary' ),
+								'tooltip_text' => __(
+									'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.',
+									'cloudinary'
+								),
+								'type'         => 'text',
+								'attributes'   => array(
+									'class' => array(
+										'connection-string',
+									),
+								),
+							),
+						),
+						array(
+							'label' => __( 'Connect', 'cloudinary' ),
+							'type'  => 'submit',
+						),
+						array(
+							'collapsible' => 'open',
+							'title'       => __( 'Where to find my Connection string?', 'cloudinary' ),
+							'type'        => 'panel',
+							array(
+								'content' => $this->get_connection_string_content(),
+							),
+						),
+					),
 				),
 			),
 		);
 
 		if ( $this->is_connected() ) {
-			$args['tabs']['connect'][] = array(
-				array(
-					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
-					'type'  => 'panel',
-					array(
-						'type' => 'connect',
-					),
-				),
-				array(
-					'type' => 'switch_cloud',
-				),
-			);
+			$args['tabs']['connect'][] = '';
 		} else {
-			$args['tabs']['connect'][] = array(
-				array(
-					'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
-					'type'  => 'panel',
-					array(
-						'content' => __( 'You need to connect your Cloudinary account to WordPress by adding your unique connection string. See below for where to find this.', 'cloudinary' ),
-					),
-					array(
-						'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
-						'slug'         => 'cloudinary_url',
-						'title'        => __( 'Connection string', 'cloudinary' ),
-						'tooltip_text' => __(
-							'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.',
-							'cloudinary'
-						),
-						'type'         => 'text',
-						'attributes'   => array(
-							'class' => array(
-								'connection-string',
-							),
-						),
-					),
-				),
-				array(
-					'label' => __( 'Connect', 'cloudinary' ),
-					'type'  => 'submit',
-				),
-				array(
-					'collapsible' => 'open',
-					'title'       => __( 'Where to find my Connection string?', 'cloudinary' ),
-					'type'        => 'panel',
-					array(
-						'content' => $this->get_connection_string_content(),
-					),
-				),
-			);
+			$args['tabs']['connect'][] = '';
 		}
 
 		// Add data storage.
