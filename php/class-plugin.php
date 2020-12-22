@@ -180,6 +180,7 @@ final class Plugin {
 				$this->slug => array(
 					'page_title' => __( 'Dashboard', 'cloudinary' ),
 					'menu_title' => __( 'Cloudinary', 'cloudinary' ),
+					'priority'   => 0,
 					array(
 						'type' => 'panel',
 						array(

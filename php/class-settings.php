@@ -162,9 +162,8 @@ class Settings {
 		$this->current_setting->set_param( 'active_setting', $this->current_page );
 		// Setup default tab.
 		if ( $this->current_page->has_parent() && $this->current_page->has_settings() ) {
-			$setting_slugs     = $this->current_page->get_setting_slugs();
-			$setting_slug      = array_shift( $setting_slugs );
-			$this->current_tab = $this->current_page->get_setting( $setting_slug );
+			$settings          = $this->current_page->get_settings();
+			$this->current_tab = array_shift( $settings );
 		}
 
 		$active_setting = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
@@ -247,6 +246,7 @@ class Settings {
 		}
 		$params['option_name'] = $slug; // Root option.
 		$params['type']        = 'page';
+		$params['priority']    = 0;
 
 		return self::$instance->register_setting( $slug, $params );
 	}

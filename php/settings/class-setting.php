@@ -143,6 +143,11 @@ class Setting {
 			$this->remove_param( $param );
 		}
 
+		// Update priority sorting if set.
+		if ( 'priority' === $param && $this->has_parent() ) {
+			$this->get_parent()->sort_settings();
+		}
+
 		return $this;
 	}
 
@@ -273,12 +278,24 @@ class Setting {
 	}
 
 	/**
+	 * Sort settings based on priority.
+	 */
+	protected function sort_settings() {
+		uasort(
+			$this->settings,
+			function ( $x, $y ) {
+				return ( (int) $x->get_param( 'priority' ) > (int) $y->get_param( 'priority' ) );
+			}
+		);
+	}
+
+	/**
 	 * Get all slugs of settings.
 	 *
 	 * @return array
 	 */
 	public function get_setting_slugs() {
-		return array_keys( $this->settings );
+		return array_keys( $this->get_settings() );
 	}
 
 	/**
@@ -371,6 +388,10 @@ class Setting {
 	 */
 	public function setup_setting( array $params ) {
 
+		$default        = array(
+			'priority' => 10,
+		);
+		$params         = wp_parse_args( $params, $default );
 		$dynamic_params = array_filter( $params, array( $this, 'is_setting_param' ), ARRAY_FILTER_USE_KEY );
 		foreach ( $params as $param => $value ) {
 
@@ -880,6 +901,7 @@ class Setting {
 	public function add_setting( $setting ) {
 		$setting->set_parent( $this );
 		$this->settings[ $setting->get_slug() ] = $setting;
+		$this->sort_settings();
 
 		return $setting;
 	}
