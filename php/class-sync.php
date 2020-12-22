@@ -19,7 +19,7 @@ use Cloudinary\Sync\Upload_Sync;
 /**
  * Class Sync
  */
-class Sync extends Settings_Component implements Setup, Assets {
+class Sync implements Setup, Assets {
 
 	/**
 	 * Holds the plugin instance.
@@ -64,6 +64,13 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * @var string
 	 */
 	protected $settings_slug = 'sync_media';
+
+	/**
+	 * Holds the sync settings object.
+	 *
+	 * @var Settings
+	 */
+	protected $settings;
 
 	/**
 	 * Holds the meta keys for sync meta to maintain consistency.
@@ -835,6 +842,9 @@ class Sync extends Settings_Component implements Setup, Assets {
 			$this->managers['media']   = $this->plugin->components['media'];
 			$this->managers['connect'] = $this->plugin->components['connect'];
 			$this->managers['api']     = $this->plugin->components['api'];
+
+			// Register Settings.
+			$this->register_settings();
 		}
 	}
 
@@ -849,6 +859,7 @@ class Sync extends Settings_Component implements Setup, Assets {
 			'type'        => 'page',
 			'menu_title'  => __( 'Sync', 'cloudinary' ),
 			'option_name' => 'cloudinary_sync_media',
+			'priority'    => 9,
 			array(
 				'type'  => 'panel',
 				'title' => __( 'Sync Settings', 'cloudinary ' ),
@@ -902,12 +913,13 @@ class Sync extends Settings_Component implements Setup, Assets {
 	/**
 	 * Register the setting under media.
 	 */
-	public function register_settings() {
+	protected function register_settings() {
 
-		// Register the default location.
-		parent::register_settings();
+		$settings_params = $this->settings();
+		$this->settings  = $this->plugin->settings->create_setting( $this->settings_slug, $settings_params );
 
 		// Move setting to media.
-		$this->settings->find_setting( 'media' )->add_setting( $this->settings );
+		$media_settings = $this->managers['media']->get_settings();
+		$media_settings->add_setting( $this->settings );
 	}
 }
