@@ -256,8 +256,6 @@ final class Plugin {
 		foreach ( $components as $slug => $component ) {
 			$component->get_config();
 		}
-		// Setup config.
-		$this->config = $this->settings->get_value();
 	}
 
 	/**

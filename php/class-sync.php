@@ -877,6 +877,7 @@ class Sync implements Setup, Assets {
 					'type'              => 'text',
 					'slug'              => 'cloudinary_folder',
 					'title'             => __( 'Cloudinary folder path', 'cloudinary' ),
+					'default'           => '.',
 					'attributes'        => array(
 						'placeholder' => __( 'e.g.: wordpress_assets/', 'cloudinary' ),
 					),
