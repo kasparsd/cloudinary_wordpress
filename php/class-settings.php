@@ -67,6 +67,7 @@ class Settings {
 	 * Initiate the settings object.
 	 */
 	protected function __construct() {
+		add_action( 'admin_init', array( $this, 'register_wordpress_settings' ) );
 		add_action( 'admin_menu', array( $this, 'build_menus' ) );
 	}
 
@@ -233,6 +234,16 @@ class Settings {
 	}
 
 	/**
+	 * Register settings with WordPress.
+	 */
+	public function register_wordpress_settings() {
+
+		foreach ( $this->settings as $setting ) {
+			$setting->register_settings();
+		}
+	}
+
+	/**
 	 * Create a new setting on the Settings object.
 	 *
 	 * @param string $slug   The setting slug.
@@ -260,9 +271,7 @@ class Settings {
 		if ( ! is_null( self::$instance ) && ! empty( self::$instance->settings[ $slug ] ) ) {
 			self::check_version( $slug );
 			$settings = self::$instance->settings[ $slug ];
-			$settings->register_settings();
 			$settings->setup_component();
-			$settings->load_value();
 		}
 	}
 }
