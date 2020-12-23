@@ -96,6 +96,7 @@ class Api {
 			'pg'  => 'page',
 			'sp'  => 'streaming_profile',
 			'vs'  => 'video_sampling',
+			'if'  => 'if',
 		),
 		'video' => array(
 			'w'   => 'width',
@@ -123,6 +124,7 @@ class Api {
 			'fl'  => 'flags',
 			'f'   => 'fetch_format',
 			'q'   => 'quality',
+			'if'  => 'if',
 		),
 	);
 

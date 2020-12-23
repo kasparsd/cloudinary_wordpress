@@ -69,7 +69,11 @@ const GlobalTransformations = {
 		let transformations = '';
 		if ( this.elements[ type ].length ) {
 			transformations =
-				'/' + this.elements[ type ].join( ',' ).replace( / /g, '%20' );
+				'/' +
+				this._getGlobalTransformationElements( type ).replace(
+					/ /g,
+					'%20'
+				);
 		}
 		this.sample[ type ].textContent = transformations;
 		this.sample[ type ].parentElement.href =
@@ -91,7 +95,7 @@ const GlobalTransformations = {
 		const self = this;
 		const newSrc =
 			CLD_GLOBAL_TRANSFORMATIONS[ type ].preview_url +
-			self.elements[ type ].join( ',' ) +
+			this._getGlobalTransformationElements( type ) +
 			CLD_GLOBAL_TRANSFORMATIONS[ type ].file;
 		this.button[ type ].style.display = 'none';
 		this._placeItem( this.spinner[ type ] );
@@ -134,16 +138,34 @@ const GlobalTransformations = {
 			};
 			newImg.src = newSrc;
 		} else {
-			const transformations = self._transformations(
-				self.elements[ type ].join( ',' ),
+			const transformationsString = self._transformations(
+				self._getGlobalTransformationElements( type ),
 				type
 			);
 			samplePlayer.source( {
 				publicId: 'dog',
-				transformation: transformations,
+				transformation: transformationsString,
 			} );
 			self._clearLoading( type );
 		}
+	},
+	/**
+	 * Get's the Global Transformation Elements string by Type.
+	 *
+	 * @param  {string} type The type of Elements.
+	 * @return {string}      A string with the Elements
+	 * @private
+	 */
+	_getGlobalTransformationElements( type ) {
+		let transformations = [];
+
+		transformations.push( this.elements[ type ].slice( 0, 2 ).join( ',' ) );
+		transformations.push( this.elements[ type ].slice( 2 ).join( ',' ) );
+		transformations = transformations
+			.filter( ( item ) => item )
+			.join( '/' );
+
+		return transformations;
 	},
 	_transformations( input, type, string = false ) {
 		const set = CLD_GLOBAL_TRANSFORMATIONS[ type ].valid_types;
