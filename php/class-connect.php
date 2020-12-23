@@ -723,7 +723,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			update_option( self::META_KEYS['connect'], $data );
 			update_option( self::META_KEYS['signature'], $signature );
 			update_option( self::META_KEYS['version'], $this->plugin->version );
-			$this->plugin->config['settings']['connect'] = $data; // Set the connection url for this round.
 		}
 	}
 
@@ -840,12 +839,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				),
 			),
 		);
-
-		if ( $this->is_connected() ) {
-			$args['tabs']['connect'][] = '';
-		} else {
-			$args['tabs']['connect'][] = '';
-		}
 
 		// Add data storage.
 		foreach ( self::META_KEYS as $slug => $option_name ) {
