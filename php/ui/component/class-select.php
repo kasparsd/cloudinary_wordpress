@@ -19,7 +19,7 @@ class Select extends Text {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|icon/|div|label|title/|tooltip/|prefix/|/label|/div|input|option/|/input|suffix/|description/|/wrap';
+	protected $blueprint = 'wrap|icon/|div|label|title|tooltip/|/title|prefix/|/label|/div|input|option/|/input|suffix/|description/|/wrap';
 
 	/**
 	 * Filter the select input parts structure.
@@ -61,13 +61,12 @@ class Select extends Text {
 				$key = $value;
 			}
 			if ( $key === $this->setting->get_value() ) {
-				$option['attributes']['checked'] = 'checked';
+				$option['attributes']['selected'] = 'selected';
 			}
 			$option['attributes']['value'] = $key;
 			$option['content']             = $value;
 			$select_options[]              = $option;
 		}
-
 
 		return $select_options;
 	}

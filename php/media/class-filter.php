@@ -499,7 +499,7 @@ class Filter {
 			$new_atts = $shortcode['args'] . ' id="' . esc_attr( $id ) . '"';
 
 			// Add defaults.
-			$settings = $this->media->plugin->config['settings']['global_video_transformations'];
+			$settings = $this->media->get_settings()->get_value( 'video_settings' );
 			if ( 'off' !== $settings['video_autoplay_mode'] ) {
 				$new_atts .= ' autoplay="true"';
 			}
@@ -691,7 +691,6 @@ class Filter {
 
 		return $block;
 	}
-
 
 	/**
 	 * Add filters for Rest API handling.

@@ -106,7 +106,6 @@ final class Plugin {
 	 */
 	public $hooks;
 
-
 	/**
 	 * Plugin_Base constructor.
 	 */
@@ -131,16 +130,13 @@ final class Plugin {
 	 * that extend the Customizer to ensure resources are available in time.
 	 */
 	public function init() {
-		$this->components['settings']     = new Settings_Page( $this );
+
 		$this->components['connect']      = new Connect( $this );
 		$this->components['deactivation'] = new Deactivation( $this );
-
-		if ( $this->components['connect'] && $this->components['connect']->is_connected() ) {
-			$this->components['sync']    = new Sync( $this );
-			$this->components['media']   = new Media( $this );
-			$this->components['api']     = new REST_API( $this );
-			$this->components['storage'] = new Storage( $this );
-		}
+		$this->components['sync']         = new Sync( $this );
+		$this->components['media']        = new Media( $this );
+		$this->components['api']          = new REST_API( $this );
+		$this->components['storage']      = new Storage( $this );
 		// Testing Settings.
 		$this->components['testing'] = new Test( $this );
 	}
@@ -184,6 +180,7 @@ final class Plugin {
 				$this->slug => array(
 					'page_title' => __( 'Cloudinary Dashboard', 'cloudinary' ),
 					'menu_title' => __( 'Dashboard', 'cloudinary' ),
+					'priority'   => 0,
 					array(
 						'type' => 'panel',
 						array(
@@ -271,12 +268,7 @@ final class Plugin {
 		$components = array_filter( $this->components, array( $this, 'is_config_component' ) );
 
 		foreach ( $components as $slug => $component ) {
-			/**
-			 * Component that implements Component\Config.
-			 *
-			 * @var  Component\Config $component
-			 */
-			$this->config[ $slug ] = $component->get_config();
+			$component->get_config();
 		}
 	}
 
@@ -367,7 +359,6 @@ final class Plugin {
 		return $component instanceof Assets;
 	}
 
-
 	/**
 	 * Check if an asset component is active.
 	 *
@@ -453,6 +444,7 @@ final class Plugin {
 
 			$component->setup();
 		}
+
 	}
 
 	/**

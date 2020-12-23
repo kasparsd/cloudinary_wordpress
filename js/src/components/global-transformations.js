@@ -7,7 +7,7 @@ const GlobalTransformations = {
 		image: document.getElementById( 'sample-image' ),
 		video: document.getElementById( 'sample-video' ),
 	},
-	fields: document.getElementsByClassName( 'cld-field' ),
+	fields: document.getElementsByClassName( 'cld-ui-input' ),
 	button: {
 		image: document.getElementById( 'refresh-image-preview' ),
 		video: document.getElementById( 'refresh-video-preview' ),

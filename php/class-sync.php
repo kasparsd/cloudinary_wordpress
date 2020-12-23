@@ -15,12 +15,11 @@ use Cloudinary\Sync\Download_Sync;
 use Cloudinary\Sync\Push_Sync;
 use Cloudinary\Sync\Sync_Queue;
 use Cloudinary\Sync\Upload_Sync;
-use Cloudinary\Settings\Setting;
 
 /**
  * Class Sync
  */
-class Sync extends Settings_Component implements Setup, Assets {
+class Sync implements Setup, Assets {
 
 	/**
 	 * Holds the plugin instance.
@@ -58,6 +57,20 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * @var array
 	 */
 	private $to_sync = array();
+
+	/**
+	 * Holds the settings stlug.
+	 *
+	 * @var string
+	 */
+	protected $settings_slug = 'sync_media';
+
+	/**
+	 * Holds the sync settings object.
+	 *
+	 * @var Settings
+	 */
+	protected $settings;
 
 	/**
 	 * Holds the meta keys for sync meta to maintain consistency.
@@ -98,7 +111,7 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * Setup assets/scripts.
 	 */
 	public function enqueue_assets() {
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 			$data = array(
 				'restUrl' => esc_url_raw( rest_url() ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
@@ -111,7 +124,7 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * Register Assets.
 	 */
 	public function register_assets() {
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 			// Setup the sync_base_structure.
 			$this->setup_sync_base_struct();
 			// Setup sync types.
@@ -119,12 +132,11 @@ class Sync extends Settings_Component implements Setup, Assets {
 		}
 	}
 
-
 	/**
 	 * Is the component Active.
 	 */
 	public function is_active() {
-		return $this->plugin->components['settings']->is_active() && 'sync_media' === $this->plugin->components['settings']->active_tab();
+		return $this->settings && $this->settings->has_param( 'is_active' );
 	}
 
 	/**
@@ -666,7 +678,6 @@ class Sync extends Settings_Component implements Setup, Assets {
 				}
 			}
 
-
 			// Check if there's an error.
 			$has_error = $this->managers['media']->get_post_meta( $attachment_id, self::META_KEYS['sync_error'], true );
 			if ( ! empty( $has_error ) && $this->get_sync_type( $attachment_id ) ) {
@@ -802,9 +813,8 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * @return bool
 	 */
 	public function is_auto_sync_enabled() {
-		$settings = $this->plugin->config['settings'];
 
-		if ( ! empty( $settings['sync_media']['auto_sync'] ) && 'on' === $settings['sync_media']['auto_sync'] ) {
+		if ( 'on' === $this->plugin->settings->get_value( 'auto_sync' ) ) {
 			return true;
 		}
 
@@ -815,7 +825,8 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * Additional component setup.
 	 */
 	public function setup() {
-		if ( $this->plugin->config['connect'] ) {
+
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 
 			// Show sync status.
 			add_filter( 'cloudinary_media_status', array( $this, 'filter_status' ), 10, 2 );
@@ -831,6 +842,9 @@ class Sync extends Settings_Component implements Setup, Assets {
 			$this->managers['media']   = $this->plugin->components['media'];
 			$this->managers['connect'] = $this->plugin->components['connect'];
 			$this->managers['api']     = $this->plugin->components['api'];
+
+			// Register Settings.
+			$this->register_settings();
 		}
 	}
 
@@ -840,20 +854,54 @@ class Sync extends Settings_Component implements Setup, Assets {
 	 * @return array
 	 */
 	public function settings() {
+
 		$args = array(
-			'type'       => 'page',
-			'menu_title' => __( 'Sync', 'cloudinary' ),
+			'type'        => 'page',
+			'menu_title'  => __( 'Sync', 'cloudinary' ),
+			'option_name' => 'cloudinary_sync_media',
+			'priority'    => 9,
 			array(
 				'type'  => 'panel',
 				'title' => __( 'Sync Settings', 'cloudinary ' ),
 				array(
 					'type'    => 'radio',
 					'title'   => __( 'Sync Method', 'cloudinary' ),
-					'slug'    => 'sync_method',
-					'default' => 'manual',
+					'slug'    => 'auto_sync',
+					'default' => 'off',
 					'options' => array(
-						'auto'   => __( 'Auto Sync', 'cloudinary' ),
-						'manual' => __( 'Manual Sync', 'cloudinary' ),
+						'on'  => __( 'Auto Sync', 'cloudinary' ),
+						'off' => __( 'Manual Sync', 'cloudinary' ),
+					),
+				),
+				array(
+					'type'              => 'text',
+					'slug'              => 'cloudinary_folder',
+					'title'             => __( 'Cloudinary folder path', 'cloudinary' ),
+					'default'           => '.',
+					'attributes'        => array(
+						'input' => array(
+							'placeholder' => __( 'e.g.: wordpress_assets/', 'cloudinary' ),
+						),
+					),
+					'tooltip_text'      => __(
+						'Specify the folder in your Cloudinary account where WordPress assets are uploaded to. All assets uploaded to WordPress from this point on will be synced to the specified folder in Cloudinary. Leave blank to use the root of your Cloudinary library.',
+						'cloudinary'
+					),
+					'sanitize_callback' => array( '\Cloudinary\Media', 'sanitize_cloudinary_folder' ),
+				),
+				array(
+					'type'         => 'select',
+					'slug'         => 'offload',
+					'title'        => __( 'Storage', 'cloudinary' ),
+					'tooltip_text' => __(
+						'Choose where to store your assets. Assets stored in both Cloudinary and WordPress will enable local WordPress delivery if the Cloudinary plugin is disabled or uninstalled. Storing assets with WordPress in lower resolution will save on local WordPress storage and enable low resolution local WordPress delivery if the plugin is disabled. Storing assets with Cloudinary only will require additional steps to enable backwards compatibility.',
+						'cloudinary'
+					),
+					'default'      => 'dual_full',
+					'options'      => array(
+						'dual_full' => __( 'Cloudinary and WordPress', 'cloudinary' ),
+						'dual_low'  => __( 'Cloudinary and WordPress (low resolution)', 'cloudinary' ),
+						'cld'       => __( 'Cloudinary only', 'cloudinary' ),
 					),
 				),
 			),
@@ -868,12 +916,13 @@ class Sync extends Settings_Component implements Setup, Assets {
 	/**
 	 * Register the setting under media.
 	 */
-	public function register_settings() {
+	protected function register_settings() {
 
-		// Register the default location.
-		parent::register_settings();
+		$settings_params = $this->settings();
+		$this->settings  = $this->plugin->settings->create_setting( $this->settings_slug, $settings_params );
 
 		// Move setting to media.
-		$this->settings->find_setting( 'media' )->add_setting( $this->settings );
+		$media_settings = $this->managers['media']->get_settings();
+		$media_settings->add_setting( $this->settings );
 	}
 }
