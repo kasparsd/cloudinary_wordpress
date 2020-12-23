@@ -28,7 +28,7 @@ class WooCommerceGallery {
 	public function __construct( Gallery $gallery ) {
 		$this->gallery = $gallery;
 
-		if ( $this->woocommerce_active() && $this->gallery->gallery_enabled() ) {
+		if ( $this->woocommerce_active() && $this->enabled() ) {
 			$this->setup_hooks();
 		}
 	}
@@ -53,6 +53,17 @@ class WooCommerceGallery {
 	 */
 	protected function woocommerce_active() {
 		return class_exists( 'WooCommerce' ) && function_exists( 'wc_get_product' );
+	}
+
+	/**
+	 * Whether the replacement toggle is on or off
+	 *
+	 * @return bool
+	 */
+	public function enabled() {
+		return ! empty( $media->plugin->config['settings']['gallery']['enable'] ) ?
+			(bool) $media->plugin->config['settings']['gallery']['enable'] :
+			false;
 	}
 
 	/**

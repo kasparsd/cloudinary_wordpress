@@ -7,6 +7,7 @@
 
 namespace Cloudinary\Media;
 
+use Cloudinary\Component\Settings;
 use Cloudinary\Media;
 use Cloudinary\REST_API;
 use Cloudinary\Utils;
@@ -31,6 +32,20 @@ class Gallery {
 	 * @var string
 	 */
 	const GALLERY_LIBRARY_URL = 'https://product-gallery.cloudinary.com/all.js';
+
+	/**
+	 * Holds the settings slug.
+	 *
+	 * @var string
+	 */
+	protected $settings_slug = 'gallery';
+
+	/**
+	 * Holds the sync settings object.
+	 *
+	 * @var Settings
+	 */
+	protected $settings;
 
 	/**
 	 * The default config in case no settings are saved.
@@ -67,6 +82,7 @@ class Gallery {
 			'selectedBorderWidth'    => 4,
 			'mediaSymbolShape'       => 'round',
 		),
+		'customSettings'   => '',
 	);
 
 	/**
@@ -91,7 +107,9 @@ class Gallery {
 	public function __construct( Media $media ) {
 		$this->media = $media;
 
-		$config = ! empty( $media->plugin->config['settings']['gallery'] ) ? $media->plugin->config['settings']['gallery'] : wp_json_encode( self::$default_config );
+		$config = ! empty( $media->plugin->config['settings']['gallery']['config'] ) ?
+			$media->plugin->config['settings']['gallery']['config'] :
+			wp_json_encode( self::$default_config );
 
 		$this->config = json_decode( $config, true );
 
@@ -184,15 +202,6 @@ class Gallery {
 	}
 
 	/**
-	 * Checks if the Cloudinary Gallery Widget is enabled.
-	 *
-	 * @return bool
-	 */
-	public function gallery_enabled() {
-		return true; // @TODO: reimplement this.
-	}
-
-	/**
 	 * Fetches image public id and transformations.
 	 *
 	 * @param array|int[]|array[] $images An array of image IDs or a multi-dimensional array with url and id keys.
@@ -265,11 +274,61 @@ class Gallery {
 	}
 
 	/**
+	 * Define the settings.
+	 *
+	 * @return array
+	 */
+	public function settings() {
+		return array(
+			'type'        => 'page',
+			'page_title'  => __( 'Gallery Settings', 'cloudinary' ),
+			'option_name' => 'cloudinary_gallery',
+			array(
+				'type'  => 'panel',
+				'title' => __( 'Gallery Settings', 'cloudinary' ),
+				'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
+				array(
+					'type'        => 'on_off',
+					'slug'        => 'enable',
+					'title'       => __( 'Enable Gallery', 'cloudinary' ),
+					'description' => __( 'Replace WooCommerce Gallery', 'cloudinary' ),
+				),
+				array(
+					'type'   => 'react',
+					'slug'   => 'config',
+					'script' => array(
+						'slug' => 'gallery-widget',
+						'src'  => $this->media->plugin->dir_url . 'js/gallery.js',
+					),
+				),
+			),
+			array(
+				'type' => 'submit',
+			),
+		);
+	}
+
+	/**
+	 * Register the setting under media.
+	 */
+	protected function register_settings() {
+		$settings_params = $this->settings();
+		$this->settings  = $this->media->plugin->settings->create_setting( $this->settings_slug, $settings_params );
+
+		// Move setting to media.
+		$media_settings = $this->media->get_settings();
+		$media_settings->add_setting( $this->settings );
+	}
+
+	/**
 	 * Setup hooks for the gallery.
 	 */
 	public function setup_hooks() {
 		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
+
+		// Register Settings.
+		$this->register_settings();
 	}
 }

@@ -8,6 +8,7 @@ import {
 	PanelBody,
 	RangeControl,
 	SelectControl,
+	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
 
@@ -408,6 +409,24 @@ const Controls = ( { attributes, setAttributes } ) => (
 					) ) }
 				</>
 			) }
+		</PanelBody>
+		<PanelBody
+			title={ __( 'Advanced', 'cloudinary' ) }
+			initialOpen={ false }
+		>
+			<TextareaControl
+				label={ __( 'Custom Settings', 'cloudinary' ) }
+				help={ __(
+					'Provide a JSON string of the settings you want to add and/or override.',
+					'cloudinary'
+				) }
+				value={ attributes.customSettings }
+				onChange={ ( value ) =>
+					setAttributes( {
+						customSettings: value,
+					} )
+				}
+			/>
 		</PanelBody>
 	</>
 );

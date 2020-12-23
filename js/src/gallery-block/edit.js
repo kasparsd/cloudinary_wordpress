@@ -1,12 +1,6 @@
 /* global cloudinaryGalleryApi */
 
 /**
- * External dependencies
- */
-import Dot from 'dot-object';
-import cloneDeep from 'lodash/cloneDeep';
-
-/**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -20,9 +14,7 @@ import { InspectorControls, MediaPlaceholder } from '@wordpress/block-editor';
 import '../../../css/src/gallery.scss';
 import Controls from './controls';
 import { ALLOWED_MEDIA_TYPES } from './options';
-import { generateId, showNotice } from './utils';
-
-const dot = new Dot( '_' );
+import { generateId, setupAttributesForRendering, showNotice } from './utils';
 
 const PLACEHOLDER_TEXT = __(
 	'Drag images, upload new ones or select files from your library.',
@@ -59,17 +51,9 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 		}
 
 		if ( attributes.selectedImages.length ) {
-			const attributesClone = cloneDeep( attributes );
-			const { selectedImages, ...config } = dot.object(
-				attributesClone,
-				{}
+			const { mediaAssets, config } = setupAttributesForRendering(
+				attributes
 			);
-
-			if ( config.displayProps.mode !== 'classic' ) {
-				delete config.transition;
-			} else {
-				delete config.displayProps.columns;
-			}
 
 			if ( ! attributes.container ) {
 				setAttributes( {
@@ -80,7 +64,7 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 			const gallery = cloudinary.galleryWidget( {
 				cloudName: CLDN.mloptions.cloud_name,
 				...config,
-				mediaAssets: selectedImages,
+				mediaAssets,
 				container: '.' + attributes.container,
 				zoom: false,
 			} );

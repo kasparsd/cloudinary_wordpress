@@ -207,7 +207,7 @@
 	&-panel {
 		background-color: #fff;
 		border: 1px solid $color-light-grey;
-		padding: 0.5rem 1.75rem 0.4rem;
+		padding: 1.75rem;
 		width: 60%;
 		margin-top: 1rem;
 
@@ -315,10 +315,15 @@
 		}
 	}
 
+	&-gallery-settings-container {
+		border-top: 1px solid $color-light-grey;
+	}
+
 	&-gallery-settings {
 		width: 100%;
 		display: flex;
 		flex-wrap: wrap;
+		padding: 1rem 0;
 		margin-left: -1rem;
 		margin-right: -1rem;
 		box-sizing: border-box;
@@ -361,4 +366,10 @@
 
 .components-panel__body:last-child {
 	border-bottom: 0 !important;
+}
+
+.components-textarea-control__input {
+	display: block;
+	width: 100%;
+	margin: 0.5rem 0;
 }

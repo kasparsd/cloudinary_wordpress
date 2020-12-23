@@ -147,26 +147,6 @@ class Test extends Settings_Component {
 						),
 					),
 				),
-				'gallery'  => array(
-					'type'       => 'page',
-					'page_title' => __( 'Gallery Settings', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'Gallery Settings', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/gallery.svg',
-						array(
-							'type'   => 'react',
-							'slug'   => 'gallery',
-							'script' => array(
-								'slug' => 'gallery-widget',
-								'src'  => $this->plugin->dir_url . 'js/gallery.js',
-							),
-						),
-					),
-					array(
-						'type' => 'submit',
-					),
-				),
 			),
 		);
 

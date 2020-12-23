@@ -32,7 +32,7 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function app( $struct ) {
-		$struct['attributes']['id'] = 'app_' . $this->setting->get_slug();
+		$struct['attributes']['id'] = 'app_gallery_' . $this->setting->get_slug();
 		$struct['render']           = true;
 
 		return $struct;
@@ -48,7 +48,6 @@ class React extends Text {
 	protected function input( $struct ) {
 		$struct                       = parent::input( $struct );
 		$struct['attributes']['id']   = 'gallery_settings_input';
-		$struct['attributes']['name'] = 'test_settings_gallery';
 		$struct['attributes']['type'] = 'hidden';
 
 		$struct['attributes']['value'] = $this->setting->get_value();

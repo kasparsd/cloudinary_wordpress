@@ -1,3 +1,5 @@
+import Dot from 'dot-object';
+import cloneDeep from 'lodash/cloneDeep';
 import { dispatch } from '@wordpress/data';
 
 export const showNotice = ( { status, message, options = {} } ) => {
@@ -50,4 +52,30 @@ export const toBlockAttributes = ( object ) => {
 	} );
 
 	return blockAttributes;
+};
+
+export const setupAttributesForRendering = ( attributes ) => {
+	const dot = new Dot( '_' );
+
+	const attributesClone = cloneDeep( attributes );
+	let { selectedImages: mediaAssets, ...config } = dot.object(
+		attributesClone,
+		{}
+	);
+
+	if ( config?.displayProps?.mode !== 'classic' ) {
+		delete config.transition;
+	} else {
+		delete config.displayProps.columns;
+	}
+
+	if ( config.customSettings ) {
+		try {
+			const parsedCustomSettings = JSON.parse( config.customSettings );
+			config = { ...config, ...parsedCustomSettings };
+			delete config.customSettings;
+		} catch ( err ) {}
+	}
+
+	return { config, mediaAssets };
 };
