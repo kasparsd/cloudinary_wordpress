@@ -172,7 +172,7 @@ class Download_Sync {
 		if ( false !== strpos( $public_id, '/' ) ) {
 			$path              = pathinfo( $public_id );
 			$asset_folder      = trailingslashit( $path['dirname'] );
-			$cloudinary_folder = trailingslashit( $this->plugin->config['sync_media']['cloudinary_folder'] );
+			$cloudinary_folder = trailingslashit( $this->plugin->settings->get_value( 'cloudinary_folder' ) );
 			if ( $asset_folder === $cloudinary_folder ) {
 				// The asset folder matches the defined cloudinary folder, flag it as being in a folder sync.
 				$media->update_post_meta( $attachment_id, Sync::META_KEYS['folder_sync'], true );

@@ -1917,8 +1917,7 @@ class Media extends Settings_Component implements Setup {
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
-
-		if ( $this->plugin->config['connect'] && $this->plugin->components['connect']->api instanceof Api ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 
 			$this->base_url          = $this->plugin->components['connect']->api->cloudinary_url();
 			$this->credentials       = $this->plugin->components['connect']->get_credentials();
@@ -2013,7 +2012,7 @@ class Media extends Settings_Component implements Setup {
 	 * @return bool
 	 */
 	public function is_enabled( $enabled ) {
-		return $this->plugin->get_component( 'connect' )->is_connected();
+		return $this->plugin->settings->get_param( 'connected' );
 	}
 
 	/**

@@ -84,13 +84,28 @@ class Setting {
 		$this->slug           = $slug;
 		$this->setting_params = $this->get_settings_params();
 		$root                 = $this;
+
 		if ( ! is_null( $parent ) ) {
 			$root = $parent->get_root_setting();
 			$this->set_parent( $parent );
 		}
 		$this->root_setting = $root;
+		$this->register_with_root();
 		if ( ! empty( $params ) ) {
 			$this->setup_setting( $params );
+		}
+	}
+
+	/**
+	 * Register with the root settings.
+	 */
+	protected function register_with_root() {
+		if ( ! $this->is_root_setting() ) {
+			// Add to root index.
+			$root                       = $this->get_root_setting();
+			$index                      = $root->get_param( 'index', array() );
+			$index[ $this->get_slug() ] = $this;
+			$root->set_param( 'index', $index );
 		}
 	}
 
@@ -405,19 +420,8 @@ class Setting {
 		// Register dynamics.
 		$this->register_dynamic_settings( $dynamic_params );
 
-		// Add setting to index.
-		if ( ! $this->is_root_setting() ) {
-			$root                       = $this->get_root_setting();
-			$index                      = $root->get_param( 'index', array() );
-			$index[ $this->get_slug() ] = $this;
-			$root->set_param( 'index', $index );
-			if ( $this->has_param( 'option_name' ) && $this->is_capture() ) {
-				$option_names                                      = $root->get_param( 'option_names', array() );
-				$option_names[ $this->get_param( 'option_name' ) ] = $this->get_slug();
-				$root->set_param( 'option_names', $option_names );
-
-			}
-		}
+		// Load data.
+		$this->load_value();
 
 		return $this;
 	}
@@ -746,10 +750,7 @@ class Setting {
 		if ( is_array( $value ) ) {
 			// Attempt to match array keys to settings settings.
 			foreach ( $value as $key => $val ) {
-				$setting = $this->get_setting( $key );
-				if ( $setting ) {
-					$setting->set_value( $val );
-				}
+				$this->find_setting( $key )->set_value( $val );
 			}
 		}
 		$this->value = $value;
@@ -785,36 +786,17 @@ class Setting {
 	}
 
 	/**
-	 * Get all option names in settings.
-	 *
-	 * @return array
-	 */
-	protected function get_option_names() {
-
-		if ( ! $this->is_root_setting() ) {
-			return $this->get_root_setting()->get_option_names();
-		}
-
-		return $this->get_param( 'option_names', array() );
-	}
-
-	/**
-	 * Load settings value.
-	 *
-	 * @return $this
+	 * Load the value of the setting.
 	 */
 	public function load_value() {
-
-		$names       = $this->get_option_names();
-		$this->value = array();
-		foreach ( $names as $name => $slug ) {
-			$data    = get_option( $name );
-			$setting = $this->find_setting( $slug );
-			$setting->set_value( $data );
-			$this->value[ $slug ] = $data;
+		if ( ! $this->is_root_setting() && $this->has_param( 'option_name' ) ) {
+			$root                            = $this->get_root_setting();
+			$root_value                      = (array) $root->get_value();
+			$option                          = $this->get_param( 'option_name' );
+			$data                            = get_option( $option );
+			$root_value[ $this->get_slug() ] = $data;
+			$root->set_value( $root_value );
 		}
-
-		return $this;
 	}
 
 	/**
