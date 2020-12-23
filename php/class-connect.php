@@ -491,6 +491,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			$this->api = new Connect\Api( $this, $this->plugin->version );
 			$this->usage_stats();
 			$this->setup_status_cron();
+			$this->plugin->settings->set_param( 'connected', $this->is_connected() );
 		}
 	}
 

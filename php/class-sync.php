@@ -111,7 +111,7 @@ class Sync implements Setup, Assets {
 	 * Setup assets/scripts.
 	 */
 	public function enqueue_assets() {
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 			$data = array(
 				'restUrl' => esc_url_raw( rest_url() ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
@@ -124,7 +124,7 @@ class Sync implements Setup, Assets {
 	 * Register Assets.
 	 */
 	public function register_assets() {
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 			// Setup the sync_base_structure.
 			$this->setup_sync_base_struct();
 			// Setup sync types.
@@ -136,7 +136,7 @@ class Sync implements Setup, Assets {
 	 * Is the component Active.
 	 */
 	public function is_active() {
-		return $this->settings->has_param( 'is_active' );
+		return $this->settings && $this->settings->has_param( 'is_active' );
 	}
 
 	/**
@@ -813,9 +813,8 @@ class Sync implements Setup, Assets {
 	 * @return bool
 	 */
 	public function is_auto_sync_enabled() {
-		$settings = $this->plugin->config;
 
-		if ( ! empty( $settings['sync_media']['auto_sync'] ) && 'on' === $settings['sync_media']['auto_sync'] ) {
+		if ( 'on' === $this->plugin->settings->get_value( 'auto_sync' ) ) {
 			return true;
 		}
 
@@ -826,7 +825,8 @@ class Sync implements Setup, Assets {
 	 * Additional component setup.
 	 */
 	public function setup() {
-		if ( $this->plugin->config['connect'] ) {
+
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 
 			// Show sync status.
 			add_filter( 'cloudinary_media_status', array( $this, 'filter_status' ), 10, 2 );
