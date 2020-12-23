@@ -48,8 +48,35 @@ class Panel extends Component {
 	protected function title( $struct ) {
 
 		$struct['element'] = 'h2';
+		if ( $this->setting->has_param( 'collapsible' ) ) {
+			$struct['attributes']['class'][]  = 'collapsible';
+			$struct['attributes']['data-for'] = $this->setting->get_slug();
+		}
 
-		return parent::title( $struct );
+		return $struct;
+	}
+
+
+	/**
+	 * Filter the collapsible parts structure.
+	 *
+	 * @param array $struct The array structure.
+	 *
+	 * @return array
+	 */
+	protected function collapse( $struct ) {
+
+		if ( $this->setting->has_param( 'collapsible' ) ) {
+			$struct['element']                   = 'span';
+			$struct['render']                    = true;
+			$struct['attributes']['class'][]     = 'dashicons';
+			$state                               = $this->setting->get_param( 'collapsible' );
+			$struct['attributes']['class'][]     = 'open' === $state ? 'dashicons-arrow-up-alt2' : 'dashicons-arrow-down-alt2';
+			$struct['attributes']['data-toggle'] = $this->setting->get_slug();
+			$struct['attributes']['id']          = $this->setting->get_slug();
+		}
+
+		return $struct;
 	}
 
 	/**
@@ -63,6 +90,11 @@ class Panel extends Component {
 
 		if ( $this->setting->has_param( 'title' ) ) {
 			$struct['attributes']['class'][] = 'has-heading';
+
+			if ( $this->setting->has_param( 'collapsible' ) ) {
+				$struct['attributes']['class'][]   = $this->setting->get_param( 'collapsible' );
+				$struct['attributes']['data-wrap'] = $this->setting->get_slug();
+			}
 		}
 
 		return parent::wrap( $struct );

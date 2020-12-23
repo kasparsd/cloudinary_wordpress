@@ -19,7 +19,27 @@ class On_Off extends Text {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'label|title|tooltip/|/title|prefix/|/label|wrap|control|input/|slider/|/control|description/|/wrap';
+	protected $blueprint = 'label|title|tooltip/|/title|prefix/|/label|wrap|control|false_value/|input/|slider/|/control|description/|/wrap';
+
+	/**
+	 * Filter the false_value parts structure.
+	 *
+	 * @param array $struct The array structure.
+	 *
+	 * @return array
+	 */
+	protected function false_value( $struct ) {
+
+		$struct['element']             = 'input';
+		$struct['attributes']['type']  = 'hidden';
+		$struct['attributes']['name']  = $this->get_name();
+		$struct['attributes']['value'] = false;
+		unset( $struct['attributes']['class'] );
+		unset( $struct['attributes']['data-bound'] );
+		$struct['render'] = true;
+
+		return $struct;
+	}
 
 	/**
 	 * Filter the input parts structure.
@@ -78,4 +98,14 @@ class On_Off extends Text {
 		return $struct;
 	}
 
+	/**
+	 * Sanitize the value.
+	 *
+	 * @param string $value The value to sanitize.
+	 *
+	 * @return bool
+	 */
+	public function sanitize_value( $value ) {
+		return (bool) $value;
+	}
 }
