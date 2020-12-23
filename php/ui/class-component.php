@@ -83,9 +83,6 @@ abstract class Component {
 		$class_name    = substr( strrchr( $class, '\\' ), 1 );
 		$this->type    = str_replace( '_', '-', $class_name );
 
-		// Setup the components parts for render.
-		$this->setup_component_parts();
-
 		// Setup blueprint.
 		$this->blueprint = $this->setting->get_param( 'blueprint', $this->blueprint );
 
@@ -94,8 +91,10 @@ abstract class Component {
 			$condition = $this->setting->get_param( 'condition' );
 			foreach ( $condition as $slug => $value ) {
 				$bound            = $this->setting->find_setting( $slug );
-				$bound_attributes = $bound->get_param( 'attributes', array() );
-				$conditional_bind = wp_parse_args(
+				$conditional_bind = $bound->get_param( 'attributes', array() );
+				$bound_attributes = $bound->get_param( 'attributes:input', array() );
+
+				$conditional_bind['input'] = wp_parse_args(
 					array(
 						'data-bound' => $this->setting->get_slug(),
 					),
@@ -106,6 +105,10 @@ abstract class Component {
 
 			$this->blueprint = 'conditional|' . $this->blueprint . '|/conditional';
 		}
+
+		// Setup the components parts for render.
+		$this->setup_component_parts();
+
 		// Add scripts.
 		add_action( 'admin_init', array( $this, 'enqueue_scripts' ) );
 	}
@@ -580,6 +583,9 @@ abstract class Component {
 		);
 		if ( isset( $this->build_parts[ $part ] ) ) {
 			$struct = wp_parse_args( $this->build_parts[ $part ], $struct );
+		}
+		if ( $this->setting->has_param( "attributes:{$part}" ) ) {
+			$struct['attributes'] = wp_parse_args( $this->setting->get_param( "attributes:{$part}" ), $struct['attributes'] );
 		}
 
 		return $struct;

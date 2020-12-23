@@ -68,7 +68,6 @@ class Select extends Text {
 			$select_options[]              = $option;
 		}
 
-
 		return $select_options;
 	}
 }

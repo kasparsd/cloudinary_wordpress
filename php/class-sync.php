@@ -879,7 +879,9 @@ class Sync implements Setup, Assets {
 					'title'             => __( 'Cloudinary folder path', 'cloudinary' ),
 					'default'           => '.',
 					'attributes'        => array(
-						'placeholder' => __( 'e.g.: wordpress_assets/', 'cloudinary' ),
+						'input' => array(
+							'placeholder' => __( 'e.g.: wordpress_assets/', 'cloudinary' ),
+						),
 					),
 					'tooltip_text'      => __(
 						'Specify the folder in your Cloudinary account where WordPress assets are uploaded to. All assets uploaded to WordPress from this point on will be synced to the specified folder in Cloudinary. Leave blank to use the root of your Cloudinary library.',
