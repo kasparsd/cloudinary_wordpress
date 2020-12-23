@@ -22,6 +22,7 @@ class Test extends Settings_Component {
 			'type'        => 'page',
 			'menu_title'  => __( 'Settings test', 'cloudinary' ),
 			'option_name' => 'test_settings',
+			'priority'    => 20,
 			'tabs'        => array(
 				'fields'   => array(
 					'type'       => 'page',
@@ -33,6 +34,12 @@ class Test extends Settings_Component {
 						array(
 							'type'  => 'group',
 							'title' => __( 'Checks and radios', 'cloudinary' ),
+							array(
+								'type'        => 'color',
+								'title'       => __( 'Thing', 'cloudinary' ),
+								'slug'        => 'sjkdhf',
+								'description' => __( 'Dome', 'cloudinary' ),
+							),
 							array(
 								'type'        => 'radio',
 								'title'       => __( 'Radio Group', 'cloudinary' ),
@@ -160,7 +167,9 @@ class Test extends Settings_Component {
 	 */
 	protected function get_content() {
 		ob_start();
-		include $this->plugin->dir_path . 'ui-definitions/tabs/connect-content.php';
+		?>
+		<h2>This is html</h2>
+		<?php
 
 		return ob_get_clean();
 	}

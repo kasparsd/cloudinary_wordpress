@@ -77,7 +77,7 @@ class Video {
 	 */
 	public function __construct( Media $media ) {
 		$this->media  = $media;
-		$this->config = ! empty( $this->media->plugin->config['settings']['global_video_transformations'] ) ? $this->media->plugin->config['settings']['global_video_transformations'] : '';
+		$this->config = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG )->get_value();
 
 		$this->setup_hooks();
 	}
@@ -353,7 +353,7 @@ class Video {
 					'publicId'    => $cloudinary_id,
 					'sourceTypes' => array( $video['format'] ), // @todo Make this based on eager items as mentioned above.
 					'autoplay'    => 'off' !== $this->config['video_autoplay_mode'],
-					'loop'        => 'on' === $this->config['video_loop'],
+					'loop'        => $this->config['video_loop'],
 				);
 
 				$valid_autoplay_modes = array( 'never', 'always', 'on-scroll' );
@@ -367,7 +367,7 @@ class Video {
 					$config['fluid'] = true;
 				}
 
-				$config['controls']      = 'on' === $this->config['video_controls'];
+				$config['controls']      = $this->config['video_controls'];
 				$cld_videos[ $instance ] = $config;
 			}
 

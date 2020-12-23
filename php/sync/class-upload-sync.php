@@ -208,7 +208,7 @@ class Upload_Sync {
 
 		add_filter(
 			'cloudinary_is_folder_synced',
-			function( $is_synced, $post_id ) use ( $attachment_id ) {
+			function ( $is_synced, $post_id ) use ( $attachment_id ) {
 				if ( $post_id === $attachment_id ) {
 					return true;
 				}
@@ -330,7 +330,7 @@ class Upload_Sync {
 	 */
 	public function update_breakpoints( $attachment_id, $breakpoints ) {
 
-		if ( ! empty( $this->plugin->config['settings']['global_transformations']['enable_breakpoints'] ) ) {
+		if ( ! empty( $this->plugin->settings->get_value( 'enable_breakpoints' ) ) ) {
 			if ( ! empty( $breakpoints['responsive_breakpoints'] ) ) { // Images only.
 				$this->media->update_post_meta( $attachment_id, Sync::META_KEYS['breakpoints'], $breakpoints['responsive_breakpoints'][0]['breakpoints'] );
 			} elseif ( wp_attachment_is_image( $attachment_id ) ) {

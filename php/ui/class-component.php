@@ -83,9 +83,6 @@ abstract class Component {
 		$class_name    = substr( strrchr( $class, '\\' ), 1 );
 		$this->type    = str_replace( '_', '-', $class_name );
 
-		// Setup the components parts for render.
-		$this->setup_component_parts();
-
 		// Setup blueprint.
 		$this->blueprint = $this->setting->get_param( 'blueprint', $this->blueprint );
 
@@ -94,8 +91,10 @@ abstract class Component {
 			$condition = $this->setting->get_param( 'condition' );
 			foreach ( $condition as $slug => $value ) {
 				$bound            = $this->setting->find_setting( $slug );
-				$bound_attributes = $bound->get_param( 'attributes', array() );
-				$conditional_bind = wp_parse_args(
+				$conditional_bind = $bound->get_param( 'attributes', array() );
+				$bound_attributes = $bound->get_param( 'attributes:input', array() );
+
+				$conditional_bind['input'] = wp_parse_args(
 					array(
 						'data-bound' => $this->setting->get_slug(),
 					),
@@ -106,6 +105,18 @@ abstract class Component {
 
 			$this->blueprint = 'conditional|' . $this->blueprint . '|/conditional';
 		}
+
+		// Setup the components parts for render.
+		$this->setup_component_parts();
+
+		// Add scripts.
+		add_action( 'admin_init', array( $this, 'enqueue_scripts' ) );
+	}
+
+	/**
+	 * Enqueue scripts this component may use.
+	 */
+	public function enqueue_scripts() {
 	}
 
 	/**
@@ -135,6 +146,15 @@ abstract class Component {
 	 * Setup the components build parts.
 	 */
 	private function setup_component_parts() {
+
+		$default_input_atts = array(
+			'type'  => $this->type,
+			'class' => array(),
+		);
+		$input_atts         = $this->setting->get_param(
+			'attributes',
+			array()
+		);
 
 		$build_parts = array(
 			'wrap'        => array(
@@ -190,13 +210,7 @@ abstract class Component {
 			'input'       => array(
 				'element'    => 'input',
 				'render'     => 'true',
-				'attributes' => $this->setting->get_param(
-					'attributes',
-					array(
-						'type'  => $this->type,
-						'class' => array(),
-					)
-				),
+				'attributes' => wp_parse_args( $input_atts, $default_input_atts ),
 			),
 			'settings'    => array(
 				'element'    => 'div',
@@ -205,13 +219,13 @@ abstract class Component {
 				),
 			),
 			'prefix'      => array(
-				'element'    => 'div',
+				'element'    => 'span',
 				'attributes' => array(
 					'class' => array(),
 				),
 			),
 			'suffix'      => array(
-				'element'    => 'div',
+				'element'    => 'span',
 				'attributes' => array(
 					'class' => array(),
 				),
@@ -274,13 +288,31 @@ abstract class Component {
 	}
 
 	/**
+	 * Check if component is enabled.
+	 *
+	 * @return bool
+	 */
+	protected function is_enabled() {
+		$enabled = $this->setting->get_param( 'enabled', true );
+		if ( is_callable( $enabled ) ) {
+			$enabled = call_user_func( $enabled, $this );
+		}
+
+		return $enabled;
+	}
+
+	/**
 	 * Renders the component.
 	 */
 	public function render() {
-
 		// Setup the component.
 		$this->pre_render();
 
+		// Check if component is enabled.
+		$enabled = $this->is_enabled();
+		if ( false === $enabled ) {
+			return null;
+		}
 		// Build the blueprint parts list.
 		$blueprint   = $this->setting->get_param( 'blueprint', $this->blueprint );
 		$build_parts = explode( '|', $blueprint );
@@ -543,7 +575,7 @@ abstract class Component {
 	public function get_part( $part ) {
 		$struct = array(
 			'element'    => $part,
-			'attributes' => $this->setting->get_param( 'attributes', array() ),
+			'attributes' => array(),
 			'children'   => array(),
 			'state'      => null,
 			'content'    => null,
@@ -551,6 +583,9 @@ abstract class Component {
 		);
 		if ( isset( $this->build_parts[ $part ] ) ) {
 			$struct = wp_parse_args( $this->build_parts[ $part ], $struct );
+		}
+		if ( $this->setting->has_param( "attributes:{$part}" ) ) {
+			$struct['attributes'] = wp_parse_args( $this->setting->get_param( "attributes:{$part}" ), $struct['attributes'] );
 		}
 
 		return $struct;
@@ -579,12 +614,20 @@ abstract class Component {
 	protected function tooltip( $struct ) {
 		$struct['content'] = null;
 		if ( $this->setting->has_param( 'tooltip_text' ) ) {
-			$struct['render']              = true;
-			$struct['attributes']['class'] = array(
+
+			$struct['render']                     = true;
+			$struct['attributes']['class']        = array(
 				'dashicons',
-				'dashicons-editor-help',
+				'dashicons-info',
 			);
-			$struct['attributes']['title'] = $this->setting->get_param( 'tooltip_text' );
+			$tooltip_id                           = 'tooltip_' . $this->setting->get_slug();
+			$struct['attributes']['data-tooltip'] = $tooltip_id;
+
+			$content                        = $this->get_part( 'span' );
+			$content['content']             = $this->setting->get_param( 'tooltip_text' );
+			$content['attributes']['id']    = $tooltip_id;
+			$content['attributes']['class'] = 'hidden';
+			$struct['children']['content']  = $content;
 		}
 
 		return $struct;
@@ -646,7 +689,7 @@ abstract class Component {
 	 */
 	protected function settings( $struct ) {
 		$struct['element'] = '';
-		if ( $this->setting->has_settings() ) {
+		if ( $this->setting->has_parent() && $this->setting->has_settings() ) {
 			$html = array();
 			foreach ( $this->setting->get_settings() as $setting ) {
 				$html[] = $setting->get_component()->render();
@@ -669,7 +712,11 @@ abstract class Component {
 		$return = array();
 		foreach ( $attributes as $attribute => $value ) {
 			if ( is_array( $value ) ) {
-				$value = implode( ' ', $value );
+				if ( count( $value ) !== count( $value, COUNT_RECURSIVE ) ) {
+					$value = wp_json_encode( $value );
+				} else {
+					$value = implode( ' ', $value );
+				}
 			}
 			$return[] = esc_attr( $attribute ) . '="' . esc_attr( $value ) . '"';
 		}
