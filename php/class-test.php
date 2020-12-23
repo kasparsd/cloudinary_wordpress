@@ -218,7 +218,9 @@ class Test extends Settings_Component {
 	 */
 	protected function get_content() {
 		ob_start();
-		include $this->plugin->dir_path . 'ui-definitions/tabs/connect-content.php';
+		?>
+		<h2>This is html</h2>
+		<?php
 
 		return ob_get_clean();
 	}
