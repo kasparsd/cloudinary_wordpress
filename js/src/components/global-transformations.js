@@ -138,13 +138,13 @@ const GlobalTransformations = {
 			};
 			newImg.src = newSrc;
 		} else {
-			const transformationsString = self._transformations(
+			const transformations = self._transformations(
 				self._getGlobalTransformationElements( type ),
 				type
 			);
 			samplePlayer.source( {
 				publicId: 'dog',
-				transformation: transformationsString,
+				transformation: transformations,
 			} );
 			self._clearLoading( type );
 		}
