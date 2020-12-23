@@ -1917,12 +1917,11 @@ class Media extends Settings_Component implements Setup {
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
-
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 
 			$this->base_url          = $this->plugin->components['connect']->api->cloudinary_url();
 			$this->credentials       = $this->plugin->components['connect']->get_credentials();
-			$this->cloudinary_folder = ! empty( $this->plugin->config['settings']['sync_media']['cloudinary_folder'] ) ? $this->plugin->config['settings']['sync_media']['cloudinary_folder'] : '';
+			$this->cloudinary_folder = $this->settings->get_value( 'cloudinary_folder' );
 			$this->sync              = $this->plugin->components['sync'];
 
 			// Internal components.
@@ -2003,6 +2002,17 @@ class Media extends Settings_Component implements Setup {
 		);
 
 		return $args;
+	}
+
+	/**
+	 * Enabled method for version if settings are enabled.
+	 *
+	 * @param bool $enabled Flag to enable.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled( $enabled ) {
+		return $this->plugin->settings->get_param( 'connected' );
 	}
 
 	/**

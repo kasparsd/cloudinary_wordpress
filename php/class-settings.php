@@ -36,6 +36,13 @@ class Settings {
 	public $handles = array();
 
 	/**
+	 * Holds the current active setting.
+	 *
+	 * @var Setting
+	 */
+	protected $current_setting;
+
+	/**
 	 * Holds the current Page.
 	 *
 	 * @var Setting
@@ -60,6 +67,7 @@ class Settings {
 	 * Initiate the settings object.
 	 */
 	protected function __construct() {
+		add_action( 'admin_init', array( $this, 'register_wordpress_settings' ) );
 		add_action( 'admin_menu', array( $this, 'build_menus' ) );
 	}
 
@@ -95,36 +103,84 @@ class Settings {
 	 * @param Setting $setting The settings to create pages.
 	 */
 	public function register_admin( $setting ) {
+
 		$render_function = array( $this, 'render' );
 
 		// Setup the main page.
-		$page_handle                   = add_menu_page( $setting->get_param( 'page_title' ), $setting->get_param( 'menu_title' ), $setting->get_param( 'capability' ), $setting->get_slug(), $render_function, $setting->get_param( 'icon' ) );
+		$page_handle                   = add_menu_page(
+			$setting->get_param( 'page_title' ),
+			$setting->get_param( 'menu_title' ),
+			$setting->get_param( 'capability' ),
+			$setting->get_slug(),
+			$render_function,
+			$setting->get_param( 'icon' )
+		);
 		$this->handles[ $page_handle ] = $setting;
 		$setting->set_param( 'page_handle', $page_handle );
+
+		add_action( "load-{$page_handle}", array( $this, 'set_active_setting' ) );
 		// Setup the Child page handles.
 		foreach ( $setting->get_settings() as $sub_setting ) {
-			if ( 'page' !== $sub_setting->get_param( 'type' ) ) {
+			if ( 'page' !== $sub_setting->get_param( 'type' ) || ! apply_filters( "settings_enabled_{$sub_setting->get_slug()}", true ) ) {
 				continue;
 			}
 			$sub_setting->set_param( 'page_header', $setting->get_param( 'page_header' ) );
 			$sub_setting->set_param( 'page_footer', $setting->get_param( 'page_footer' ) );
 			$capability                    = $sub_setting->get_param( 'capability', $setting->get_param( 'capability' ) );
-			$page_handle                   = add_submenu_page( $setting->get_slug(), $sub_setting->get_param( 'page_title', $setting->get_param( 'page_title' ) ), $sub_setting->get_param( 'menu_title', $sub_setting->get_param( 'page_title' ) ), $capability, $sub_setting->get_slug(), $render_function, $sub_setting->get_param( 'position' ) );
+			$page_handle                   = add_submenu_page(
+				$setting->get_slug(),
+				$sub_setting->get_param( 'page_title', $setting->get_param( 'page_title' ) ),
+				$sub_setting->get_param( 'menu_title', $sub_setting->get_param( 'page_title' ) ),
+				$capability,
+				$sub_setting->get_slug(),
+				$render_function,
+				$sub_setting->get_param( 'position' )
+			);
 			$this->handles[ $page_handle ] = $sub_setting;
 			$sub_setting->set_param( 'page_handle', $page_handle );
-		}
 
+			add_action( "load-{$page_handle}", array( $this, 'set_active_setting' ) );
+		}
 	}
 
 	/**
 	 * Render a page.
 	 */
 	public function render() {
-		$setting = $this->get_active_page();
-		if ( $setting->has_param( 'page_footer' ) ) {
+		if ( $this->current_page->has_param( 'page_footer' ) ) {
 			add_action( 'in_admin_footer', array( $this, 'bind_footer' ) );
 		}
-		echo $setting->get_component()->render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->current_page->get_component()->render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Set the current active settings and tabs.
+	 */
+	public function set_active_setting() {
+		$this->current_page = $this->get_active_page();
+		$this->current_page->set_param( 'is_active', true );
+		$this->current_setting = $this->current_page->get_root_setting();
+		$this->current_setting->set_param( 'active_setting', $this->current_page );
+		// Setup default tab.
+		if ( $this->current_page->has_parent() && $this->current_page->has_settings() ) {
+			$settings          = $this->current_page->get_settings();
+			$this->current_tab = array_shift( $settings );
+		}
+
+		$active_setting = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
+		if ( is_null( $active_setting ) ) {
+			$active_setting = filter_input( INPUT_POST, 'tab', FILTER_SANITIZE_STRING );
+		}
+		if ( ! is_null( $active_setting ) && $this->current_page->setting_exists( $active_setting ) ) {
+			$this->current_tab = $this->current_page->get_setting( $active_setting );
+		}
+
+		// Setup current tab.
+		if ( $this->current_tab && $this->current_page !== $this->current_tab ) {
+			$this->current_tab->set_param( 'is_active', true );
+			$this->current_page->set_param( 'active_tab', $this->current_tab );
+		}
+
 	}
 
 	/**
@@ -178,6 +234,16 @@ class Settings {
 	}
 
 	/**
+	 * Register settings with WordPress.
+	 */
+	public function register_wordpress_settings() {
+
+		foreach ( $this->settings as $setting ) {
+			$setting->register_settings();
+		}
+	}
+
+	/**
 	 * Create a new setting on the Settings object.
 	 *
 	 * @param string $slug   The setting slug.
@@ -191,6 +257,7 @@ class Settings {
 		}
 		$params['option_name'] = $slug; // Root option.
 		$params['type']        = 'page';
+		$params['priority']    = 0;
 
 		return self::$instance->register_setting( $slug, $params );
 	}
@@ -204,9 +271,7 @@ class Settings {
 		if ( ! is_null( self::$instance ) && ! empty( self::$instance->settings[ $slug ] ) ) {
 			self::check_version( $slug );
 			$settings = self::$instance->settings[ $slug ];
-			$settings->register_settings();
 			$settings->setup_component();
-			$settings->load_value();
 		}
 	}
 }

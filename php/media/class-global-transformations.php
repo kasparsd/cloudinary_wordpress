@@ -63,25 +63,17 @@ class Global_Transformations {
 	 */
 	public function __construct( \Cloudinary\Media $media ) {
 		$this->media            = $media;
-		$settings               = $this->media->plugin->components['settings']->get_ui();
-		$this->globals['image'] = ! empty( $this->media->plugin->config['settings']['global_transformations'] ) ? $this->media->plugin->config['settings']['global_transformations'] : '';
-		$this->globals['video'] = ! empty( $this->media->plugin->config['settings']['global_video_transformations'] ) ? $this->media->plugin->config['settings']['global_video_transformations'] : '';
-		$image_fields           = array_filter(
-			$settings['pages']['global_transformation']['tabs']['global_transformations']['fields'],
-			function ( $field ) {
-				return ! empty( $field['contextual'] );
+		$settings               = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG );
+		$this->globals['image'] = $settings->get_setting( 'image_settings' );
+		$this->globals['video'] = $settings->get_setting( 'video_settings' );
+
+		$field_slugs = array_keys( $settings->get_value() );
+		foreach ( $field_slugs as $slug ) {
+			$setting = $settings->get_setting( $slug );
+			if ( $setting->has_param( 'attributes:data-context' ) ) {
+				$this->fields[ $slug ] = $setting;
 			}
-		);
-
-		$video_fields = array_filter(
-			$settings['pages']['global_transformation']['tabs']['global_video_transformations']['fields'],
-			function ( $field ) {
-				return ! empty( $field['contextual'] );
-			}
-		);
-
-		$this->fields = array_merge( $image_fields, $video_fields );
-
+		}
 		$this->setup_hooks();
 	}
 
@@ -410,6 +402,7 @@ class Global_Transformations {
 		}
 
 		$out[] = '</div>';
+
 		return implode( $out );
 	}
 

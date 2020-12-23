@@ -22,6 +22,7 @@ class Test extends Settings_Component {
 			'type'        => 'page',
 			'menu_title'  => __( 'Settings test', 'cloudinary' ),
 			'option_name' => 'test_settings',
+			'priority'    => 20,
 			'tabs'        => array(
 				'fields'     => array(
 					'type'       => 'page',
@@ -217,7 +218,9 @@ class Test extends Settings_Component {
 	 */
 	protected function get_content() {
 		ob_start();
-		include $this->plugin->dir_path . 'ui-definitions/tabs/connect-content.php';
+		?>
+		<h2>This is html</h2>
+		<?php
 
 		return ob_get_clean();
 	}
