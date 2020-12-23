@@ -138,6 +138,11 @@ class Gallery {
 		$json_config = wp_json_encode( $this->get_config() );
 		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryGalleryConfig = JSON.parse( '{$json_config}' );" );
 
+		$post         = get_post();
+		$post_content = $post ? "'" . implode( '', explode( "\n", $post->post_content ) ) . "'" : 'null';
+
+		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryPostContent = {$post_content};" );
+
 		wp_enqueue_script(
 			'cloudinary-gallery-init',
 			$this->media->plugin->dir_url . 'js/gallery-init.js',
