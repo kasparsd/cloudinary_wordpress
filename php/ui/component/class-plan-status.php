@@ -54,13 +54,6 @@ class Plan_Status extends Component {
 	}
 
 	/**
-	 * Setup action before rendering.
-	 */
-	protected function pre_render() {
-		$this->setting->set_param( 'plan_heading', $this->connection->get_usage_stat( 'plan' ) );
-	}
-
-	/**
 	 * Filter the title parts structure.
 	 *
 	 * @param array $struct The array structure.

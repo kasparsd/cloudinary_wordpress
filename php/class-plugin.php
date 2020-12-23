@@ -203,6 +203,13 @@ final class Plugin {
 							'title' => __( 'Your Plan Status', 'cloudinary' ),
 						),
 					),
+					array(
+						'type' => 'panel_short',
+						array(
+							'type'  => 'media_status',
+							'title' => __( 'Your Media Sync Status', 'cloudinary' ),
+						),
+					),
 				),
 			),
 		);
