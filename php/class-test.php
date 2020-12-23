@@ -26,10 +26,10 @@ class Test extends Settings_Component {
 			'tabs'        => array(
 				'fields'     => array(
 					'type'       => 'page',
-					'page_title' => __( 'Input Settings', 'cloudinary ' ),
+					'page_title' => __( 'Input Settings', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'Settings with inputs', 'cloudinary ' ),
+						'title' => __( 'Settings with inputs', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/gallery.svg',
 						array(
 							'type'  => 'group',
@@ -143,10 +143,10 @@ class Test extends Settings_Component {
 				),
 				'contents'   => array(
 					'type'       => 'page',
-					'page_title' => __( 'Content Settings', 'cloudinary ' ),
+					'page_title' => __( 'Content Settings', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'Settings with content', 'cloudinary ' ),
+						'title' => __( 'Settings with content', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/video.svg',
 						array(
 							'content' => $this->get_content(),
@@ -156,10 +156,10 @@ class Test extends Settings_Component {
 				),
 				'react_test' => array(
 					'type'       => 'page',
-					'page_title' => __( 'React', 'cloudinary ' ),
+					'page_title' => __( 'React', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'React example', 'cloudinary ' ),
+						'title' => __( 'React example', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/video.svg',
 						array(
 							'type'   => 'react',
@@ -176,10 +176,10 @@ class Test extends Settings_Component {
 				),
 				'col_test'   => array(
 					'type'       => 'page',
-					'page_title' => __( 'Columns', 'cloudinary ' ),
+					'page_title' => __( 'Columns', 'cloudinary' ),
 					array(
 						'type'  => 'panel',
-						'title' => __( 'Columns example', 'cloudinary ' ),
+						'title' => __( 'Columns example', 'cloudinary' ),
 						'icon'  => $this->plugin->dir_url . 'css/crop.svg',
 						array(
 							'type' => 'row',

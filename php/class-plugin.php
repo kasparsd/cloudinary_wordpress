@@ -171,14 +171,14 @@ final class Plugin {
 			'icon'        => 'dashicons-cloudinary',
 			'option_name' => $this->slug,
 			'page_header' => array(
-				'content' => '<img src="' . $this->dir_url . '/css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="#">Need help?</a></p>',
+				'content' => '<img src="' . esc_url( $this->dir_url ) . 'css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="#">' . esc_html__( 'Need help?', 'cloudinary' ) . '</a></p>',
 			),
 			'page_footer' => array(
 				'content' => __( 'Thanks for using Cloudinary, please take a minute to rate our plugin.', 'cloudinary' ),
 			),
 			'pages'       => array(
 				$this->slug => array(
-					'page_title' => __( 'Dashboard', 'cloudinary' ),
+					'page_title' => __( 'Cloudinary Dashboard', 'cloudinary' ),
 					'menu_title' => __( 'Dashboard', 'cloudinary' ),
 					'priority'   => 0,
 					array(
@@ -189,8 +189,22 @@ final class Plugin {
 						),
 						array(
 							'type'    => 'link',
-							'url'     => '#',
+							'url'     => 'https://cloudinary.com/console/lui/upgrade_options',
 							'content' => __( 'Upgrade Plan', 'cloudinary' ),
+						),
+					),
+					array(
+						'type' => 'panel',
+						array(
+							'type'  => 'plan_status',
+							'title' => __( 'Your Plan Status', 'cloudinary' ),
+						),
+					),
+					array(
+						'type' => 'panel_short',
+						array(
+							'type'  => 'media_status',
+							'title' => __( 'Your Media Sync Status', 'cloudinary' ),
 						),
 					),
 				),
@@ -635,7 +649,7 @@ final class Plugin {
 			$plugin_site_link = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( $plugin_data['PluginURI'] ),
-				__( 'Visit plugin site' )
+				__( 'Visit plugin site', 'cloudinary' )
 			);
 			if ( ! in_array( $plugin_site_link, $plugin_meta, true ) ) {
 				$plugin_meta[] = $plugin_site_link;
