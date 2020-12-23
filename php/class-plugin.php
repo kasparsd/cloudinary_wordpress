@@ -650,7 +650,7 @@ final class Plugin {
 			$plugin_site_link = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( $plugin_data['PluginURI'] ),
-				__( 'Visit plugin site' )
+				__( 'Visit plugin site', 'cloudinary' )
 			);
 			if ( ! in_array( $plugin_site_link, $plugin_meta, true ) ) {
 				$plugin_meta[] = $plugin_site_link;
