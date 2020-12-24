@@ -1,11 +1,8 @@
 import React from 'react';
-import Dot from 'dot-object';
 import { render, useEffect, useState } from '@wordpress/element';
 import attributes from '../gallery-block/attributes';
 import GalleryControls from '../gallery-block/controls';
 import { setupAttributesForRendering } from '../gallery-block/utils';
-
-const dot = new Dot( '_' );
 
 delete attributes.cloudName;
 delete attributes.mediaAssets;
@@ -27,6 +24,8 @@ const StatefulGalleryControls = () => {
 
 	useEffect( () => {
 		const { config } = setupAttributesForRendering( statefulAttrs );
+		// eslint-disable-next-line no-unused-vars
+		const { customSettings, ...mainConfig } = config;
 
 		const gallery = cloudinary.galleryWidget( {
 			cloudName: 'demo',
@@ -36,7 +35,7 @@ const StatefulGalleryControls = () => {
 					mediaType: 'image',
 				},
 			],
-			...config,
+			...mainConfig,
 			container: '.gallery-preview',
 		} );
 
@@ -45,6 +44,10 @@ const StatefulGalleryControls = () => {
 		const hiddenField = document.getElementById( 'gallery_settings_input' );
 
 		if ( hiddenField ) {
+			try {
+				config.customSettings = JSON.parse( config.customSettings );
+			} catch {}
+
 			hiddenField.value = JSON.stringify( config );
 		}
 

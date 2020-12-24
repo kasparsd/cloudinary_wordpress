@@ -107,13 +107,13 @@ class Gallery {
 	public function __construct( Media $media ) {
 		$this->media = $media;
 
-		$config = ! empty( $media->plugin->config['settings']['gallery']['config'] ) ?
-			$media->plugin->config['settings']['gallery']['config'] :
+		$this->setup_hooks();
+
+		$config = ! empty( $media->plugin->settings->get_value( 'config' ) ) ?
+			$media->plugin->settings->get_value( 'config' ) :
 			wp_json_encode( self::$default_config );
 
 		$this->config = json_decode( $config, true );
-
-		$this->setup_hooks();
 	}
 
 	/**

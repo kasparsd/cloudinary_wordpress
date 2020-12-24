@@ -73,7 +73,6 @@ export const setupAttributesForRendering = ( attributes ) => {
 		try {
 			const parsedCustomSettings = JSON.parse( config.customSettings );
 			config = { ...config, ...parsedCustomSettings };
-			delete config.customSettings;
 		} catch ( err ) {}
 	}
 
