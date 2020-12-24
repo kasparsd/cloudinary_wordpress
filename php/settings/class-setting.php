@@ -160,7 +160,9 @@ class Setting {
 
 		// Update priority sorting if set.
 		if ( 'priority' === $param && $this->has_parent() ) {
-			$this->get_parent()->sort_settings();
+			$parent = $this->get_parent();
+			$parent->remove_setting( $this->get_slug() );
+			$parent->add_setting( $this );
 		}
 
 		return $this;
@@ -290,18 +292,6 @@ class Setting {
 	 */
 	public function get_settings() {
 		return $this->settings;
-	}
-
-	/**
-	 * Sort settings based on priority.
-	 */
-	protected function sort_settings() {
-		uasort(
-			$this->settings,
-			function ( $x, $y ) {
-				return ( (int) $x->get_param( 'priority' ) > (int) $y->get_param( 'priority' ) );
-			}
-		);
 	}
 
 	/**
@@ -888,11 +878,42 @@ class Setting {
 	 * @return Setting
 	 */
 	public function add_setting( $setting ) {
+
 		$setting->set_parent( $this );
-		$this->settings[ $setting->get_slug() ] = $setting;
-		$this->sort_settings();
+
+		// Get the position in which to insert the new setting.
+		$index = $this->get_position_index( $setting->get_param( 'priority', 10 ) );
+
+		$new_setting = array(
+			$setting->get_slug() => $setting,
+		);
+
+		// Add the new setting at the index based on the priority position.
+		$this->settings = array_slice( $this->settings, 0, $index, true ) + $new_setting + array_slice( $this->settings, $index, null, true );
 
 		return $setting;
+	}
+
+	/**
+	 * Get the index where the new setting should go based on the priority.
+	 * The position will be the just after the same priority, but before any priority that's higher.
+	 * This maintains the first-come-first serve for like priorities.
+	 *
+	 * @param int $priority The priority to get the index for.
+	 *
+	 * @return int
+	 */
+	protected function get_position_index( $priority ) {
+		$index = 0;
+		foreach ( $this->settings as $setting_check ) {
+			$check_priority = $setting_check->get_param( 'priority', 10 );
+			if ( $priority < $check_priority ) {
+				break;
+			}
+			$index ++;
+		}
+
+		return $index;
 	}
 
 	/**
