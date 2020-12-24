@@ -63,6 +63,8 @@ export const setupAttributesForRendering = ( attributes ) => {
 		{}
 	);
 
+	config.mediaAssets = mediaAssets;
+
 	if ( config?.displayProps?.mode !== 'classic' ) {
 		delete config.transition;
 	} else {
@@ -71,10 +73,10 @@ export const setupAttributesForRendering = ( attributes ) => {
 
 	if ( config.customSettings ) {
 		try {
-			const parsedCustomSettings = JSON.parse( config.customSettings );
-			config = { ...config, ...parsedCustomSettings };
+			const customSettings = JSON.parse( config.customSettings );
+			config = { ...config, customSettings };
 		} catch ( err ) {}
 	}
 
-	return { config, mediaAssets };
+	return config;
 };

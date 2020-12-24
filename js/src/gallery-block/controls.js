@@ -49,9 +49,11 @@ const dot = new Dot( '_' );
 
 const Controls = ( { attributes, setAttributes } ) => {
 	const nestedAttrs = dot.object( attributes );
-	nestedAttrs.customSettings = JSON.stringify( nestedAttrs.customSettings );
 
-	console.log( nestedAttrs );
+	nestedAttrs.customSettings =
+		typeof nestedAttrs.customSettings === 'object'
+			? JSON.stringify( nestedAttrs.customSettings )
+			: nestedAttrs.customSettings;
 
 	return (
 		<>
@@ -433,7 +435,7 @@ const Controls = ( { attributes, setAttributes } ) => {
 				) }
 			</PanelBody>
 			<PanelBody
-				title={ __( 'Advanced', 'cloudinary' ) }
+				title={ __( 'Additional Settings', 'cloudinary' ) }
 				initialOpen={ false }
 			>
 				<TextareaControl
@@ -443,11 +445,17 @@ const Controls = ( { attributes, setAttributes } ) => {
 						'cloudinary'
 					) }
 					value={ nestedAttrs.customSettings }
-					onChange={ ( value ) =>
-						setAttributes( {
-							customSettings: value,
-						} )
-					}
+					onChange={ ( value ) => {
+						try {
+							setAttributes( {
+								customSettings: JSON.parse( value ),
+							} );
+						} catch {
+							setAttributes( {
+								customSettings: value,
+							} );
+						}
+					} }
 				/>
 			</PanelBody>
 		</>

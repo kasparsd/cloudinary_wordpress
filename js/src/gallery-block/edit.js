@@ -21,6 +21,15 @@ const PLACEHOLDER_TEXT = __(
 	'cloudinary'
 );
 
+function galleryWidgetConfig( config, container ) {
+	return {
+		cloudName: CLDN.mloptions.cloud_name,
+		...config,
+		container: '.' + container,
+		zoom: false,
+	};
+}
+
 const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
 
@@ -51,7 +60,9 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 		}
 
 		if ( attributes.selectedImages.length ) {
-			const { mediaAssets, config } = setupAttributesForRendering(
+			let gallery;
+
+			const { customSettings, ...config } = setupAttributesForRendering(
 				attributes
 			);
 
@@ -61,13 +72,30 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 				} );
 			}
 
-			const gallery = cloudinary.galleryWidget( {
-				cloudName: CLDN.mloptions.cloud_name,
-				...config,
-				mediaAssets,
-				container: '.' + attributes.container,
-				zoom: false,
-			} );
+			try {
+				console.log(
+					galleryWidgetConfig(
+						{ ...config, ...customSettings },
+						attributes.container
+					)
+				);
+				gallery = cloudinary.galleryWidget(
+					galleryWidgetConfig(
+						{ ...config, ...customSettings },
+						attributes.container
+					)
+				);
+			} catch {
+				console.log(
+					galleryWidgetConfig(
+						{ ...config, ...customSettings },
+						attributes.container
+					)
+				);
+				gallery = cloudinary.galleryWidget(
+					galleryWidgetConfig( config, attributes.container )
+				);
+			}
 
 			gallery.render();
 

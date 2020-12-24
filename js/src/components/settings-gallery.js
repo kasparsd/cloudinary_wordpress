@@ -12,6 +12,20 @@ Object.keys( attributes ).forEach( ( attr ) => {
 	parsedAttrs[ attr ] = attributes[ attr ]?.default;
 } );
 
+function galleryWidgetConfig( config ) {
+	return {
+		cloudName: 'demo',
+		...config,
+		mediaAssets: [
+			{
+				tag: 'shoes_product_gallery_demo',
+				mediaType: 'image',
+			},
+		],
+		container: '.gallery-preview',
+	};
+}
+
 const StatefulGalleryControls = () => {
 	const [ statefulAttrs, setStatefulAttrs ] = useState( parsedAttrs );
 
@@ -23,31 +37,26 @@ const StatefulGalleryControls = () => {
 	};
 
 	useEffect( () => {
-		const { config } = setupAttributesForRendering( statefulAttrs );
-		// eslint-disable-next-line no-unused-vars
+		let gallery;
+
+		const config = setupAttributesForRendering( statefulAttrs );
 		const { customSettings, ...mainConfig } = config;
 
-		const gallery = cloudinary.galleryWidget( {
-			cloudName: 'demo',
-			mediaAssets: [
-				{
-					tag: 'shoes_product_gallery_demo',
-					mediaType: 'image',
-				},
-			],
-			...mainConfig,
-			container: '.gallery-preview',
-		} );
+		try {
+			gallery = cloudinary.galleryWidget(
+				galleryWidgetConfig( { ...mainConfig, ...customSettings } )
+			);
+		} catch {
+			gallery = cloudinary.galleryWidget(
+				galleryWidgetConfig( mainConfig )
+			);
+		}
 
 		gallery.render();
 
 		const hiddenField = document.getElementById( 'gallery_settings_input' );
 
 		if ( hiddenField ) {
-			try {
-				config.customSettings = JSON.parse( config.customSettings );
-			} catch {}
-
 			hiddenField.value = JSON.stringify( config );
 		}
 

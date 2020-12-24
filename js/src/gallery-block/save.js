@@ -7,14 +7,13 @@ const Save = ( { attributes } ) => {
 	let configString = '';
 
 	if ( attributes.selectedImages.length ) {
-		const { mediaAssets, config } = setupAttributesForRendering(
+		const { customSettings, ...config } = setupAttributesForRendering(
 			attributes
 		);
 
 		configString = JSON.stringify( {
 			cloudName: CLDN.mloptions.cloud_name,
-			...sortObject( config ),
-			mediaAssets,
+			...sortObject( { ...config, ...customSettings } ),
 		} );
 	}
 
