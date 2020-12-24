@@ -344,9 +344,13 @@ class Setting {
 	 * @return bool
 	 */
 	public function setting_exists( $slug ) {
+		$exists  = false;
 		$setting = $this->get_root_setting()->get_setting( $slug, false );
+		if ( ! is_null( $setting ) && $setting->get_param( 'is_setup', false ) ) {
+			$exists = true;
+		}
 
-		return ! is_null( $setting );
+		return $exists;
 	}
 
 	/**
@@ -422,6 +426,9 @@ class Setting {
 
 		// Load data.
 		$this->load_value();
+
+		// Mark as setup.
+		$this->set_param( 'is_setup', true );
 
 		return $this;
 	}
