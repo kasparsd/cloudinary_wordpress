@@ -82,7 +82,7 @@ class Setting {
 	 */
 	public function __construct( $slug, $params = array(), $parent = null ) {
 		$this->slug           = $slug;
-		$this->setting_params = $this->get_settings_params();
+		$this->setting_params = $this->get_dynamic_param_keys();
 		$root                 = $this;
 
 		if ( ! is_null( $parent ) ) {
@@ -110,11 +110,11 @@ class Setting {
 	}
 
 	/**
-	 * Get the settings parameter and callback list.
+	 * Get the dynamic params and callbacks list. This allows to create a list of specific settings using a key param.
 	 *
 	 * @return array
 	 */
-	protected function get_settings_params() {
+	protected function get_dynamic_param_keys() {
 		$default_setting_params = array(
 			'components'  => array( $this, 'add_child_settings' ),
 			'settings'    => array( $this, 'add_child_settings' ),
