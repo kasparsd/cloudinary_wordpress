@@ -90,7 +90,7 @@ class Gallery {
 	 *
 	 * @var Media
 	 */
-	protected $media;
+	public $media;
 
 	/**
 	 * Holds the current config.

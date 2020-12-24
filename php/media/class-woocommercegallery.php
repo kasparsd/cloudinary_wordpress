@@ -61,8 +61,8 @@ class WooCommerceGallery {
 	 * @return bool
 	 */
 	public function enabled() {
-		return ! empty( $media->plugin->config['settings']['gallery']['enable'] ) ?
-			(bool) $media->plugin->config['settings']['gallery']['enable'] :
+		return ! empty( $this->gallery->media->plugin->settings->get_value( 'enable' ) ) ?
+			(bool) $this->gallery->media->plugin->settings->get_value( 'enable' ) :
 			false;
 	}
 
@@ -72,7 +72,7 @@ class WooCommerceGallery {
 	public function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
 
-		add_action(
+		add_filter(
 			'cloudinary_gallery_html_container',
 			static function () {
 				return '.woocommerce-product-gallery';
