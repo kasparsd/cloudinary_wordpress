@@ -33,13 +33,29 @@ class Media_Status extends Component {
 	protected $dir_url;
 
 	/**
+	 * Holds the media instance
+	 *
+	 * @var string
+	 */
+	protected $media;
+
+	/**
+	 * Holds the media sync data setting.
+	 *
+	 * @var string
+	 */
+	protected $data;
+
+	/**
 	 * Plan constructor.
 	 *
 	 * @param Setting $setting The parent Setting.
 	 */
 	public function __construct( $setting ) {
 		$plugin        = get_plugin_instance();
+		$this->media   = $plugin->get_component( 'media' );
 		$this->dir_url = $plugin->dir_url;
+		$this->data    = $this->media->get_settings()->get_setting( 'media_status' );
 
 		parent::__construct( $setting );
 	}
@@ -126,8 +142,9 @@ class Media_Status extends Component {
 	 */
 	protected function get_media_to_synced() {
 		// todo: implement logic.
+		$data = $this->data->get_value();
 
-		return 15;
+		return count( $data['synced'] );
 	}
 
 	/**
@@ -138,7 +155,46 @@ class Media_Status extends Component {
 	protected function get_total_of_media() {
 		global $wpdb;
 
-		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'attachment'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$data = $this->data->get_value();
+
+		$exclude = array_merge( $to_sync, $synced );
+		$params  = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'posts_per_page' => 10,
+			'paged'          => 0,
+			'post__not_in'   => $exclude,
+		);
+
+		$run   = true;
+		$pages = null;
+
+		while ( true === $run ) {
+
+			$query = new \WP_Query( $params );
+			$posts = $query->get_posts();
+			if ( is_null( $pages ) ) {
+				$pages = $query->max_num_pages;
+			}
+
+			$params['paged'] ++;
+			if ( $params['paged'] > $pages ) {
+				$run = false;
+			}
+			foreach ( $posts as $post ) {
+				if ( $this->media->is_media( $post->ID ) && ! in_array( $post->ID, $data['to_sync'], true ) ) {
+					$data['total'] ++;
+					$type = 'to_sync';
+					if ( $this->media->sync->is_synced( $post->ID ) ) {
+						$type = 'synced';
+					}
+					$data[ $type ][] = $post->ID;
+				}
+			}
+		}
+
+		$this->data->save_value( $data );
+
+		return $data['total'];
 	}
 }
-
