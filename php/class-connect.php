@@ -517,7 +517,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	protected function setup_status_cron() {
 		if ( false === wp_get_schedule( 'cloudinary_status' ) ) {
 			$now = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
-			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'every_minute', 'cloudinary_status' );
+			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'hourly', 'cloudinary_status' );
 		}
 	}
 
@@ -535,13 +535,14 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
-				set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
 				$last_usage->save_value( $stats );// Save the last successful call to prevent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.
 				$stats = $last_usage->get_value();
 			}
+			// Set transient with last data or new data to prevent overload.
+			set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
 		}
 		$this->usage = $stats;
 	}

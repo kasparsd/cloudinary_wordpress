@@ -1999,34 +1999,6 @@ class Media extends Settings_Component implements Setup {
 					$video_settings,
 				),
 			),
-			array(
-				'slug'        => 'media_status',
-				'type'        => 'data',
-				'option_name' => '_sync_media_status',
-				'default'     => array(
-					'_to_sync' => array(),
-					'_synced'  => array(),
-					'_total'   => 0,
-				),
-				array(
-					'slug'    => '_to_sync',
-					'type'    => 'data',
-					'default' => array(),
-
-				),
-				array(
-					'slug'    => '_synced',
-					'type'    => 'data',
-					'default' => array(),
-
-				),
-				array(
-					'slug'    => '_total',
-					'type'    => 'data',
-					'default' => 0,
-
-				),
-			),
 		);
 
 		return $args;
