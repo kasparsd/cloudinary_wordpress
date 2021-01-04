@@ -102,7 +102,6 @@ class Connect implements Config, Setup, Notice {
 	public function __construct( Plugin $plugin ) {
 		$this->plugin = $plugin;
 		add_filter( 'pre_update_option_cloudinary_connect', array( $this, 'verify_connection' ) );
-		add_filter( 'cron_schedules', array( $this, 'get_status_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval
 		add_action( 'cloudinary_status', array( $this, 'check_status' ) );
 		add_action( 'cloudinary_version_upgrade', array( $this, 'upgrade_connection' ) );
 	}
@@ -476,28 +475,12 @@ class Connect implements Config, Setup, Notice {
 	}
 
 	/**
-	 * Add our every minute schedule.
-	 *
-	 * @param array $schedules Array of schedules.
-	 *
-	 * @return array
-	 */
-	public function get_status_schedule( $schedules ) {
-		$schedules['every_minute'] = array(
-			'interval' => MINUTE_IN_SECONDS,
-			'display'  => __( 'Every Minute', 'cloudinary' ),
-		);
-
-		return $schedules;
-	}
-
-	/**
 	 * Setup Status cron.
 	 */
 	protected function setup_status_cron() {
 		if ( false === wp_get_schedule( 'cloudinary_status' ) ) {
 			$now = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
-			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'every_minute', 'cloudinary_status' );
+			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'hourly', 'cloudinary_status' );
 		}
 	}
 
@@ -514,13 +497,13 @@ class Connect implements Config, Setup, Notice {
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
-				set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
-				update_option( self::META_KEYS['last_usage'], $stats );// Save the last successful call to prevent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.
 				$stats = get_option( self::META_KEYS['last_usage'] );
 			}
+			// Set useage state to the results, either new or the last, to prevent API hits.
+			set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
 		}
 		$this->usage = $stats;
 	}
