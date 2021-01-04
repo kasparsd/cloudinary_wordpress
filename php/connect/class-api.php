@@ -662,8 +662,12 @@ class Api {
 	 * @return array|\WP_Error
 	 */
 	private function call( $url, $args = array(), $method = 'get' ) {
+
 		$args['method']     = strtoupper( $method );
 		$args['user-agent'] = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . ' (' . $this->plugin_version . ')';
+
+		// Add site url to the referer headers.
+		$args['headers']['referer'] = get_site_url();
 		if ( 'GET' === $args['method'] ) {
 			$url = 'https://' . $this->credentials['api_key'] . ':' . $this->credentials['api_secret'] . '@' . $url;
 		} else {
@@ -681,8 +685,7 @@ class Api {
 
 		// Set a long-ish timeout since uploads can be 20mb+.
 		$args['timeout'] = 60; // phpcs:ignore
-
-		$request = wp_remote_request( $url, $args );
+		$request         = wp_remote_request( $url, $args );
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		}
