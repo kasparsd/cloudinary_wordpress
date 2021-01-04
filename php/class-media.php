@@ -2025,11 +2025,14 @@ class Media extends Settings_Component implements Setup {
 
 		if ( 2.4 === $previous_version ) {
 			// Setup new data from old.
-			$images = get_option( 'cloudinary_global_transformations', array() );
-			$video  = get_option( 'cloudinary_global_video_transformations', array() );
-			$media  = array_merge( $images, $video );
-			// Get the setting.
-			$setting = $this->settings->get_setting( 'media_display' );
+			$images    = get_option( 'cloudinary_global_transformations', array() );
+			$video     = get_option( 'cloudinary_global_video_transformations', array() );
+			$old_media = array_merge( $images, $video );
+			$setting   = $this->settings->get_setting( 'media_display' );
+			// Get the current defaults.
+			$default = $setting->get_value();
+
+			$media = wp_parse_args( $old_media, $default );
 			// Update value.
 			$setting->set_value( $media );
 			// Save to DB.
