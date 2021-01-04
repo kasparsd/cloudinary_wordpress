@@ -226,7 +226,7 @@ class Setting {
 	public function get_param( $param, $default = null ) {
 		$value = $this->get_array_param( $param );
 
-		return $value ? $value : $default;
+		return ! is_null( $value ) ? $value : $default;
 	}
 
 	/**
@@ -432,7 +432,7 @@ class Setting {
 	protected function register_setting() {
 		$option_group = $this->get_option_name();
 		$root_group   = $this->get_root_setting()->get_option_name();
-		if ( $option_group !== $root_group ) { // Dont save the core setting.
+		if ( ! $this->is_root_setting() ) { // Dont save the core setting.
 			$args = array(
 				'type'              => 'array',
 				'description'       => $this->get_param( 'description' ),
@@ -711,7 +711,7 @@ class Setting {
 		if ( $this->has_param( 'option_name' ) ) {
 			return $this->get_param( 'option_name' );
 		} elseif ( $this->has_parent() ) {
-			$option_slug = $this->get_parent()->get_option_name();
+			$option_slug = $this->get_option_parent()->get_option_name();
 		}
 
 		if ( is_null( $option_slug ) && $this->has_parent() && ! $this->get_parent()->has_parent() ) {
@@ -720,6 +720,21 @@ class Setting {
 		}
 
 		return $option_slug;
+	}
+
+	/**
+	 * Get the option slug.
+	 *
+	 * @return Setting
+	 */
+	public function get_option_parent() {
+		if ( $this->has_param( 'option_name' ) ) {
+			return $this;
+		} elseif ( $this->has_parent() ) {
+			return $this->get_parent()->get_option_parent();
+		}
+
+		return $this->get_root_setting();
 	}
 
 	/**
@@ -747,7 +762,7 @@ class Setting {
 	 * @return $this
 	 */
 	public function set_value( $value ) {
-		if ( is_array( $value ) ) {
+		if ( is_array( $value ) && $this->has_settings() ) {
 			// Attempt to match array keys to settings settings.
 			foreach ( $value as $key => $val ) {
 				$this->find_setting( $key )->set_value( $val );
@@ -761,18 +776,19 @@ class Setting {
 	/**
 	 * Save the value of a setting to the first lower options slug.
 	 *
-	 * @param mixed|null $value Optional value to set and save. Else save the current value.
+	 * @param mixed|null $value    Optional value to set and save. Else save the current value.
+	 * @param bool       $autoload Flag to set this value to autoload or not.
 	 *
 	 * @return bool
 	 */
-	public function save_value( $value = null ) {
+	public function save_value( $value = null, $autoload = false ) {
 		if ( $value ) {
 			$this->set_value( $value );
 		}
 		if ( $this->has_param( 'option_name' ) ) {
 			$slug = $this->get_option_name();
 
-			return update_option( $slug, $this->get_value() );
+			return update_option( $slug, $this->get_value(), $autoload );
 		} elseif ( $this->has_parent() ) {
 			$parent                     = $this->get_parent();
 			$value                      = (array) $parent->get_value();
@@ -792,8 +808,9 @@ class Setting {
 		if ( ! $this->is_root_setting() && $this->has_param( 'option_name' ) ) {
 			$root                            = $this->get_root_setting();
 			$root_value                      = (array) $root->get_value();
+			$default_value                   = $this->get_param( 'default', null );
 			$option                          = $this->get_param( 'option_name' );
-			$data                            = get_option( $option );
+			$data                            = get_option( $option, $default_value );
 			$root_value[ $this->get_slug() ] = $data;
 			$root->set_value( $root_value );
 		}
@@ -865,7 +882,7 @@ class Setting {
 			$params['errors'][] = sprintf( __( 'Duplicate setting slug %s. This setting will not be usable.', 'cloudinary' ), $slug );
 		}
 		$new_setting = new Setting( $slug, $params, $this->root_setting );
-		$new_setting->set_value( null ); // Set value to null.
+		$new_setting->set_value( $new_setting->get_param( 'default', null ) ); // Set value to null.
 		if ( $parent ) {
 			$parent->add_setting( $new_setting );
 		}
