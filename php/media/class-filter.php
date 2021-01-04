@@ -283,6 +283,7 @@ class Filter {
 	 * @return string The filtered content.
 	 */
 	public function filter_out_local( $content ) {
+
 		$assets = $this->get_media_tags( $content, 'img' );
 		foreach ( $assets as $asset ) {
 
@@ -511,7 +512,7 @@ class Filter {
 			}
 			if ( ! empty( $attachment['transformations'] ) ) {
 				$transformation_string = Api::generate_transformation_string( $attachment['transformations'] );
-				$new_atts             .= ' transformations="' . esc_attr( $transformation_string ) . '"';
+				$new_atts              .= ' transformations="' . esc_attr( $transformation_string ) . '"';
 			}
 			$html = str_replace( $shortcode['args'], $new_atts, $html );
 		}
@@ -715,8 +716,6 @@ class Filter {
 	public function setup_hooks() {
 		// Filter URLS within content.
 		add_action( 'wp_insert_post_data', array( $this, 'filter_out_cloudinary' ) );
-		add_filter( 'the_editor_content', array( $this, 'filter_out_local' ) );
-		add_filter( 'the_content', array( $this, 'filter_out_local' ), 100 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'filter_attachment_for_js' ), 11 );
 
 		// Add support for custom header.
@@ -740,14 +739,25 @@ class Filter {
 		// Filter for block rendering.
 		add_filter( 'render_block_data', array( $this, 'filter_image_block_pre_render' ), 10, 2 );
 
-		// Cancel out breakpoints till later.
-		add_filter(
-			'wp_img_tag_add_srcset_and_sizes_attr',
-			function ( $add, $image, $context, $attachment_id ) {
-				return ! $this->media->has_public_id( $attachment_id );
-			},
-			10,
-			4
-		);
+		// Filter out locals and responsive images setup.
+		if ( $this->media->can_filter_out_local() ) {
+			// Filtering out locals.
+			add_filter( 'the_editor_content', array( $this, 'filter_out_local' ) );
+			add_filter( 'the_content', array( $this, 'filter_out_local' ), 100 );
+			// Cancel out breakpoints till later.
+			add_filter(
+				'wp_img_tag_add_srcset_and_sizes_attr',
+				function ( $add, $image, $context, $attachment_id ) {
+					$use = true;
+					if ( $this->media->has_public_id( $attachment_id ) && apply_filters( 'cloudinary_filter_out_local', true ) ) {
+						$use = false;
+					}
+
+					return $use;
+				},
+				10,
+				4
+			);
+		}
 	}
 }
