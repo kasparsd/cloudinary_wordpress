@@ -232,7 +232,7 @@ class Push_Sync {
 		$thread      = $request->get_param( 'thread' );
 		$thread_type = $this->queue->get_thread_type( $thread );
 		$queue       = $this->queue->get_thread_queue( $thread );
-		if ( ! empty( $queue['queue'] ) && ( $this->queue->is_running( $thread_type ) ) ) {
+		if ( ! empty( $queue['next'] ) && ( $this->queue->is_running( $thread_type ) ) ) {
 			while ( $attachment_id = $this->queue->get_post( $thread ) ) { // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition
 				// translators: variable is thread name and asset ID.
 				$action_message = sprintf( __( '%1$s: Syncing asset %2$d', 'cloudinary' ), $thread, $attachment_id );

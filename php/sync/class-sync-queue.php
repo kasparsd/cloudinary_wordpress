@@ -8,6 +8,7 @@
 namespace Cloudinary\Sync;
 
 use Cloudinary\Sync;
+use Cloudinary\Settings\Setting;
 
 /**
  * Class Sync_Queue.
@@ -163,6 +164,25 @@ class Sync_Queue {
 	 */
 	public function load_hooks() {
 		add_action( 'cloudinary_resume_queue', array( $this, 'maybe_resume_queue' ) );
+		add_action( 'settings_save_setting_auto_sync', array( $this, 'change_setting_state' ), 10, 3 );
+	}
+
+	/**
+	 * Filter the setting in order to disable the bulk sync if the autosync is disabled.
+	 *
+	 * @param mixed   $new_value     The new value.
+	 * @param mixed   $current_value The current value.
+	 * @param Setting $setting       The setting object.
+	 *
+	 * @return mixed
+	 */
+	public function change_setting_state( $new_value, $current_value, $setting ) {
+		if ( $this->is_running() && 'on' === $current_value && 'off' === $new_value ) {
+			$this->shutdown_queue();
+			$setting->add_error_notice( 'disabled_sync', 'Bulk sync has been disabled.', 'warning' );
+		}
+
+		return $new_value;
 	}
 
 	/**
@@ -254,9 +274,9 @@ class Sync_Queue {
 			'post_mime_type'      => array( 'image', 'video' ),
 			'post_status'         => 'inherit',
 			'posts_per_page'      => 100,
-			'paged'               => 0,
 			'fields'              => 'ids',
-			'meta_query'          => array( // phpcs:ignore
+			// phpcs:ignore
+			'meta_query'          => array(
 				'relation' => 'AND',
 				array(
 					'key'     => Sync::META_KEYS['sync_error'],
@@ -276,11 +296,20 @@ class Sync_Queue {
 		);
 
 		$ids = array();
-		do {
-			$args['paged'] ++;
-			$query = new \WP_Query( $args );
-			$ids   = array_merge( $query->get_posts(), $ids );
-		} while ( $query->have_posts() );
+
+		// translators: variable is page number.
+		$action_message = sprintf( __( 'Building Queue.', 'cloudinary' ), $args['paged'] );
+		do_action( '_cloudinary_queue_action', $action_message );
+
+		$query = new \WP_Query( $args );
+		if ( ! $query->have_posts() ) {
+			// translators: variable is page number.
+			$action_message = sprintf( __( 'No posts', 'cloudinary' ), $args['paged'] );
+			do_action( '_cloudinary_queue_action', $action_message );
+
+			return;
+		}
+		$ids = array_merge( $query->get_posts(), $ids );
 
 		$threads          = $this->add_to_queue( $ids );
 		$queue['total']   = array_sum( $threads );
@@ -311,7 +340,19 @@ class Sync_Queue {
 	}
 
 	/**
-	 * Stop the queue by removing the started flag.
+	 * Shuts down the queue and disable sync bulk.
+	 *
+	 * @param string $type The type of queue to shutdown.
+	 */
+	protected function shutdown_queue( $type = 'queue' ) {
+		if ( 'queue' === $type ) {
+			delete_option( self::$queue_enabled );
+		}
+		$this->stop_queue( $type );
+	}
+
+	/**
+	 * Stop the current queue cycle. Will restart once cycle is freed up.
 	 *
 	 * @param string $type The type of queue to stop.
 	 */
@@ -333,7 +374,6 @@ class Sync_Queue {
 
 		if ( 'queue' === $type ) {
 			delete_option( self::$queue_key );
-			delete_option( self::$queue_enabled );
 			wp_unschedule_hook( 'cloudinary_resume_queue' );
 		}
 	}
@@ -354,7 +394,7 @@ class Sync_Queue {
 			}
 			$started = $this->start_threads( $type );
 			if ( ! $started ) {
-				$this->stop_queue( $type );
+				$this->shutdown_queue( $type );
 			}
 		} else {
 			// translators: variable is queue type.

@@ -456,8 +456,23 @@ class Setting {
 	public function prepare_sanitizer( $data ) {
 
 		foreach ( $data as $slug => $value ) {
-			$setting       = $this->find_setting( $slug );
-			$data[ $slug ] = $setting->get_component()->sanitize_value( $value );
+			$setting = $this->find_setting( $slug );
+
+			$current_value = $setting->get_value();
+			$new_value     = $setting->get_component()->sanitize_value( $value );
+			/**
+			 * Filter the value before saving a setting.
+			 *
+			 * @param mixed   $new_value     The new setting value.
+			 * @param mixed   $current_value The setting current value.
+			 * @param Setting $value         The setting object.
+			 */
+			$new_value = apply_filters( "settings_save_setting_{$slug}", $new_value, $current_value, $setting );
+			$new_value = apply_filters( 'settings_save_setting', $new_value, $current_value, $setting );
+			if ( $current_value !== $new_value ) {
+				// Only use the new value if it's different.
+				$data[ $slug ] = $new_value;
+			}
 		}
 
 		return $data;
@@ -473,6 +488,9 @@ class Setting {
 	 * @return mixed
 	 */
 	public function set_notices( $value, $old_value, $setting_slug ) {
+		if ( $setting_slug !== $this->get_option_name() ) {
+			return $value;
+		}
 		static $set_errors = array();
 		if ( ! isset( $set_errors[ $setting_slug ] ) ) {
 			if ( $value !== $old_value ) {
@@ -480,12 +498,16 @@ class Setting {
 					add_settings_error( $setting_slug, 'setting_notice', $value->get_error_message(), 'error' );
 					$value = $old_value;
 				} else {
-					$setting = $this->get_root_setting()->find_setting( $setting_slug );
-					$notice  = $setting->get_param( 'success_notice', __( 'Settings updated successfully', 'cloudinary' ) );
+					$notice = $this->get_param( 'success_notice', __( 'Settings updated successfully', 'cloudinary' ) );
 					add_settings_error( $setting_slug, 'setting_notice', $notice, 'updated' );
 				}
 			}
 			$set_errors[ $setting_slug ] = true;
+		}
+
+		$other_errors = $this->get_error_notices();
+		foreach ( $other_errors as $error_code => $error ) {
+			add_settings_error( $setting_slug, $error_code, $error['message'], $error['type'] );
 		}
 
 		return $value;
@@ -682,11 +704,12 @@ class Setting {
 	 * @return string
 	 */
 	public function render_component() {
-		if ( $this->has_param( 'errors' ) ) {
-			foreach ( $this->get_param( 'errors' ) as $error ) {
-				add_settings_error( '__err', 'setting_duplicate', $error );
+		$notices = $this->get_error_notices();
+		if ( ! empty( $notices ) ) {
+			foreach ( $notices as $error_slug => $error_notice ) {
+				add_settings_error( $this->get_slug(), $error_notice['message'], $error_notice['type'] );
 			}
-			settings_errors( '__err' );
+			settings_errors( $this->get_slug() );
 		}
 
 		return $this->get_component()->render();
@@ -879,7 +902,8 @@ class Setting {
 
 		if ( $this->setting_exists( $slug ) ) {
 			// translators: Placeholder is the slug.
-			$params['errors'][] = sprintf( __( 'Duplicate setting slug %s. This setting will not be usable.', 'cloudinary' ), $slug );
+			$message = sprintf( __( 'Duplicate setting slug %s. This setting will not be usable.', 'cloudinary' ), $slug );
+			$this->add_error_notice( 'duplicate_setting', $message, 'warning' );
 		}
 		$new_setting = new Setting( $slug, $params, $this->root_setting );
 		$new_setting->set_value( $new_setting->get_param( 'default', null ) ); // Set value to null.
@@ -888,6 +912,36 @@ class Setting {
 		}
 
 		return $new_setting;
+	}
+
+	/**
+	 * Set an error/notice for a setting.
+	 *
+	 * @param string $error_code    The error code/slug.
+	 * @param string $error_message The error text/message.
+	 * @param string $type          The error type.
+	 */
+	public function add_error_notice( string $error_code, string $error_message, string $type = 'error' ) {
+
+		$option_parent = $this->get_option_parent();
+		$errors        = $option_parent->get_param( '_error_notice', array() );
+		if ( empty( $errors[ $error_code ] ) ) {
+			$errors[ $error_code ] = array();
+		}
+		$errors[ $error_code ] = array(
+			'message' => $error_message,
+			'type'    => $type,
+		);
+		$option_parent->set_param( '_error_notice', $errors );
+	}
+
+	/**
+	 * Get error notices.
+	 *
+	 * @return array
+	 */
+	protected function get_error_notices() {
+		return $this->get_param( '_error_notice', array() );
 	}
 
 	/**
