@@ -862,7 +862,7 @@ class Sync implements Setup, Assets {
 			'priority'    => 9,
 			array(
 				'type'  => 'panel',
-				'title' => __( 'Sync Settings', 'cloudinary ' ),
+				'title' => __( 'Sync Settings', 'cloudinary' ),
 				array(
 					'type'    => 'radio',
 					'title'   => __( 'Sync Method', 'cloudinary' ),

@@ -1,4 +1,4 @@
-/* global */
+/* global CLOUDINARY_SETTINGS_ERROR */
 
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
@@ -13,6 +13,8 @@ const UI = {
 		conditions.forEach( self._bind );
 		toggles.forEach( self._toggle );
 		aliases.forEach( self._alias );
+
+		self._showNotices();
 
 		tippy( tooltips, {
 			theme: 'cloudinary',
@@ -60,6 +62,42 @@ const UI = {
 				: 'open';
 			UI.toggle( wrap, element, action );
 		} );
+	},
+	_showNotices() {
+		if (
+			typeof CLOUDINARY_SETTINGS_ERROR !== 'undefined' &&
+			CLOUDINARY_SETTINGS_ERROR.length > 0
+		) {
+			const page = document.querySelector( 'form' );
+			const noticeBox = document.createElement( 'ul' );
+
+			noticeBox.classList.add( 'cld-notice-box' );
+
+			function noticeColor( type ) {
+				switch ( type ) {
+					case 'updated':
+					case 'created':
+					case 'success':
+						return 'is-success';
+					case 'error':
+						return 'is-error';
+					case 'info':
+						return 'is-info';
+					default:
+					case 'warning':
+						return 'is-warning';
+				}
+			}
+
+			page.insertBefore( noticeBox, page.firstChild );
+
+			CLOUDINARY_SETTINGS_ERROR.forEach( ( err ) => {
+				noticeBox.classList.add( noticeColor( err.type ) );
+				const li = document.createElement( 'li' );
+				li.innerHTML = err.message;
+				noticeBox.append( li );
+			} );
+		}
 	},
 	compare( element, input, condition ) {
 		const id = input.id;

@@ -10,7 +10,7 @@ $settings = array(
 		'type'  => 'panel',
 		'title' => __( 'Video - Global Settings', 'cloudinary' ),
 		'icon'  => $this->plugin->dir_url . 'css/video.svg',
-		'slug' => 'video_settings',
+		'slug'  => 'video_settings',
 		array(
 			'type' => 'row',
 			array(
@@ -139,7 +139,7 @@ $settings = array(
 					'title'      => __( 'Custom Transformation', 'cloudinary' ),
 					'attributes' => array(
 						'data-context' => 'video',
-						'placeholder'  => __( 'w_90,r_max' ),
+						'placeholder'  => __( 'w_90,r_max', 'cloudinary' ),
 					),
 				),
 			),

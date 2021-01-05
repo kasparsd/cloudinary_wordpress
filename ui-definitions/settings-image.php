@@ -130,7 +130,7 @@ $settings = array(
 					'title'      => __( 'Custom Transformation', 'cloudinary' ),
 					'attributes' => array(
 						'data-context' => 'image',
-						'placeholder'  => __( 'w_90,r_max' ),
+						'placeholder'  => __( 'w_90,r_max', 'cloudinary' ),
 					),
 				),
 			),
