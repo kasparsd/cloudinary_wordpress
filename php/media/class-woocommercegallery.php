@@ -61,8 +61,8 @@ class WooCommerceGallery {
 	 * @return bool
 	 */
 	public function enabled() {
-		return ! empty( $this->gallery->media->plugin->settings->get_value( 'enable' ) ) ?
-			(bool) $this->gallery->media->plugin->settings->get_value( 'enable' ) :
+		return ! empty( $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) ) ?
+			(bool) $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) :
 			false;
 	}
 

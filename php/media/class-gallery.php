@@ -109,8 +109,8 @@ class Gallery {
 
 		$this->setup_hooks();
 
-		$config = ! empty( $media->plugin->settings->get_value( 'config' ) ) ?
-			$media->plugin->settings->get_value( 'config' ) :
+		$config = ! empty( $media->plugin->settings->get_value( 'gallery_config' ) ) ?
+			$media->plugin->settings->get_value( 'gallery_config' ) :
 			wp_json_encode( self::$default_config );
 
 		$this->config = json_decode( $config, true );
@@ -289,13 +289,13 @@ class Gallery {
 				'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
 				array(
 					'type'        => 'on_off',
-					'slug'        => 'enable',
+					'slug'        => 'gallery_woocommerce_enabled',
 					'title'       => __( 'Enable Gallery', 'cloudinary' ),
 					'description' => __( 'Replace WooCommerce Gallery', 'cloudinary' ),
 				),
 				array(
 					'type'   => 'react',
-					'slug'   => 'config',
+					'slug'   => 'gallery_config',
 					'script' => array(
 						'slug' => 'gallery-widget',
 						'src'  => $this->media->plugin->dir_url . 'js/gallery.js',

@@ -73,12 +73,6 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 			}
 
 			try {
-				console.log(
-					galleryWidgetConfig(
-						{ ...config, ...customSettings },
-						attributes.container
-					)
-				);
 				gallery = cloudinary.galleryWidget(
 					galleryWidgetConfig(
 						{ ...config, ...customSettings },
@@ -86,12 +80,6 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 					)
 				);
 			} catch {
-				console.log(
-					galleryWidgetConfig(
-						{ ...config, ...customSettings },
-						attributes.container
-					)
-				);
 				gallery = cloudinary.galleryWidget(
 					galleryWidgetConfig( config, attributes.container )
 				);

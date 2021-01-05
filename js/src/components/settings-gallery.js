@@ -86,5 +86,5 @@ const StatefulGalleryControls = () => {
 
 render(
 	<StatefulGalleryControls />,
-	document.getElementById( 'app_gallery_config' )
+	document.getElementById( 'app_gallery_gallery_config' )
 );

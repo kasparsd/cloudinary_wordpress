@@ -1,5 +1,6 @@
 import Dot from 'dot-object';
 import { __ } from '@wordpress/i18n';
+import cloneDeep from 'lodash/cloneDeep';
 
 import '@wordpress/components/build-style/style.css';
 
@@ -48,7 +49,8 @@ const ColorPaletteLabel = ( { children, value } ) => (
 const dot = new Dot( '_' );
 
 const Controls = ( { attributes, setAttributes } ) => {
-	const nestedAttrs = dot.object( attributes );
+	const attributesClone = cloneDeep( attributes );
+	const nestedAttrs = dot.object( attributesClone );
 
 	nestedAttrs.customSettings =
 		typeof nestedAttrs.customSettings === 'object'
@@ -60,7 +62,7 @@ const Controls = ( { attributes, setAttributes } ) => {
 			<PanelBody title={ __( 'Layout', 'cloudinary' ) }>
 				{ LAYOUT_OPTIONS.map( ( item ) => (
 					<Radio
-						key={ item.value.type + '-layout' }
+						key={ `${ item.value.type }-${ item.value.columns }-layout` }
 						value={ item.value }
 						onChange={ ( value ) => {
 							setAttributes( {
