@@ -512,7 +512,7 @@ class Filter {
 			}
 			if ( ! empty( $attachment['transformations'] ) ) {
 				$transformation_string = Api::generate_transformation_string( $attachment['transformations'] );
-				$new_atts             .= ' transformations="' . esc_attr( $transformation_string ) . '"';
+				$new_atts              .= ' transformations="' . esc_attr( $transformation_string ) . '"';
 			}
 			$html = str_replace( $shortcode['args'], $new_atts, $html );
 		}
