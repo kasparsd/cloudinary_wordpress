@@ -104,13 +104,13 @@ class Sync_Queue {
 		$queue_threads_count = $this->plugin->settings->get_value( 'bulksync_threads' );
 		$queue_threads       = array();
 		for ( $i = 0; $i < $queue_threads_count; $i ++ ) {
-			$queue_threads[] = 'queue_thread_' . $i;
+			$queue_threads[] = 'queue_sync_thread_' . $i;
 		}
 		$this->queue_threads    = apply_filters( 'cloudinary_queue_threads', $queue_threads );
 		$autosync_threads_count = $this->plugin->settings->get_value( 'autosync_threads' );
 		$autosync_threads       = array();
 		for ( $i = 0; $i < $autosync_threads_count; $i ++ ) {
-			$autosync_threads[] = 'auto_thread_' . $i;
+			$autosync_threads[] = 'auto_sync_thread_' . $i;
 		}
 		$this->autosync_threads = apply_filters( 'cloudinary_autosync_threads', $autosync_threads );
 		$this->threads          = array_merge( $this->queue_threads, $this->autosync_threads );
@@ -213,13 +213,14 @@ class Sync_Queue {
 		if ( ( $this->is_running( $this->get_thread_type( $thread ) ) ) ) {
 			$thread_queue = $this->get_thread_queue( $thread );
 			// translators: variable is thread name and queue size.
-			$action_message = sprintf( __( '%1$s : Queue size :  %2$s.', 'cloudinary' ), $thread, count( $thread_queue['queue'] ) );
+			$action_message = sprintf( __( '%1$s : Queue size :  %2$s.', 'cloudinary' ), $thread, $thread_queue['count'] );
 			do_action( '_cloudinary_queue_action', $action_message );
-			if ( empty( $thread_queue['queue'] ) ) {
+			if ( empty( $thread_queue['next'] ) ) {
 				// Nothing left to sync.
 				return $return;
 			}
-			$return               = array_shift( $thread_queue['queue'] );
+			$return               = $thread_queue['next'];
+			$thread_queue['next'] = 0;
 			$thread_queue['ping'] = time();
 			$this->set_thread_queue( $thread, $thread_queue );
 		}
@@ -252,7 +253,7 @@ class Sync_Queue {
 			'post_type'           => 'attachment',
 			'post_mime_type'      => array( 'image', 'video' ),
 			'post_status'         => 'inherit',
-			'posts_per_page'      => 10,
+			'posts_per_page'      => 100,
 			'paged'               => 0,
 			'fields'              => 'ids',
 			'meta_query'          => array( // phpcs:ignore
@@ -263,6 +264,10 @@ class Sync_Queue {
 				),
 				array(
 					'key'     => Sync::META_KEYS['public_id'],
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => Sync::META_KEYS['queued'],
 					'compare' => 'NOT EXISTS',
 				),
 			),
@@ -281,8 +286,8 @@ class Sync_Queue {
 		$queue['total']   = array_sum( $threads );
 		$queue['threads'] = array_keys( $threads );
 		$queue['started'] = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
-		$queue['running'] = true;
-
+		wp_cache_delete( self::$queue_enabled, 'options' );
+		$queue['running'] = get_option( self::$queue_enabled );
 		// Set the queue option.
 		update_option( self::$queue_key, $queue, false );
 	}
@@ -311,12 +316,19 @@ class Sync_Queue {
 	 * @param string $type The type of queue to stop.
 	 */
 	public function stop_queue( $type = 'queue' ) {
+
 		// translators: variable is queue type.
 		$action_message = sprintf( __( 'Stopping queue:  %s.', 'cloudinary' ), $type );
 		do_action( '_cloudinary_queue_action', $action_message );
+		if ( 'queue' === $type ) {
+			delete_post_meta_by_key( Sync::META_KEYS['queued'] );
+		} else {
+			delete_post_meta_by_key( Sync::META_KEYS['pending'] );
+		}
 		$threads = $this->get_threads( $type );
 		foreach ( $threads as $thread ) {
 			$this->reset_thread_queue( $thread );
+			delete_post_meta_by_key( $thread );
 		}
 
 		if ( 'queue' === $type ) {
@@ -442,8 +454,8 @@ class Sync_Queue {
 		if ( in_array( $thread, $this->threads, true ) ) {
 			$thread_option = $this->get_thread_option( $thread );
 			$default       = array(
-				'queue' => array(),
-				'ping'  => 0, // set to 0 to ready to start.
+				'ping' => 0, // set to 0 to ready to start.
+				'next' => 0,
 			);
 			wp_cache_delete( $thread_option, 'options' );
 			$return = get_option( $thread_option );
@@ -452,6 +464,45 @@ class Sync_Queue {
 				$this->set_thread_queue( $thread, $default );
 				$return = $default;
 			}
+			$return = array_merge( $return, $this->get_thread_queue_details( $thread ) );
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Get the count of posts and the next post to be synced.
+	 *
+	 * @param string $thread Thread name.
+	 *
+	 * @return array
+	 */
+	protected function get_thread_queue_details( $thread ) {
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => array( 'image', 'video' ),
+			'post_status'    => 'inherit',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'cache_results'  => false,
+			'meta_query'     => array( // phpcs:ignore
+				array(
+					'key'     => $thread,
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+
+		$query = new \WP_Query( $args );
+
+		$return = array(
+			'count' => 0,
+			'next'  => 0,
+		);
+		if ( ! empty( $query->have_posts() ) ) {
+			$return['count'] = $query->found_posts;
+			$return['next']  = $query->next_post();
 		}
 
 		return $return;
@@ -462,17 +513,24 @@ class Sync_Queue {
 	 *
 	 * @param int   $thread         Thread ID.
 	 * @param array $attachment_ids The ID to add.
-	 *
-	 * @return array
 	 */
 	public function add_to_thread_queue( $thread, array $attachment_ids ) {
-		$thread_queue = $this->get_thread_queue( $thread );
-		if ( in_array( $thread, $this->threads, true ) ) {
-			$thread_queue['queue'] = array_merge( $thread_queue['queue'], $attachment_ids );
-			$this->set_thread_queue( $thread, $thread_queue );
-		}
 
-		return $thread_queue;
+		if ( in_array( $thread, $this->threads, true ) ) {
+			foreach ( $attachment_ids as $id ) {
+				$previous_thread = null;
+				if ( metadata_exists( 'post', $id, Sync::META_KEYS['queued'] ) ) {
+					if ( 'queue' === $this->get_thread_type( $thread ) ) {
+						continue;
+					}
+					$previous_thread = get_post_meta( $id, Sync::META_KEYS['queued'], true );
+					delete_post_meta( $id, $previous_thread, true );
+					delete_post_meta( $id, Sync::META_KEYS['queued'], $previous_thread );
+				}
+				add_post_meta( $id, Sync::META_KEYS['queued'], $thread, true );
+				add_post_meta( $id, $thread, true, true );
+			}
+		}
 	}
 
 	/**
@@ -482,7 +540,6 @@ class Sync_Queue {
 	 * @param array  $thread_queue The queue to set.
 	 */
 	protected function set_thread_queue( $thread, $thread_queue ) {
-		$thread_queue['queue'] = array_unique( $thread_queue['queue'] );
 		update_option( $this->get_thread_option( $thread ), $thread_queue, false );
 	}
 
@@ -559,7 +616,7 @@ class Sync_Queue {
 			$thread_queue = $this->get_thread_queue( $thread );
 			$offset       = time() - $thread_queue['ping'];
 			$return       = 3; // If autosync is running, default is ready/stalled.
-			if ( empty( $thread_queue['queue'] ) ) {
+			if ( empty( $thread_queue['next'] ) ) {
 				$return = 1; // Queue is empty, so nothing to sync, set as ended.
 			} elseif ( ! empty( $thread_queue['ping'] ) && $offset < $this->cron_start_offset ) {
 				$return = 2; // If the last ping is within the time frame, it's still active.

@@ -212,6 +212,12 @@ class Push_Sync {
 
 			// Create synced post meta as a way to search for synced / unsynced items.
 			update_post_meta( $attachment_id, Sync::META_KEYS['public_id'], $this->media->get_public_id( $attachment_id ) );
+
+			$sync_thread = get_post_meta( $attachment_id, Sync::META_KEYS['queued'], true );
+			if ( ! empty( $sync_thread ) ) {
+				delete_post_meta( $attachment_id, Sync::META_KEYS['queued'] );
+				delete_post_meta( $attachment_id, $sync_thread );
+			}
 		}
 
 		return $stat;
