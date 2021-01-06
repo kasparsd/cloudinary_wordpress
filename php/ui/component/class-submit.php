@@ -21,7 +21,7 @@ class Submit extends Component {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|submit_button/|/wrap';
+	protected $blueprint = 'wrap|submit_button/|settings/|/wrap';
 
 	/**
 	 * Filter the link parts structure.
