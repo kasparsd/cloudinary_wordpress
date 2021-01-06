@@ -122,12 +122,6 @@ class Push_Sync {
 			'permission_callback' => array( $this, 'rest_can_manage_options' ),
 		);
 
-		$endpoints['process'] = array(
-			'method'   => \WP_REST_Server::CREATABLE,
-			'callback' => array( $this, 'process_sync' ),
-			'args'     => array(),
-		);
-
 		$endpoints['queue'] = array(
 			'method'   => \WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'process_queue' ),
@@ -158,7 +152,7 @@ class Push_Sync {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'data'    => $this->queue->get_queue_status(),
+				'data'    => $this->queue->is_running(),
 			)
 		);
 	}
@@ -172,17 +166,18 @@ class Push_Sync {
 	 */
 	public function rest_start_sync( \WP_REST_Request $request ) {
 
-		$stop   = $request->get_param( 'stop' );
-		$status = $this->queue->get_queue_status();
-		if ( empty( $status['pending'] ) || ! empty( $stop ) ) {
+		$type  = $request->get_param( 'type' );
+		$start = $this->queue->is_enabled();
+		$state = array(
+			'success' => false,
+		);
+		if ( empty( $start ) ) {
 			$this->queue->stop_queue();
-
-			return $this->rest_get_queue_status(); // Nothing to sync.
+		} else {
+			$state['success'] = $this->queue->start_queue( $type );
 		}
 
-		$this->queue->start_queue();
-
-		return $this->rest_get_queue_status();
+		return rest_ensure_response( $state );
 	}
 
 	/**
@@ -217,61 +212,37 @@ class Push_Sync {
 
 			// Create synced post meta as a way to search for synced / unsynced items.
 			update_post_meta( $attachment_id, Sync::META_KEYS['public_id'], $this->media->get_public_id( $attachment_id ) );
+
+			$sync_thread = get_post_meta( $attachment_id, Sync::META_KEYS['queued'], true );
+			if ( ! empty( $sync_thread ) ) {
+				delete_post_meta( $attachment_id, Sync::META_KEYS['queued'] );
+				delete_post_meta( $attachment_id, $sync_thread );
+			}
 		}
 
 		return $stat;
 	}
 
 	/**
-	 * Process assets to sync vai WP REST API.
-	 *
-	 * @param \WP_REST_Request $request The request.
-	 *
-	 * @return mixed|\WP_REST_Response
-	 */
-	public function process_sync( \WP_REST_Request $request ) {
-		$process_key = $request->get_param( 'process_key' );
-		$note        = 'no process key';
-		if ( ! empty( $process_key ) ) {
-			$attachments = get_transient( $process_key );
-			if ( ! empty( $attachments ) ) {
-				delete_transient( $process_key );
-
-				return rest_ensure_response(
-					array(
-						'success' => true,
-						'data'    => $this->process_assets( $attachments ),
-					)
-				);
-			}
-			$note = 'no attachments';
-		}
-
-		return rest_ensure_response(
-			array(
-				'success' => false,
-				'note'    => $note,
-			)
-		);
-	}
-
-	/**
 	 * Resume the bulk sync.
 	 *
 	 * @param \WP_REST_Request $request The request.
-	 *
-	 * @return void
 	 */
 	public function process_queue( \WP_REST_Request $request ) {
-		$thread = $request->get_param( 'thread' );
-		$queue  = $this->queue->get_thread_queue( $thread );
-
-		if ( ! empty( $queue ) && $this->queue->is_running() ) {
+		$thread      = $request->get_param( 'thread' );
+		$thread_type = $this->queue->get_thread_type( $thread );
+		$queue       = $this->queue->get_thread_queue( $thread );
+		if ( ! empty( $queue['next'] ) && ( $this->queue->is_running( $thread_type ) ) ) {
 			while ( $attachment_id = $this->queue->get_post( $thread ) ) { // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition
+				// translators: variable is thread name and asset ID.
+				$action_message = sprintf( __( '%1$s: Syncing asset %2$d', 'cloudinary' ), $thread, $attachment_id );
+				do_action( '_cloudinary_queue_action', $action_message );
 				$this->process_assets( $attachment_id );
-				$this->queue->mark( $attachment_id, 'done' );
 			}
-			$this->queue->stop_maybe();
+			$this->queue->stop_maybe( $thread_type );
 		}
+		// translators: variable is thread name.
+		$action_message = sprintf( __( 'Ending thread %s', 'cloudinary' ), $thread );
+		do_action( '_cloudinary_queue_action', $action_message );
 	}
 }
