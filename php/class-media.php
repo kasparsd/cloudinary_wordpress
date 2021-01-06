@@ -717,7 +717,7 @@ class Media extends Settings_Component implements Setup {
 			$global  = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 			$default = array();
 			if ( 'video' === $type ) {
-				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
+				if ( ! empty( $global['video_limit_bitrate'] ) ) {
 					$default['bit_rate'] = $global['video_bitrate'] . 'k';
 				}
 			} else {
