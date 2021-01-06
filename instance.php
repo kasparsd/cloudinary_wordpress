@@ -25,8 +25,3 @@ function get_plugin_instance() {
 
 	return $cloudinary_plugin;
 }
-
-if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	$instance = new CLI( get_plugin_instance() );
-	\WP_CLI::add_command( 'cloudinary', $instance );
-}
