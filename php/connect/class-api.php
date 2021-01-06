@@ -7,7 +7,6 @@
 
 namespace Cloudinary\Connect;
 
-use Cloudinary\Connect;
 use function Cloudinary\get_plugin_instance;
 
 /**
@@ -96,6 +95,7 @@ class Api {
 			'pg'  => 'page',
 			'sp'  => 'streaming_profile',
 			'vs'  => 'video_sampling',
+			'if'  => 'if',
 		),
 		'video' => array(
 			'w'   => 'width',
@@ -123,6 +123,7 @@ class Api {
 			'fl'  => 'flags',
 			'f'   => 'fetch_format',
 			'q'   => 'quality',
+			'if'  => 'if',
 		),
 	);
 
@@ -426,7 +427,8 @@ class Api {
 		} else {
 			// We should have the file in args at this point, but if the transient was set, it will be defaulting here.
 			if ( empty( $args['file'] ) ) {
-				$args['file'] = wp_get_original_image_path( $attachment_id );
+				$get_path_func = function_exists( 'wp_get_original_image_path' ) ? 'wp_get_original_image_path' : 'get_attached_file';
+				$args['file']  = call_user_func( $get_path_func, $attachment_id );
 			}
 			// Headers indicate chunked upload.
 			if ( empty( $headers ) ) {

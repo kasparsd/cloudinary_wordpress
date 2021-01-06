@@ -341,7 +341,7 @@ class Storage implements Notice {
 			$defaults       = array(
 				'offload' => 'dual_full',
 			);
-			$settings       = isset( $this->plugin->config['settings']['sync_media'] ) ? $this->plugin->config['settings']['sync_media'] : array();
+			$settings = $this->media->get_settings()->get_value( 'sync_media' );
 			$this->settings = wp_parse_args( $settings, $defaults );
 			$structure      = array(
 				'generate' => array( $this, 'generate_signature' ),

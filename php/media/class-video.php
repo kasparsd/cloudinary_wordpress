@@ -7,6 +7,8 @@
 
 namespace Cloudinary\Media;
 
+use Cloudinary\Media;
+
 /**
  * Class Video.
  *
@@ -19,7 +21,7 @@ class Video {
 	 *
 	 * @since   0.1
 	 *
-	 * @var     \Cloudinary\Media Instance of the plugin.
+	 * @var     Media Instance of the plugin.
 	 */
 	private $media;
 
@@ -71,11 +73,11 @@ class Video {
 	/**
 	 * Video constructor.
 	 *
-	 * @param \Cloudinary\Media $media The plugin.
+	 * @param Media $media The plugin.
 	 */
-	public function __construct( \Cloudinary\Media $media ) {
+	public function __construct( Media $media ) {
 		$this->media  = $media;
-		$this->config = $this->media->plugin->config['settings']['global_video_transformations'];
+		$this->config = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG )->get_value();
 
 		$this->setup_hooks();
 	}
@@ -199,7 +201,7 @@ class Video {
 		// If not CLD video init, return default.
 		if ( false === $this->player_enabled ) {
 			return $html;
-		};
+		}
 		// Check for override flag.
 		$overwrite_transformations = false;
 		if ( ! empty( $attr['cldoverwrite'] ) ) {
@@ -350,8 +352,8 @@ class Video {
 				$default       = array(
 					'publicId'    => $cloudinary_id,
 					'sourceTypes' => array( $video['format'] ), // @todo Make this based on eager items as mentioned above.
-					'autoplay'    => 'off' !== $this->config['video_autoplay_mode'] ? true : false,
-					'loop'        => 'on' === $this->config['video_loop'] ? true : false,
+					'autoplay'    => 'off' !== $this->config['video_autoplay_mode'],
+					'loop'        => $this->config['video_loop'],
 				);
 
 				$valid_autoplay_modes = array( 'never', 'always', 'on-scroll' );
@@ -364,8 +366,8 @@ class Video {
 				if ( empty( $config['size'] ) && ! empty( $config['transformation'] ) && ! $this->media->get_crop_from_transformation( $config['transformation'] ) ) {
 					$config['fluid'] = true;
 				}
-				
-				$config['controls']      = 'on' === $this->config['video_controls'] ? true : false;
+
+				$config['controls']      = $this->config['video_controls'];
 				$cld_videos[ $instance ] = $config;
 			}
 
@@ -373,48 +375,10 @@ class Video {
 				return;
 			}
 
-			ob_start();
-			?>
-			var cldVideos = <?php echo wp_json_encode( $cld_videos ); ?>;
+			$json_cld_videos = wp_json_encode( $cld_videos );
+			$video_freeform  = esc_js( $this->config['video_freeform'] );
 
-			for ( var videoInstance in cldVideos ) {
-				var cldConfig = cldVideos[ videoInstance ];
-				var cldId = 'cloudinary-video-' + videoInstance;
-				cld.videoPlayer( cldId, cldConfig );
-			}
-
-			window.addEventListener( 'load', function() {
-				for ( var videoInstance in cldVideos ) {
-					var cldId = 'cloudinary-video-' + videoInstance;
-					var videoContainer = document.getElementById( cldId );
-					var videoElement = videoContainer.getElementsByTagName( 'video' );
-
-					if ( videoElement.length === 1 ) {
-						videoElement = videoElement[0];
-						videoElement.style.width = '100%';
-						<?php if ( $this->config['video_freeform'] ) : ?>
-
-						if ( 
-							videoElement.src.indexOf( '<?php echo esc_js( $this->config['video_freeform'] ); ?>' ) === -1 &&
-							! cldVideos[videoInstance]['overwrite_transformations']
-						) {
-							videoElement.src = videoElement.src.replace(
-								'upload/',
-								'upload/<?php echo esc_js( $this->config['video_freeform'] ); ?>/'
-							);
-						}
-						<?php endif ?>
-
-					}
-				}
-			} );
-			<?php
-			$script = ob_get_clean();
-
-			wp_add_inline_script(
-				'cld-player',
-				$script
-			);
+			wp_add_inline_script( 'cld-player', "var cldVideos = '{$json_cld_videos}'; var videoFreeForm = '{$video_freeform}';" );
 		}
 	}
 
@@ -422,17 +386,18 @@ class Video {
 	 * Enqueue BLock Assets
 	 */
 	public function enqueue_block_assets() {
-		wp_enqueue_script( 'cloudinary-block', $this->media->plugin->dir_url . 'js/block-editor.js', null, $this->media->plugin->version, true );
+		wp_enqueue_script( 'cloudinary-block', $this->media->plugin->dir_url . 'js/block-editor.js', array(), $this->media->plugin->version, true );
 		wp_add_inline_script( 'cloudinary-block', 'var CLD_VIDEO_PLAYER = ' . wp_json_encode( $this->config ), 'before' );
 	}
 
 	/**
 	 * Register assets for the player.
 	 */
-	public static function register_scripts_styles() {
+	public function register_scripts_styles() {
 		wp_register_style( 'cld-player', 'https://unpkg.com/cloudinary-video-player@' . self::PLAYER_VER . '/dist/cld-video-player.min.css', null, self::PLAYER_VER );
 		wp_register_script( 'cld-core', 'https://unpkg.com/cloudinary-core@' . self::CORE_VER . '/cloudinary-core-shrinkwrap.min.js', null, self::CORE_VER, true );
 		wp_register_script( 'cld-player', 'https://unpkg.com/cloudinary-video-player@' . self::PLAYER_VER . '/dist/cld-video-player.min.js', array( 'cld-core' ), self::PLAYER_VER, true );
+		wp_enqueue_script( 'cld-video-init', CLDN_URL . 'js/video-init.js', array( 'cld-player' ), self::CORE_VER, true );
 	}
 
 	/**
@@ -461,7 +426,7 @@ class Video {
 						$content = str_replace( 'class="', 'class="' . $classes . ' ', $content );
 					} else {
 						$content = str_replace( '<video ', '<video class="' . $classes . '" ', $content );
-					}               
+					}
 				}
 			}
 		}
@@ -480,7 +445,7 @@ class Video {
 			// Filter for block rendering.
 			add_filter( 'render_block_data', array( $this, 'filter_video_block_pre_render' ), 10, 2 );
 		}
-		
+
 		add_action( 'wp_print_styles', array( $this, 'init_player' ) );
 		add_action( 'wp_footer', array( $this, 'print_video_scripts' ) );
 

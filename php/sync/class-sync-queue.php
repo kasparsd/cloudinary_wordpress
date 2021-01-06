@@ -23,7 +23,7 @@ class Sync_Queue {
 	 *
 	 * @var     \Cloudinary\Plugin Instance of the global plugin.
 	 */
-	private $plugin;
+	protected $plugin;
 
 	/**
 	 * Holds the key for saving the queue.

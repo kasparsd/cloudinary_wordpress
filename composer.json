@@ -16,10 +16,10 @@
 	},
 	"scripts": {
 		"lint": [
-			"phpcs"
+			"phpcs --ignore=*js/*"
 		],
 		"fix": [
-			"phpcbf"
+			"phpcbf --ignore=*js/*"
 		]
 	}
 }

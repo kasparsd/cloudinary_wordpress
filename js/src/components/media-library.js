@@ -1,34 +1,35 @@
-/* global window wp */
-const Media_Library = {
+/* global CLD_ML */
+const MediaLibrary = {
 	wpWrap: document.getElementById( 'wpwrap' ),
 	wpContent: document.getElementById( 'wpbody-content' ),
 	libraryWrap: document.getElementById( 'cloudinary-embed' ),
-	_init: function() {
-		let self = this;
+	_init() {
+		const self = this;
 		if ( typeof CLD_ML !== 'undefined' ) {
-
 			cloudinary.openMediaLibrary( CLD_ML.mloptions, {
-					insertHandler: function( data ) {
-						// @todo: Determin what to do here.
-						alert( 'Import is not yet implemented.' );
-					}
-				}
-			);
+				insertHandler() {
+					// @todo: Determin what to do here.
+					alert( 'Import is not yet implemented.' );
+				},
+			} );
 
-			window.addEventListener( 'resize', function( ev ) {
+			window.addEventListener( 'resize', function () {
 				self._resize();
 			} );
 
 			self._resize();
 		}
 	},
-	_resize: function() {
-		let style = getComputedStyle( this.wpContent );
-		this.libraryWrap.style.height = (this.wpWrap.offsetHeight - parseInt( style.getPropertyValue( 'padding-bottom' ) )) + 'px';
+	_resize() {
+		const style = getComputedStyle( this.wpContent );
+		this.libraryWrap.style.height =
+			this.wpWrap.offsetHeight -
+			parseInt( style.getPropertyValue( 'padding-bottom' ) ) +
+			'px';
 	},
 };
 
-export default Media_Library;
+export default MediaLibrary;
 
 // Init.
-Media_Library._init();
+MediaLibrary._init();

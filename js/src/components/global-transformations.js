@@ -1,6 +1,4 @@
-/* global window wp */
-
-const Global_Transformations = {
+const GlobalTransformations = {
 	sample: {
 		image: document.getElementById( 'transformation-sample-image' ),
 		video: document.getElementById( 'transformation-sample-video' ),
@@ -9,85 +7,101 @@ const Global_Transformations = {
 		image: document.getElementById( 'sample-image' ),
 		video: document.getElementById( 'sample-video' ),
 	},
-	fields: document.getElementsByClassName( 'cld-field' ),
+	fields: document.getElementsByClassName( 'cld-ui-input' ),
 	button: {
 		image: document.getElementById( 'refresh-image-preview' ),
 		video: document.getElementById( 'refresh-video-preview' ),
 	},
 	spinner: {
-		image : document.getElementById( 'image-loader' ),
-		video : document.getElementById( 'video-loader' ),
+		image: document.getElementById( 'image-loader' ),
+		video: document.getElementById( 'video-loader' ),
 	},
-	error_container: document.getElementById('cld-preview-error'),
+	error_container: document.getElementById( 'cld-preview-error' ),
 	activeItem: null,
 	elements: {
 		image: [],
 		video: [],
 	},
-	_placeItem: function( item ) {
+	_placeItem( item ) {
 		if ( null !== item ) {
-			item.style.display    = 'block';
+			item.style.display = 'block';
 			item.style.visibility = 'visible';
-			item.style.position   = 'absolute';
-			item.style.top        = (item.parentElement.clientHeight / 2) - (item.clientHeight / 2) + 'px';
-			item.style.left       = (item.parentElement.clientWidth / 2) - (item.clientWidth / 2) + 'px';
+			item.style.position = 'absolute';
+			item.style.top =
+				item.parentElement.clientHeight / 2 -
+				item.clientHeight / 2 +
+				'px';
+			item.style.left =
+				item.parentElement.clientWidth / 2 -
+				item.clientWidth / 2 +
+				'px';
 		}
 	},
-	_setLoading: function( type ) {
+	_setLoading( type ) {
 		this.button[ type ].style.display = 'block';
 		this._placeItem( this.button[ type ] );
 		this.preview[ type ].style.opacity = '0.1';
-
-		},
-	_build: function( type ) {
+	},
+	_build( type ) {
 		this.sample[ type ].innerHTML = '';
-		this.elements[ type ]         = [];
-		for (let item of this.fields) {
-			if( type !== item.dataset.context ){
+		this.elements[ type ] = [];
+		for ( const item of this.fields ) {
+			if ( type !== item.dataset.context ) {
 				continue;
 			}
 			let value = item.value.trim();
 			if ( value.length ) {
-
 				if ( 'select-one' === item.type ) {
 					if ( 'none' === value ) {
 						continue;
 					}
 					value = item.dataset.meta + '_' + value;
-				}
-				else {
-					let type = item.dataset.context;
+				} else {
+					type = item.dataset.context;
 					value = this._transformations( value, type, true );
 				}
 				// Apply value if valid.
-				if( value ) {
+				if ( value ) {
 					this.elements[ type ].push( value );
 				}
 			}
 		}
 		let transformations = '';
 		if ( this.elements[ type ].length ) {
-			transformations = '/' + this.elements[ type ].join( ',' ).replace( / /g, '%20' );
+			transformations =
+				'/' +
+				this._getGlobalTransformationElements( type ).replace(
+					/ /g,
+					'%20'
+				);
 		}
-		this.sample[ type ].textContent        = transformations;
-		this.sample[ type ].parentElement.href = 'https://res.cloudinary.com/demo/' + this.sample[ type ].parentElement.innerText.trim().replace('../', '').replace( / /g, '%20' );
+		this.sample[ type ].textContent = transformations;
+		this.sample[ type ].parentElement.href =
+			'https://res.cloudinary.com/demo/' +
+			this.sample[ type ].parentElement.innerText
+				.trim()
+				.replace( '../', '' )
+				.replace( / /g, '%20' );
 	},
-	_clearLoading: function( type ) {
+	_clearLoading( type ) {
 		this.spinner[ type ].style.visibility = 'hidden';
-		this.activeItem                       = null;
-		this.preview[ type ].style.opacity    = 1;
+		this.activeItem = null;
+		this.preview[ type ].style.opacity = 1;
 	},
-	_refresh: function( e, type ) {
-		if( e ) {
+	_refresh( e, type ) {
+		if ( e ) {
 			e.preventDefault();
 		}
-		let self    = this;
-		let new_src = CLD_GLOBAL_TRANSFORMATIONS[ type ].preview_url + self.elements[ type ].join( ',' ) + CLD_GLOBAL_TRANSFORMATIONS[ type ].file;
+		const self = this;
+		const newSrc =
+			CLD_GLOBAL_TRANSFORMATIONS[ type ].preview_url +
+			this._getGlobalTransformationElements( type ) +
+			CLD_GLOBAL_TRANSFORMATIONS[ type ].file;
 		this.button[ type ].style.display = 'none';
 		this._placeItem( this.spinner[ type ] );
 		if ( type === 'image' ) {
-			let newImg = new Image;
-			newImg.onload = function() {
+			const newImg = new Image();
+			newImg.onload = function () {
 				self.preview[ type ].src = this.src;
 				self._clearLoading( type );
 				if ( self.error_container ) {
@@ -95,150 +109,193 @@ const Global_Transformations = {
 				}
 				newImg.remove();
 			};
-			newImg.onerror = function() {
-				const has_fmp4 = self.elements[ type ].includes( 'f_mp4' );
+			newImg.onerror = function () {
+				const hasMp4 = self.elements[ type ].includes( 'f_mp4' );
 
 				if ( self.error_container ) {
 					self.error_container.style.display = 'block';
 
-					if (!has_fmp4) {
-						self.error_container.innerHTML = CLD_GLOBAL_TRANSFORMATIONS[type].error;
-						self.error_container.classList.replace('settings-alert-warning', 'settings-alert-error');
+					if ( ! hasMp4 ) {
+						self.error_container.innerHTML =
+							CLD_GLOBAL_TRANSFORMATIONS[ type ].error;
+						self.error_container.classList.replace(
+							'settings-alert-warning',
+							'settings-alert-error'
+						);
 					} else {
 						// temporary, will be replaced with i18n.sprintf instead of .replace
-						self.error_container.innerHTML = CLD_GLOBAL_TRANSFORMATIONS[type].warning.replace('%s', 'f_mp4');
-						self.error_container.classList.replace('settings-alert-error', 'settings-alert-warning');
+						self.error_container.innerHTML = CLD_GLOBAL_TRANSFORMATIONS[
+							type
+						].warning.replace( '%s', 'f_mp4' );
+						self.error_container.classList.replace(
+							'settings-alert-error',
+							'settings-alert-warning'
+						);
 					}
 				}
 
 				self._clearLoading( type );
 			};
-			newImg.src = new_src;
-		}else{
-			let transformations = self._transformations( self.elements[ type ].join( ',' ), type );
-			samplePlayer.source( { publicId: 'dog', transformation: transformations } );
+			newImg.src = newSrc;
+		} else {
+			const transformations = self._transformations(
+				self._getGlobalTransformationElements( type ),
+				type
+			);
+			samplePlayer.source( {
+				publicId: 'dog',
+				transformation: transformations,
+			} );
 			self._clearLoading( type );
 		}
 	},
-	_transformations : function( input, type, string = false ){
-		let set = CLD_GLOBAL_TRANSFORMATIONS[ type ].valid_types;
+	/**
+	 * Get's the Global Transformation Elements string by Type.
+	 *
+	 * @param  {string} type The type of Elements.
+	 * @return {string}      A string with the Elements
+	 * @private
+	 */
+	_getGlobalTransformationElements( type ) {
+		let transformations = [];
+
+		transformations.push( this.elements[ type ].slice( 0, 2 ).join( ',' ) );
+		transformations.push( this.elements[ type ].slice( 2 ).join( ',' ) );
+		transformations = transformations
+			.filter( ( item ) => item )
+			.join( '/' );
+
+		return transformations;
+	},
+	_transformations( input, type, string = false ) {
+		const set = CLD_GLOBAL_TRANSFORMATIONS[ type ].valid_types;
 		let value = null;
-		let elements = input.split( '/' );
-		let valid_elements = [];
-		for (let i = 0; i < elements.length; i++) {
-			let parts = elements[ i ].split(',');
-			let valid_parts;
-			if( true === string ) {
-				valid_parts = [];
-			}else{
-				valid_parts = {};
+		const elements = input.split( '/' );
+		const validElements = [];
+		for ( let i = 0; i < elements.length; i++ ) {
+			const parts = elements[ i ].split( ',' );
+			let validParts;
+			if ( true === string ) {
+				validParts = [];
+			} else {
+				validParts = {};
 			}
-			for (let p = 0; p < parts.length; p++) {
-				let key_val = parts[ p ].trim().split('_');
-				if( key_val.length <= 1 || typeof set[ key_val[0] ] === 'undefined' ){
+			for ( let p = 0; p < parts.length; p++ ) {
+				const keyVal = parts[ p ].trim().split( '_' );
+				if (
+					keyVal.length <= 1 ||
+					typeof set[ keyVal[ 0 ] ] === 'undefined'
+				) {
 					continue;
 				}
-				let option = key_val.shift();
-				let instruct = key_val.join( '_' );
-				if( true === string ) {
-					if( 'f' === option || 'q' === option ){
-						for( let t in this.elements[ type ] ){
-							if( option + '_' === this.elements[ type ][ t ].substr(0,2 ) ){
-								this.elements[ type ].splice(t,1);
+				const option = keyVal.shift();
+				const instruct = keyVal.join( '_' );
+				if ( true === string ) {
+					if ( 'f' === option || 'q' === option ) {
+						for ( const t in this.elements[ type ] ) {
+							if (
+								option + '_' ===
+								this.elements[ type ][ t ].substr( 0, 2 )
+							) {
+								this.elements[ type ].splice( t, 1 );
 							}
 						}
 					}
-					valid_parts.push( parts[ p ] );
-				}else{
-					valid_parts[ set[ option ] ] = instruct.trim();
+					validParts.push( parts[ p ] );
+				} else {
+					validParts[ set[ option ] ] = instruct.trim();
 				}
 			}
 			let length = 0;
-			if( true === string ) {
-				length = valid_parts.length;
-			}else{
-				length = Object.keys( valid_parts ).length;
+			if ( true === string ) {
+				length = validParts.length;
+			} else {
+				length = Object.keys( validParts ).length;
 			}
 			if ( length ) {
-				if( true === string ) {
-					valid_parts = valid_parts.join( ',' );
+				if ( true === string ) {
+					validParts = validParts.join( ',' );
 				}
-				valid_elements.push( valid_parts );
+				validElements.push( validParts );
 			}
 		}
 
-		if ( valid_elements.length ) {
-			if( true === string ) {
-				value = valid_elements.join( '/' ).trim();
-			}else{
-				value = valid_elements;
+		if ( validElements.length ) {
+			if ( true === string ) {
+				value = validElements.join( '/' ).trim();
+			} else {
+				value = validElements;
 			}
 		}
 
 		return value;
 	},
-	_reset: function() {
-		for (let item of this.fields) {
+	_reset() {
+		for ( const item of this.fields ) {
 			item.value = null;
 		}
-		for( let type in this.button ) {
+		for ( const type in this.button ) {
 			this._build( type );
 			this._refresh( null, type );
 		}
 	},
-	_input: function( input ){
-		if( typeof input.dataset.context !== 'undefined' && input.dataset.context.length ) {
-			let type = input.dataset.context;
+	_input( input ) {
+		if (
+			typeof input.dataset.context !== 'undefined' &&
+			input.dataset.context.length
+		) {
+			const type = input.dataset.context;
 			this._setLoading( type );
 			this._build( type );
 		}
 	},
-	_init: function() {
-
+	_init() {
 		if ( typeof CLD_GLOBAL_TRANSFORMATIONS !== 'undefined' ) {
-			let self = this;
+			const self = this;
 
-			document.addEventListener( 'DOMContentLoaded', function( ev ) {
-				for( let type in self.button ) {
-					if( self.button[ type ] ) {
-						self.button[ type ].addEventListener( 'click', function( e ) {
-							self._refresh( e, type );
-						} );
+			document.addEventListener( 'DOMContentLoaded', function () {
+				for ( const type in self.button ) {
+					if ( self.button[ type ] ) {
+						self.button[ type ].addEventListener(
+							'click',
+							function ( e ) {
+								self._refresh( e, type );
+							}
+						);
 					}
 				}
-				for (let item of self.fields) {
-					item.addEventListener( 'input', function(){
+				for ( const item of self.fields ) {
+					item.addEventListener( 'input', function () {
 						self._input( this );
 					} );
-					item.addEventListener( 'change', function() {
+					item.addEventListener( 'change', function () {
 						self._input( this );
 					} );
 				}
 				// Init.
-				for( let type in CLD_GLOBAL_TRANSFORMATIONS ) {
+				for ( const type in CLD_GLOBAL_TRANSFORMATIONS ) {
 					self._build( type );
 					self._refresh( null, type );
 				}
 			} );
 			// listen to AJAX add-tag complete
-			jQuery(document).ajaxComplete(function(event, xhr, settings) {
-
+			jQuery( document ).ajaxComplete( function ( event, xhr, settings ) {
 				// bail early if is other ajax call
-				if( settings.data.indexOf('action=add-tag') === -1 ) {
+				if ( settings.data.indexOf( 'action=add-tag' ) === -1 ) {
 					return;
 				}
 
 				// bail early if response contains error
-				if( xhr.responseText.indexOf('wp_error') !== -1 ) {
+				if ( xhr.responseText.indexOf( 'wp_error' ) !== -1 ) {
 					return;
 				}
 				self._reset();
-			});
+			} );
 		}
 	},
 };
 
 // Init.
-Global_Transformations._init();
+GlobalTransformations._init();
 
-export default Global_Transformations;
+export default GlobalTransformations;
