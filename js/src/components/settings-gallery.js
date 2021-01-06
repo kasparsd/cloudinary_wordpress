@@ -1,3 +1,5 @@
+/*global CLD_THEME_COLORS */
+
 import React from 'react';
 import { render, useEffect, useState } from '@wordpress/element';
 import attributes from '../gallery-block/attributes';
@@ -73,6 +75,7 @@ const StatefulGalleryControls = () => {
 								<GalleryControls
 									attributes={ statefulAttrs }
 									setAttributes={ setAttributes }
+									colors={ CLD_THEME_COLORS }
 								/>
 							</div>
 						</div>

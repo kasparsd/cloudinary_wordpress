@@ -48,7 +48,7 @@ const ColorPaletteLabel = ( { children, value } ) => (
 
 const dot = new Dot( '_' );
 
-const Controls = ( { attributes, setAttributes } ) => {
+const Controls = ( { attributes, setAttributes, colors } ) => {
 	const attributesClone = cloneDeep( attributes );
 	const nestedAttrs = dot.object( attributesClone );
 
@@ -89,6 +89,8 @@ const Controls = ( { attributes, setAttributes } ) => {
 				</ColorPaletteLabel>
 				<ColorPalette
 					value={ attributes.themeProps_primary }
+					colors={ colors }
+					disableCustomColors={ false }
 					onChange={ ( value ) =>
 						setAttributes( { themeProps_primary: value } )
 					}
@@ -98,6 +100,8 @@ const Controls = ( { attributes, setAttributes } ) => {
 				</ColorPaletteLabel>
 				<ColorPalette
 					value={ attributes.themeProps_onPrimary }
+					colors={ colors }
+					disableCustomColors={ false }
 					onChange={ ( value ) =>
 						setAttributes( { themeProps_onPrimary: value } )
 					}
@@ -107,6 +111,8 @@ const Controls = ( { attributes, setAttributes } ) => {
 				</ColorPaletteLabel>
 				<ColorPalette
 					value={ attributes.themeProps_active }
+					colors={ colors }
+					disableCustomColors={ false }
 					onChange={ ( value ) =>
 						setAttributes( { themeProps_active: value } )
 					}
