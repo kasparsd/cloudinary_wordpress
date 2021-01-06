@@ -86,12 +86,18 @@ $settings = array(
 						'slug'        => 'video_optimization',
 						'title'       => __( 'Video Optimization', 'cloudinary' ),
 						'description' => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'attributes'  => array(
+							'data-context' => 'video',
+						),
 					),
 				),
 				array(
 					'type'        => 'group',
 					'title'       => __( 'Advanced Optimization', 'cloudinary' ),
-					'collapsible' => 'closed',
+					'collapsible' => 'open',
+					'condition'   => array(
+						'video_optimization' => true,
+					),
 					array(
 						'type'         => 'select',
 						'slug'         => 'video_format',
@@ -139,7 +145,7 @@ $settings = array(
 					'title'      => __( 'Custom Transformation', 'cloudinary' ),
 					'attributes' => array(
 						'data-context' => 'video',
-						'placeholder'  => __( 'w_90,r_max' ),
+						'placeholder'  => 'fps_15-25,ac_none',
 					),
 				),
 			),

@@ -58,8 +58,8 @@ class On_Off extends Text {
 		if ( $this->setting->get_value() ) {
 			$struct['attributes']['checked'] = 'checked';
 		}
-		unset( $struct['attributes']['class'] );
-		$struct['render'] = true;
+		$struct['attributes']['class'] = 'cld-ui-input';
+		$struct['render']              = true;
 
 		return $struct;
 	}

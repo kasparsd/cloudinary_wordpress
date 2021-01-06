@@ -16,6 +16,10 @@ const GlobalTransformations = {
 		image: document.getElementById( 'image-loader' ),
 		video: document.getElementById( 'video-loader' ),
 	},
+	optimization: {
+		image: document.getElementById( 'image-optimization' ),
+		video: document.getElementById( 'video-optimization' ),
+	},
 	error_container: document.getElementById( 'cld-preview-error' ),
 	activeItem: null,
 	elements: {
@@ -52,7 +56,10 @@ const GlobalTransformations = {
 			let value = item.value.trim();
 			if ( value.length ) {
 				if ( 'select-one' === item.type ) {
-					if ( 'none' === value ) {
+					if (
+						'none' === value ||
+						false === this.optimization[ type ].checked
+					) {
 						continue;
 					}
 					value = item.dataset.meta + '_' + value;

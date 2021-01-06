@@ -23,13 +23,19 @@ $settings = array(
 						'slug'        => 'image_optimization',
 						'title'       => __( 'Image Optimization', 'cloudinary' ),
 						'description' => __( 'Optimize images on my site.', 'cloudinary' ),
+						'attributes'  => array(
+							'data-context' => 'image',
+						),
 					),
 
 				),
 				array(
 					'type'        => 'group',
 					'title'       => __( 'Advanced Optimization', 'cloudinary' ),
-					'collapsible' => 'closed',
+					'collapsible' => 'open',
+					'condition'   => array(
+						'image_optimization' => true,
+					),
 					array(
 						'type'         => 'select',
 						'slug'         => 'image_format',
@@ -130,7 +136,7 @@ $settings = array(
 					'title'      => __( 'Custom Transformation', 'cloudinary' ),
 					'attributes' => array(
 						'data-context' => 'image',
-						'placeholder'  => __( 'w_90,r_max' ),
+						'placeholder'  => 'w_90,r_max',
 					),
 				),
 			),

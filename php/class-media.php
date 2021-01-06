@@ -716,11 +716,11 @@ class Media extends Settings_Component implements Setup {
 			// Get Lowest level.
 			$global  = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 			$default = array();
-			if ( 'video' === $type ) {
+			if ( true === $global['video_optimization'] && 'video' === $type ) {
 				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
 					$default['bit_rate'] = $global['video_bitrate'] . 'k';
 				}
-			} else {
+			} elseif ( true === $global['image_optimization'] && 'image' === $type ) {
 				if ( 'auto' === $global[ $type . '_format' ] ) {
 					$default['fetch_format'] = 'auto';
 				}
