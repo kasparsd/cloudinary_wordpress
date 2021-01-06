@@ -82,7 +82,7 @@ class Setting {
 	 */
 	public function __construct( $slug, $params = array(), $parent = null ) {
 		$this->slug           = $slug;
-		$this->setting_params = $this->get_settings_params();
+		$this->setting_params = $this->get_dynamic_param_keys();
 		$root                 = $this;
 
 		if ( ! is_null( $parent ) ) {
@@ -110,11 +110,11 @@ class Setting {
 	}
 
 	/**
-	 * Get the settings parameter and callback list.
+	 * Get the dynamic params and callbacks list. This allows to create a list of specific settings using a key param.
 	 *
 	 * @return array
 	 */
-	protected function get_settings_params() {
+	protected function get_dynamic_param_keys() {
 		$default_setting_params = array(
 			'components'  => array( $this, 'add_child_settings' ),
 			'settings'    => array( $this, 'add_child_settings' ),
@@ -160,7 +160,9 @@ class Setting {
 
 		// Update priority sorting if set.
 		if ( 'priority' === $param && $this->has_parent() ) {
-			$this->get_parent()->sort_settings();
+			$parent = $this->get_parent();
+			$parent->remove_setting( $this->get_slug() );
+			$parent->add_setting( $this );
 		}
 
 		return $this;
@@ -293,18 +295,6 @@ class Setting {
 	}
 
 	/**
-	 * Sort settings based on priority.
-	 */
-	protected function sort_settings() {
-		uasort(
-			$this->settings,
-			function ( $x, $y ) {
-				return ( (int) $x->get_param( 'priority' ) > (int) $y->get_param( 'priority' ) );
-			}
-		);
-	}
-
-	/**
 	 * Get all slugs of settings.
 	 *
 	 * @return array
@@ -344,9 +334,13 @@ class Setting {
 	 * @return bool
 	 */
 	public function setting_exists( $slug ) {
+		$exists  = false;
 		$setting = $this->get_root_setting()->get_setting( $slug, false );
+		if ( ! is_null( $setting ) && $setting->get_param( 'is_setup', false ) ) {
+			$exists = true;
+		}
 
-		return ! is_null( $setting );
+		return $exists;
 	}
 
 	/**
@@ -422,6 +416,9 @@ class Setting {
 
 		// Load data.
 		$this->load_value();
+
+		// Mark as setup.
+		$this->set_param( 'is_setup', true );
 
 		return $this;
 	}
@@ -881,11 +878,42 @@ class Setting {
 	 * @return Setting
 	 */
 	public function add_setting( $setting ) {
+
 		$setting->set_parent( $this );
-		$this->settings[ $setting->get_slug() ] = $setting;
-		$this->sort_settings();
+
+		// Get the position in which to insert the new setting.
+		$index = $this->get_position_index( $setting->get_param( 'priority', 10 ) );
+
+		$new_setting = array(
+			$setting->get_slug() => $setting,
+		);
+
+		// Add the new setting at the index based on the priority position.
+		$this->settings = array_slice( $this->settings, 0, $index, true ) + $new_setting + array_slice( $this->settings, $index, null, true );
 
 		return $setting;
+	}
+
+	/**
+	 * Get the index where the new setting should go based on the priority.
+	 * The position will be the just after the same priority, but before any priority that's higher.
+	 * This maintains the first-come-first serve for like priorities.
+	 *
+	 * @param int $priority The priority to get the index for.
+	 *
+	 * @return int
+	 */
+	protected function get_position_index( $priority ) {
+		$index = 0;
+		foreach ( $this->settings as $setting_check ) {
+			$check_priority = $setting_check->get_param( 'priority', 10 );
+			if ( $priority < $check_priority ) {
+				break;
+			}
+			$index ++;
+		}
+
+		return $index;
 	}
 
 	/**
