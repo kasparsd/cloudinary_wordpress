@@ -10,7 +10,7 @@ $settings = array(
 		'type'  => 'panel',
 		'title' => __( 'Video - Global Settings', 'cloudinary' ),
 		'icon'  => $this->plugin->dir_url . 'css/video.svg',
-		'slug' => 'video_settings',
+		'slug'  => 'video_settings',
 		array(
 			'type' => 'row',
 			array(
@@ -66,18 +66,27 @@ $settings = array(
 						),
 					),
 					array(
-						'type'         => 'checkbox',
+						'type'         => 'on_off',
 						'slug'         => 'video_limit_bitrate',
 						'title'        => __( 'Bitrate', 'cloudinary' ),
+						'description'  => __( 'Enable bitrate limiter', 'cloudinary' ),
 						'tooltip_text' => __( 'If set, all videos will be delivered in the defined bitrate.', 'cloudinary' ),
-						'options'      => array(
-							'1' => __( 'Limit bitrate', 'cloudinary' ),
-						),
+						'default'      => false,
 						'attributes'   => array(
 							'data-context' => 'video',
 						),
 					),
-
+					array(
+						'type'        => 'number',
+						'slug'        => 'video_bitrate',
+						'prefix'      => __( 'Bitrate limit', 'cloudinary' ),
+						'description' => __( 'Maximum number of bits per second in Kilobytes.', 'cloudinary' ),
+						'default'     => '500',
+						'suffix'      => 'k',
+						'condition'   => array(
+							'video_limit_bitrate' => true,
+						),
+					),
 				),
 				array(
 					'type' => 'group',
