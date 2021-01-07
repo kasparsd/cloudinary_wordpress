@@ -7,10 +7,12 @@
 
 namespace Cloudinary;
 
+use Cloudinary\Component\Setup;
+
 /**
  * Plugin Exception class.
  */
-class Test extends Settings_Component {
+class Test extends Settings_Component implements Setup {
 
 	/**
 	 * Define the settings.
@@ -205,6 +207,10 @@ class Test extends Settings_Component {
 						'type' => 'submit',
 					),
 				),
+				'notices'    => array(
+					'type'       => 'page',
+					'page_title' => __( 'Notice and Error tests', 'cloudinary' ),
+				),
 			),
 		);
 
@@ -223,5 +229,21 @@ class Test extends Settings_Component {
 		<?php
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Setup method.
+	 */
+	public function setup() {
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'test', __( 'Notice : success', 'cloudinary' ), 'success' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : updated', 'cloudinary' ), 'updated' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : created', 'cloudinary' ), 'created' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : error', 'cloudinary' ), 'error' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : warning', 'cloudinary' ), 'warning' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : info', 'cloudinary' ), 'info' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : neutral', 'cloudinary' ), 'neutral' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Dismissed for 5 seconds', 'cloudinary' ), 'info', true, 5 );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice with dashicon.', 'cloudinary' ), 'info', true, 0, 'dashicons-wordpress-alt' );
+		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice with image icon.', 'cloudinary' ), 'error', true, 0, $this->plugin->dir_url . 'css/video.svg' );
 	}
 }
