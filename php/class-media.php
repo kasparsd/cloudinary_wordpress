@@ -721,7 +721,7 @@ class Media extends Settings_Component implements Setup {
 					$default['bit_rate'] = $global['video_bitrate'] . 'k';
 				}
 			} else {
-				if ( 'auto' === $global[ $type . '_format' ] ) {
+				if ( isset( $global[ $type . '_format' ] ) && 'auto' === $global[ $type . '_format' ] ) {
 					$default['fetch_format'] = 'auto';
 				}
 				if ( isset( $global[ $type . '_quality' ] ) ) {

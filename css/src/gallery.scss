@@ -1,3 +1,5 @@
+@import "../../node_modules/@wordpress/components/build-style/style.css";
+
 .radio-select {
 	display: flex;
 	align-items: center;
@@ -38,17 +40,18 @@
 }
 
 /* stylelint-disable */
-.wp-block-cloudinary-gallery .block-editor-media-placeholder .components-placeholder__label {
+.wp-block-cloudinary-gallery .block-editor-media-placeholder.is-appender .components-placeholder__label {
 	display: none;
 }
 /* stylelint-enable */
 
-.wp-block-cloudinary-gallery .block-editor-media-placeholder {
+.wp-block-cloudinary-gallery .block-editor-media-placeholder.is-appender {
 	margin-top: 11px;
 	margin-bottom: 11px;
 	padding: 11px;
+	min-height: auto;
 }
 
-.wp-block-cloudinary-gallery .block-editor-media-placeholder .components-button {
+.wp-block-cloudinary-gallery .block-editor-media-placeholder.is-appender .components-button {
 	margin-bottom: 0;
 }

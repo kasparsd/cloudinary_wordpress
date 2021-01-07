@@ -7,6 +7,9 @@
 
 namespace Cloudinary\UI\Component;
 
+use Cloudinary\Media\Gallery;
+use function Cloudinary\get_plugin_instance;
+
 /**
  * Frame Component to render components only.
  *
@@ -19,8 +22,7 @@ class React extends Text {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'input/|app/|template/|scripts/';
-
+	protected $blueprint = 'input/|app/|scripts/';
 
 	/**
 	 * Filter the app part structure.
@@ -30,7 +32,7 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function app( $struct ) {
-		$struct['attributes']['id'] = 'app_' . $this->setting->get_slug();
+		$struct['attributes']['id'] = 'app_gallery_' . $this->setting->get_slug();
 		$struct['render']           = true;
 
 		return $struct;
@@ -44,33 +46,13 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function input( $struct ) {
+		$struct                       = parent::input( $struct );
+		$struct['attributes']['id']   = 'gallery_settings_input';
+		$struct['attributes']['type'] = 'hidden';
 
-		$struct                        = parent::input( $struct );
-		$struct['attributes']['type']  = 'hidden';
 		$struct['attributes']['value'] = $this->setting->get_value();
 
-		// @todo Complete value output.
-
 		return $struct;
-
-	}
-
-	/**
-	 * Filter the template part structure.
-	 *
-	 * @param array $struct The array structure.
-	 *
-	 * @return array
-	 */
-	protected function template( $struct ) {
-
-		$struct['element'] = 'script';
-		$struct['content'] = $this->setting->get_value();
-
-		// @todo Complete template structures..
-
-		return $struct;
-
 	}
 
 	/**
@@ -81,7 +63,6 @@ class React extends Text {
 	 * @return array
 	 */
 	protected function scripts( $struct ) {
-
 		$struct['element'] = null;
 		if ( $this->setting->has_param( 'script' ) ) {
 			$script_default = array(
@@ -91,12 +72,36 @@ class React extends Text {
 				'ver'       => $this->setting->get_root_setting()->get_param( 'version' ),
 				'in_footer' => true,
 			);
-			$script         = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
-			// @todo Perhaps make the script param be an array or scripts to allow for multiples.
-			wp_enqueue_script( $script['slug'], $script['src'], $script['depts'], $script['ver'], $script['in_footer'] );
+
+			$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
+
+			$script = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
+			$asset  = $this->get_asset();
+
+			$gallery = new Gallery( get_plugin_instance()->get_component( 'media' ) );
+			$gallery->block_editor_scripts_styles();
+			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
+			wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
 		}
 
 		return $struct;
+	}
 
+	/**
+	 * Retrieve asset dependencies.
+	 *
+	 * @return array
+	 */
+	private function get_asset() {
+		$asset = require __DIR__ . '/../../../js/gallery.asset.php';
+
+		$asset['dependencies'] = array_filter(
+			$asset['dependencies'],
+			static function ( $dependency ) {
+				return false === strpos( $dependency, '/' );
+			}
+		);
+
+		return $asset;
 	}
 }
