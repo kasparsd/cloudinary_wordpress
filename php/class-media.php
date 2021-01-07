@@ -639,7 +639,7 @@ class Media extends Settings_Component implements Setup {
 	 */
 	public function get_transformations_from_string( $str, $type = 'image' ) {
 
-		$params = \Cloudinary\Connect\Api::$transformation_index[ $type ];
+		$params = Api::$transformation_index[ $type ];
 
 		$transformation_chains = explode( '/', $str );
 		$transformations       = array();
@@ -705,7 +705,7 @@ class Media extends Settings_Component implements Setup {
 
 		// Base image level.
 		$new_transformations = array(
-			'image'  => \Cloudinary\Connect\Api::generate_transformation_string( $transformations, $type ),
+			'image'  => Api::generate_transformation_string( $transformations, $type ),
 			'global' => array(),
 			'tax'    => array(),
 			'qf'     => array(),
@@ -713,39 +713,39 @@ class Media extends Settings_Component implements Setup {
 		// Get Taxonomies.
 		$new_transformations['tax'] = $this->global_transformations->get_taxonomy_transformations( $type );
 		if ( ! $this->global_transformations->is_taxonomy_overwrite() ) {
-			// Get Lowest level.
-			$global  = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
-			$default = array();
-			if ( true === $global['video_optimization'] && 'video' === $type ) {
-				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
-					$default['bit_rate'] = $global['video_bitrate'] . 'k';
-				}
-			} elseif ( true === $global['image_optimization'] && 'image' === $type ) {
-				if ( 'auto' === $global[ $type . '_format' ] ) {
-					$default['fetch_format'] = 'auto';
-				}
-				if ( isset( $global[ $type . '_quality' ] ) ) {
-					$default['quality'] = 'none' !== $global[ $type . '_quality' ] ? $global[ $type . '_quality' ] : null;
-				} else {
-					$default['quality'] = 'auto';
-				}
-			}
+			/**
+			 * Filter the default Quality and Format transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$default = apply_filters( "cloudinary_default_qf_transformations_{$type}", array(), $transformations );
+
 			$default                   = array_filter( $default ); // Clear out empty settings.
 			$new_transformations['qf'] = \Cloudinary\Connect\Api::generate_transformation_string( array( $default ), $type );
+
+			/**
+			 * Filter the default Freeform transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$freeform = apply_filters( "cloudinary_default_freeform_transformations_{$type}", array(), $transformations );
+			$freeform = array_filter( $freeform ); // Clear out empty settings.
 			// Add freeform global transformations.
-			$freeform_type = $type . '_freeform';
-			if ( ! empty( $global[ $freeform_type ] ) ) {
-				$new_transformations['global'][] = trim( $global[ $freeform_type ] );
+			if ( ! empty( $freeform ) ) {
+				$new_transformations['global'] = implode( '/', $freeform );
 			}
-
-			$new_transformations['global'] = implode( '/', $new_transformations['global'] );
-
 		}
 		// Clean out empty parts, and join into a sectioned string.
 		$new_transformations = array_filter( $new_transformations );
 		$new_transformations = implode( '/', $new_transformations );
 		// Take sectioned string, and create a transformation array set.
-		$transformations = $this->get_transformations_from_string( $new_transformations );
+		$transformations = $this->get_transformations_from_string( $new_transformations, $type );
 		/**
 		 * Filter the default cloudinary transformations.
 		 *
@@ -759,6 +759,46 @@ class Media extends Settings_Component implements Setup {
 		);
 
 		return $defaults;
+	}
+	/**
+	 * Apply default  quality anf format image transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_transformations( $default ) {
+
+		$config = $this->settings->get_value( 'image_settings' );
+
+		if ( true === $config['image_optimization'] ) {
+			if ( 'auto' === $config['image_format'] ) {
+				$default['fetch_format'] = 'auto';
+			}
+			if ( isset( $config['image_quality'] ) ) {
+				$default['quality'] = 'none' !== $config['image_quality'] ? $config['image_quality'] : null;
+			} else {
+				$default['quality'] = 'auto';
+			}
+		}
+
+		return $default;
+	}
+
+	/**
+	 * Apply default image freeform transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_freeform_transformations( $default ) {
+		$config = $this->settings->get_value( 'image_settings' );
+		if ( ! empty( $config['image_freeform'] ) ) {
+			$default[] = trim( $config['image_freeform'] );
+		}
+
+		return $default;
 	}
 
 	/**
@@ -1973,6 +2013,10 @@ class Media extends Settings_Component implements Setup {
 				add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
 				add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
 			}
+			// Filter default image Quality and Format transformations.
+			add_filter( 'cloudinary_default_qf_transformations_image', array( $this, 'default_image_transformations' ), 10 );
+			add_filter( 'cloudinary_default_freeform_transformations_image', array( $this, 'default_image_freeform_transformations' ), 10 );
+
 			// Filter and action the custom column.
 			add_filter( 'manage_media_columns', array( $this, 'media_column' ) );
 			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );

@@ -435,11 +435,53 @@ class Video {
 	}
 
 	/**
+	 * Apply default video Quality and Format transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_video_transformations( $default ) {
+
+		if ( isset( $this->config['video_limit_bitrate'] ) && 'on' === $this->config['video_limit_bitrate'] ) {
+			$default['bit_rate'] = $this->config['video_bitrate'] . 'k';
+		}
+		if ( true === $this->config['video_optimization'] ) {
+			if ( 'auto' === $this->config['video_format'] ) {
+				$default['fetch_format'] = 'auto';
+			}
+			if ( isset( $this->config['video_quality'] ) ) {
+				$default['quality'] = 'none' !== $this->config['video_quality'] ? $this->config['video_quality'] : null;
+			} else {
+				$default['quality'] = 'auto';
+			}
+		}
+
+		return $default;
+	}
+
+	/**
+	 * Apply default video freeform transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_video_freeform_transformations( $default ) {
+		if ( ! empty( $this->config['video_freeform'] ) ) {
+			$default[] = trim( $this->config['video_freeform'] );
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Setup hooks for the filters.
 	 */
 	public function setup_hooks() {
 		add_filter( 'wp_video_shortcode_override', array( $this, 'filter_video_shortcode' ), 10, 2 );
-
+		add_filter( 'cloudinary_default_qf_transformations_video', array( $this, 'default_video_transformations' ), 10 );
+		add_filter( 'cloudinary_default_freeform_transformations_video', array( $this, 'default_video_freeform_transformations' ), 10 );
 		if ( ! is_admin() ) {
 			add_filter( 'the_content', array( $this, 'filter_video_tags' ) );
 			// Filter for block rendering.
