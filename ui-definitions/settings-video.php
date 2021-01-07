@@ -86,6 +86,11 @@ $settings = array(
 						'condition'   => array(
 							'video_limit_bitrate' => true,
 						),
+						'attributes'  => array(
+							'data-context' => 'video',
+							'data-meta'    => 'br',
+							'data-suffix'  => 'k',
+						),
 					),
 				),
 				array(
