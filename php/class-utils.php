@@ -7,16 +7,19 @@
 
 namespace Cloudinary;
 
+use Cloudinary\Settings\Setting;
+
 /**
  * Class that includes utility methods.
  *
  * @package Cloudinary
  */
 class Utils {
+
 	/**
 	 * Detects array keys with dot notation and expands them to form a new multi-dimensional array.
 	 *
-	 * @param  array $input The array that will be processed.
+	 * @param array $input The array that will be processed.
 	 *
 	 * @return array
 	 */
@@ -56,5 +59,17 @@ class Utils {
 		}
 
 		return array_filter( $input, $callback );
+	}
+
+	/**
+	 * Gets the active child setting.
+	 *
+	 * @return Setting
+	 */
+	public static function get_active_setting() {
+		$settings = get_plugin_instance()->settings;
+		$page     = $settings->get_param( 'active_setting', $settings );
+
+		return $page->get_param( 'active_tab', $page );
 	}
 }
