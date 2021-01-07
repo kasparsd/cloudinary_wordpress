@@ -41,7 +41,6 @@ class Video {
 	 */
 	private $player_enabled = false;
 
-
 	/**
 	 * List of attachment ID's to enable.
 	 *
@@ -443,7 +442,7 @@ class Video {
 	 */
 	public function default_video_transformations( $default ) {
 
-		if ( isset( $this->config['video_limit_bitrate'] ) && 'on' === $this->config['video_limit_bitrate'] ) {
+		if ( ! empty( $this->config['video_limit_bitrate'] ) ) {
 			$default['bit_rate'] = $this->config['video_bitrate'] . 'k';
 		}
 		if ( true === $this->config['video_optimization'] ) {
