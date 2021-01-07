@@ -62,7 +62,7 @@ abstract class Settings_Component implements Settings {
 
 		$this->settings = $setting->get_setting( $this->settings_slug );
 		// Add enabling filter.
-		add_filter( "settings_enabled_{$this->settings_slug}", array( $this, 'is_enabled' ) );
+		add_filter( "cloudinary_settings_enabled_{$this->settings_slug}", array( $this, 'is_enabled' ) );
 	}
 
 	/**

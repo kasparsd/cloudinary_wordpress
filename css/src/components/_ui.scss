@@ -51,6 +51,7 @@
 
 			.cld-row {
 				margin: 0 -1.75em;
+				clear: both;
 			}
 
 			.cld-column {
@@ -154,13 +155,7 @@
 		hr {
 			border-top: 1px solid $color-light-grey;
 			margin: 1.5rem 0;
-		}
-
-		&:last-child {
-
-			hr {
-				display: none;
-			}
+			clear: both;
 		}
 
 		&-heading {
@@ -198,6 +193,10 @@
 		.suffixed {
 			width: 40%;
 			margin-right: 6px;
+		}
+
+		.regular-number {
+			width: 100px;
 		}
 
 		.regular-select {

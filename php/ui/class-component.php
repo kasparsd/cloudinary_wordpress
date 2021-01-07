@@ -762,18 +762,20 @@ abstract class Component {
 
 		$caller = get_called_class();
 		$type   = $setting->get_param( 'type' );
-		// Set Caller.
-		$component = "{$caller}\\{$type}";
 		// Final check if type is callable component.
 		if ( ! is_string( $type ) || ! self::is_component_type( $type ) ) {
-			// Set to a default HTML component if not found.
-			$type = 'html';
 			// Check what type this component needs to be.
 			if ( is_callable( $type ) ) {
 				$setting->set_param( 'callback', $type );
 				$setting->set_param( 'type', 'custom' );
 				$type = 'custom';
+			} else {
+				// Set to a default HTML component if not found.
+				$type = 'html';
 			}
+			$component = "{$caller}\\{$type}";
+		} else {
+			// Set Caller.
 			$component = "{$caller}\\{$type}";
 		}
 

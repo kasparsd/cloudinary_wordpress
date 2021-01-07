@@ -844,6 +844,8 @@ class Sync implements Setup, Assets {
 
 			// Register Settings.
 			$this->register_settings();
+			// Setup sync queue.
+			$this->managers['queue']->setup( $this );
 		}
 	}
 
@@ -863,14 +865,22 @@ class Sync implements Setup, Assets {
 				'type'  => 'panel',
 				'title' => __( 'Sync Settings', 'cloudinary' ),
 				array(
-					'type'    => 'radio',
-					'title'   => __( 'Sync Method', 'cloudinary' ),
-					'slug'    => 'auto_sync',
-					'default' => 'off',
-					'options' => array(
+					'type'      => 'radio',
+					'title'     => __( 'Sync Method', 'cloudinary' ),
+					'slug'      => 'auto_sync',
+					'no_cached' => true,
+					'default'   => 'off',
+					'options'   => array(
 						'on'  => __( 'Auto Sync', 'cloudinary' ),
 						'off' => __( 'Manual Sync', 'cloudinary' ),
 					),
+				),
+				array(
+					'type'        => 'sync',
+					'title'       => __( 'Bulk sync all your WordPress assets to Cloudinary', 'cloudinary' ),
+					'tooltip_off' => __( 'Manual sync is enabled. Assets can only be synced from using the Media Library.', 'cloudinary' ),
+					'tooltip_on'  => __( 'For large numbers of assets, you can choose to sync them to Cloudinary in bulk.', 'cloudinary' ),
+					'queue'       => $this->managers['queue'],
 				),
 				array(
 					'type'              => 'text',

@@ -121,7 +121,7 @@ class Settings {
 		add_action( "load-{$page_handle}", array( $this, 'set_active_setting' ) );
 		// Setup the Child page handles.
 		foreach ( $setting->get_settings() as $sub_setting ) {
-			if ( 'page' !== $sub_setting->get_param( 'type' ) || ! apply_filters( "settings_enabled_{$sub_setting->get_slug()}", true ) ) {
+			if ( 'page' !== $sub_setting->get_param( 'type' ) || ! apply_filters( "cloudinary_settings_enabled_{$sub_setting->get_slug()}", true ) ) {
 				continue;
 			}
 			$sub_setting->set_param( 'page_header', $setting->get_param( 'page_header' ) );
