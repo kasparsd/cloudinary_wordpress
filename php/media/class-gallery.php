@@ -38,14 +38,14 @@ class Gallery {
 	 *
 	 * @var string
 	 */
-	protected $settings_slug = 'gallery';
+	public $settings_slug = 'gallery';
 
 	/**
 	 * Holds the sync settings object.
 	 *
 	 * @var Settings
 	 */
-	protected $settings;
+	public $settings;
 
 	/**
 	 * The default config in case no settings are saved.
@@ -279,7 +279,7 @@ class Gallery {
 	 * @return array
 	 */
 	public function settings() {
-		return array(
+		$settings = array(
 			'type'        => 'page',
 			'page_title'  => __( 'Gallery Settings', 'cloudinary' ),
 			'option_name' => 'cloudinary_gallery',
@@ -287,25 +287,33 @@ class Gallery {
 				'type'  => 'panel',
 				'title' => __( 'Gallery Settings', 'cloudinary' ),
 				'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
-				array(
-					'type'        => 'on_off',
-					'slug'        => 'gallery_woocommerce_enabled',
-					'title'       => __( 'Enable Gallery', 'cloudinary' ),
-					'description' => __( 'Replace WooCommerce Gallery', 'cloudinary' ),
-				),
-				array(
-					'type'   => 'react',
-					'slug'   => 'gallery_config',
-					'script' => array(
-						'slug' => 'gallery-widget',
-						'src'  => $this->media->plugin->dir_url . 'js/gallery.js',
-					),
-				),
 			),
-			array(
-				'type' => 'submit',
+			
+		);
+
+		if ( WooCommerceGallery::woocommerce_active() ) {
+			$settings[] = array(
+				'type'        => 'on_off',
+				'slug'        => 'gallery_woocommerce_enabled',
+				'title'       => __( 'Enable Gallery', 'cloudinary' ),
+				'description' => __( 'Replace WooCommerce Gallery', 'cloudinary' ),
+			);
+		}
+
+		$settings[] = array(
+			'type'   => 'react',
+			'slug'   => 'gallery_config',
+			'script' => array(
+				'slug' => 'gallery-widget',
+				'src'  => $this->media->plugin->dir_url . 'js/gallery.js',
 			),
 		);
+
+		$settings[] = array(
+			'type' => 'submit',
+		);
+
+		return $settings;
 	}
 
 	/**
