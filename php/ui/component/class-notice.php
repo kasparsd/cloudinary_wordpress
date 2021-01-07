@@ -8,7 +8,6 @@
 namespace Cloudinary\UI\Component;
 
 use Cloudinary\REST_API;
-use Cloudinary\Settings\Setting;
 use Cloudinary\UI\Component;
 
 /**
@@ -113,6 +112,6 @@ class Notice extends Component {
 	 * @return bool
 	 */
 	protected function is_enabled() {
-		return empty( $this->setting->get_param( 'rendered', false ) ) && empty( get_transient( $this->setting->get_slug() ) );
+		return empty( get_transient( $this->setting->get_slug() ) );
 	}
 }

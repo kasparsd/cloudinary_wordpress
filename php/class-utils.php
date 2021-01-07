@@ -68,8 +68,11 @@ class Utils {
 	 */
 	public static function get_active_setting() {
 		$settings = get_plugin_instance()->settings;
-		$page     = $settings->get_param( 'active_setting', $settings );
+		$setting  = $settings->get_param( 'active_setting', $settings );
+		if ( $setting->has_param( 'has_tabs' ) ) {
+			$setting = $setting->get_param( 'active_tab', $setting );
+		}
 
-		return $page->get_param( 'active_tab', $page );
+		return $setting;
 	}
 }

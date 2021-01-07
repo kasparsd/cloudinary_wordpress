@@ -291,7 +291,9 @@ class Setting {
 	 * @return Setting[]
 	 */
 	public function get_settings() {
-		return $this->settings;
+		$settings = array_filter( $this->settings, array( $this, 'is_public' ) );
+
+		return $settings;
 	}
 
 	/**
@@ -912,7 +914,10 @@ class Setting {
 
 		$option_parent  = $this->get_option_parent();
 		$option_notices = $option_parent->get_setting( '_notices' );
-		$params         = array(
+		$notices        = $option_notices->get_param( '_notices', array() );
+
+		// Set new notice.
+		$params                  = array(
 			'type'     => 'notice',
 			'level'    => $type,
 			'message'  => $error_message,
@@ -921,10 +926,9 @@ class Setting {
 			'duration' => $duration,
 			'icon'     => $icon,
 		);
-
-		$notice_slug = md5( wp_json_encode( $params ) );
-
-		$this->create_setting( $notice_slug, $params, $option_notices );
+		$notice_slug             = md5( wp_json_encode( $params ) );
+		$notices[ $notice_slug ] = $this->create_setting( $notice_slug, $params );
+		$option_notices->set_param( '_notices', $notices );
 	}
 
 	/**
@@ -939,7 +943,7 @@ class Setting {
 			$option_parent->add_admin_notice( $notice['code'], $notice['message'], $notice['type'], true );
 		}
 
-		return $option_parent->get_setting( '_notices' )->get_settings();
+		return $option_parent->get_setting( '_notices' )->get_param( '_notices' );
 	}
 
 	/**
@@ -1084,5 +1088,12 @@ class Setting {
 	 */
 	protected function is_private_slug( $slug ) {
 		return '_' === substr( $slug, 0, 1 );
+	}
+
+	/**
+	 * Check if a setting is public.
+	 */
+	protected function is_public() {
+		return ! $this->is_private_slug( $this->get_slug() );
 	}
 }
