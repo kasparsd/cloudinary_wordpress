@@ -258,10 +258,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			return false;
 		}
 
-		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -491,6 +487,28 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			$this->usage_stats();
 			$this->setup_status_cron();
 			$this->plugin->settings->set_param( 'connected', $this->is_connected() );
+
+			// Add cancel button.
+			if ( $this->switch_account() ) {
+				$link = array(
+					'type'       => 'link',
+					'content'    => 'Cancel',
+					'url'        => $this->settings->find_setting( 'connect' )->get_component()->get_url(),
+					'target'     => '_self',
+					'attributes' => array(
+						'class'    => array(
+							'button-secondary',
+						),
+						'link_tag' => array(
+							'style' => array(
+								'margin-left:12px;',
+							),
+						),
+					),
+				);
+
+				$this->settings->create_setting( 'cancel_switch', $link, $this->settings->find_setting( 'connect_button' ) );
+			}
 		}
 	}
 
@@ -615,7 +633,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 
 				// translators: Placeholders are URLS and percentage values.
 				$message = sprintf(
-					/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
+				/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
 					__(
 						'<span class="dashicons dashicons-cloudinary"></span> You are %2$s of the way through your monthly quota for %1$s on your Cloudinary account. If you exceed your quota, the Cloudinary plugin will be deactivated until your next billing cycle and your media assets will be served from your WordPress Media Library. You may wish to <a href="%3$s" target="_blank">%4$s</a> and increase your quota to ensure you maintain full functionality.',
 						'cloudinary'
@@ -712,6 +730,21 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	}
 
 	/**
+	 * Check if the switch account param is set.
+	 *
+	 * @return bool
+	 */
+	public function switch_account() {
+
+		$return = false;
+		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
+			return true;
+		}
+
+		return $return;
+	}
+
+	/**
 	 * Define the Settings.
 	 *
 	 * @return array
@@ -770,7 +803,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				'connect' => array(
 					'page_title' => __( 'Connect', 'cloudinary' ),
 					array(
-						'enabled' => array( $this, 'is_connected' ),
+						'enabled' => function () use ( $self ) {
+							return ! $self->switch_account() && $this->is_connected();
+						},
 						array(
 							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
 							'type'  => 'panel',
@@ -784,7 +819,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 					),
 					array(
 						'enabled' => function () use ( $self ) {
-							return ! $self->is_connected();
+							return $self->switch_account() || ! $this->is_connected();
 						},
 						array(
 							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
@@ -811,6 +846,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 						array(
 							'label' => __( 'Connect', 'cloudinary' ),
 							'type'  => 'submit',
+							'slug'  => 'connect_button',
 						),
 						array(
 							'collapsible' => 'open',

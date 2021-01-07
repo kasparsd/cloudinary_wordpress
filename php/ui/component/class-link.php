@@ -35,10 +35,14 @@ class Link extends Component {
 		$struct['element']              = 'a';
 		$struct['content']              = $this->setting->get_param( 'content' );
 		$struct['attributes']['href']   = $this->setting->get_param( 'url' );
-		$struct['attributes']['target'] = '_blank';
-		$struct['attributes']['class']  = array(
-			'button',
-			'button-primary',
+		$struct['attributes']['target'] = $this->setting->get_param( 'target', '_blank' );
+		$struct['render']               = true;
+		$struct['attributes']['class']  = $this->setting->get_param(
+			'attributes:class',
+			array(
+				'button',
+				'button-primary',
+			)
 		);
 
 		return $struct;
