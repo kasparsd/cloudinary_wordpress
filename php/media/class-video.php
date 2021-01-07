@@ -96,7 +96,7 @@ class Video {
 	 */
 	public function init_player() {
 
-		if ( 'cld' === $this->config['video_player'] && ! is_admin() ) {
+		if ( isset( $this->config['video_player'] ) && 'cld' === $this->config['video_player'] && ! is_admin() ) {
 			// Check content has a video to enqueue assets in correct location.
 			while ( have_posts() ) {
 				the_post();

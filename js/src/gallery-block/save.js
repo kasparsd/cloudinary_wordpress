@@ -1,32 +1,19 @@
 /**
- * External dependencies
- */
-import Dot from 'dot-object';
-import cloneDeep from 'lodash/cloneDeep';
-
-/**
  * Internal dependencies
  */
-
-const dot = new Dot( '_' );
+import { setupAttributesForRendering, sortObject } from './utils';
 
 const Save = ( { attributes } ) => {
 	let configString = '';
 
 	if ( attributes.selectedImages.length ) {
-		const attributesClone = cloneDeep( attributes );
-		const { selectedImages, ...config } = dot.object( attributesClone, {} );
-
-		if ( config?.displayProps?.mode !== 'classic' ) {
-			delete config.transition;
-		} else {
-			delete config.displayProps.columns;
-		}
+		const { customSettings, ...config } = setupAttributesForRendering(
+			attributes
+		);
 
 		configString = JSON.stringify( {
 			cloudName: CLDN.mloptions.cloud_name,
-			mediaAssets: selectedImages,
-			...config,
+			...sortObject( { ...config, ...customSettings } ),
 		} );
 	}
 

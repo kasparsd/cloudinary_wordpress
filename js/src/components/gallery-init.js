@@ -15,7 +15,8 @@ if ( configElements.length ) {
 	} );
 } else if (
 	document.querySelector( '.woocommerce-page' ) &&
-	cloudinaryGalleryConfig
+	cloudinaryGalleryConfig &&
+	cloudinaryGalleryConfig?.mediaAssets?.length
 ) {
 	cloudinary.galleryWidget( cloudinaryGalleryConfig ).render();
 }

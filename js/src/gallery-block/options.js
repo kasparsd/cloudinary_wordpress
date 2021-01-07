@@ -21,22 +21,22 @@ import {
 export const LAYOUT_OPTIONS = [
 	{
 		value: { type: 'expanded', columns: 1 },
-		icon: <LayoutGridOneColumn />,
+		icon: LayoutGridOneColumn,
 		label: __( 'Expanded - 1 Column', 'cloudinary' ),
 	},
 	{
 		value: { type: 'expanded', columns: 2 },
-		icon: <LayoutGridTwoColumn />,
+		icon: LayoutGridTwoColumn,
 		label: __( 'Expanded - 2 Column', 'cloudinary' ),
 	},
 	{
 		value: { type: 'expanded', columns: 3 },
-		icon: <LayoutGridThreeColumn />,
+		icon: LayoutGridThreeColumn,
 		label: __( 'Expanded - 3 Column', 'cloudinary' ),
 	},
 	{
 		value: { type: 'classic', columns: 1 },
-		icon: <LayoutClassic />,
+		icon: LayoutClassic,
 		label: __( 'Classic', 'cloudinary' ),
 	},
 ];
@@ -108,27 +108,27 @@ export const CAROUSEL_STYLE = [
 export const NAVIGATION_BUTTON_SHAPE = [
 	{
 		value: 'round',
-		icon: <ShapeRound />,
+		icon: ShapeRound,
 		label: __( 'Round', 'cloudinary' ),
 	},
 	{
 		value: 'radius',
-		icon: <ShapeRadius />,
+		icon: ShapeRadius,
 		label: __( 'Radius', 'cloudinary' ),
 	},
 	{
 		value: 'none',
-		icon: <ShapeNone />,
+		icon: ShapeNone,
 		label: __( 'None', 'cloudinary' ),
 	},
 	{
 		value: 'square',
-		icon: <ShapeSquare />,
+		icon: ShapeSquare,
 		label: __( 'Square', 'cloudinary' ),
 	},
 	{
 		value: 'rectangle',
-		icon: <ShapeRectangle />,
+		icon: ShapeRectangle,
 		label: __( 'Rectangle', 'cloudinary' ),
 	},
 ];
@@ -136,17 +136,17 @@ export const NAVIGATION_BUTTON_SHAPE = [
 export const INDICATOR_SHAPE = [
 	{
 		value: 'round',
-		icon: <ShapeRound />,
+		icon: ShapeRound,
 		label: __( 'Round', 'cloudinary' ),
 	},
 	{
 		value: 'radius',
-		icon: <ShapeRadius />,
+		icon: ShapeRadius,
 		label: __( 'Radius', 'cloudinary' ),
 	},
 	{
 		value: 'square',
-		icon: <ShapeSquare />,
+		icon: ShapeSquare,
 		label: __( 'Square', 'cloudinary' ),
 	},
 ];
@@ -170,22 +170,22 @@ export const SELECTED_BORDER_POSITION = [
 export const MEDIA_ICON_SHAPE = [
 	{
 		value: 'round',
-		icon: <ShapeRound />,
+		icon: ShapeRound,
 		label: __( 'Round', 'cloudinary' ),
 	},
 	{
 		value: 'radius',
-		icon: <ShapeRadius />,
+		icon: ShapeRadius,
 		label: __( 'Radius', 'cloudinary' ),
 	},
 	{
 		value: 'none',
-		icon: <ShapeNone />,
+		icon: ShapeNone,
 		label: __( 'None', 'cloudinary' ),
 	},
 	{
 		value: 'square',
-		icon: <ShapeSquare />,
+		icon: ShapeSquare,
 		label: __( 'Square', 'cloudinary' ),
 	},
 ];

@@ -101,7 +101,7 @@ class Storage implements Notice {
 			if ( 'dual_full' !== $this->settings['offload'] ) {
 				$field['suffix']      = null;
 				$field['description'] = sprintf(
-					// translators: Placeholders are <a> tags.
+				// translators: Placeholders are <a> tags.
 					__( 'You can’t currently change your environment variable as your storage setting is set to "Cloudinary only". Update your %1$s storage settings %2$s and sync your assets to WordPress storage to enable this setting.', 'cloudinary' ),
 					sprintf(
 						'<a href="%s">',
@@ -109,7 +109,7 @@ class Storage implements Notice {
 					),
 					'</a>'
 				);
-				$field['disabled'] = true;
+				$field['disabled']    = true;
 			}
 		}
 
@@ -287,7 +287,7 @@ class Storage implements Notice {
 
 				$notices[] = array(
 					'message'     => sprintf(
-						// translators: Placeholders are <a> tags.
+					// translators: Placeholders are <a> tags.
 						__( 'You have reached one or more of your quota limits. Your Cloudinary media will soon stop being delivered. Your current storage setting is "Cloudinary only" and this will therefore result in broken links to media assets. To prevent any issues upgrade your account or change your %1$s storage settings.%2$s', 'cloudinary' ),
 						'<a href="' . esc_url( admin_url( 'admin.php?page=cld_sync_media' ) ) . '">',
 						'</a>'
