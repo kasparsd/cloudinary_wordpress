@@ -24,7 +24,7 @@ class Test extends Settings_Component {
 			'option_name' => 'test_settings',
 			'priority'    => 20,
 			'tabs'        => array(
-				'fields'     => array(
+				'fields'   => array(
 					'type'       => 'page',
 					'page_title' => __( 'Input Settings', 'cloudinary' ),
 					array(
@@ -141,7 +141,7 @@ class Test extends Settings_Component {
 						'type' => 'submit',
 					),
 				),
-				'contents'   => array(
+				'contents' => array(
 					'type'       => 'page',
 					'page_title' => __( 'Content Settings', 'cloudinary' ),
 					array(
@@ -152,57 +152,6 @@ class Test extends Settings_Component {
 							'content' => $this->get_content(),
 							'clear'   => '',
 						),
-					),
-				),
-				'react_test' => array(
-					'type'       => 'page',
-					'page_title' => __( 'React', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'React example', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/video.svg',
-						array(
-							'type'   => 'react',
-							'slug'   => 'gallery',
-							'script' => array(
-								'slug' => 'gallery-widget',
-								'src'  => $this->plugin->dir_url . 'js/gallery.js',
-							),
-						),
-					),
-					array(
-						'type' => 'submit',
-					),
-				),
-				'col_test'   => array(
-					'type'       => 'page',
-					'page_title' => __( 'Columns', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'Columns example', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/crop.svg',
-						array(
-							'type' => 'row',
-							array(
-								'type'  => 'column',
-								'width' => '50%',
-								array(
-									'type'  => 'text',
-									'title' => 'Firstname',
-								),
-							),
-							array(
-								'type'  => 'column',
-								'width' => '50%',
-								array(
-									'type'  => 'text',
-									'title' => 'last name',
-								),
-							),
-						),
-					),
-					array(
-						'type' => 'submit',
 					),
 				),
 			),
