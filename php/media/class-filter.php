@@ -328,10 +328,8 @@ class Filter {
 
 			// Get a cloudinary URL.
 			$classes                   = $this->get_classes( $asset ); // check if this is a transformation overwrite.
-			$overwrite_transformations = false;
-			if ( false !== strpos( $classes, 'cld-overwrite' ) ) {
-				$overwrite_transformations = true;
-			}
+			$overwrite_transformations = false !== strpos( $classes, 'cld-overwrite' );
+
 			$cloudinary_url = $this->media->cloudinary_url( $attachment_id, $wp_size, $transformations, null, $overwrite_transformations );
 
 			if ( $url === $cloudinary_url ) {
@@ -364,9 +362,8 @@ class Filter {
 				}
 				$new_tag = $this->media->apply_srcset( $new_tag, $attachment_id, $overwrite_transformations );
 			}
-			$content = str_replace( $asset, $new_tag, $content );
 			// Additional URL change for backgrounds etc..
-			$content = str_replace( $url, $cloudinary_url, $content );
+			$content = str_replace( array( $asset, $url ), array( $new_tag, $cloudinary_url ), $content );
 		}
 
 		return $this->filter_video_shortcodes( $content );
@@ -512,7 +509,7 @@ class Filter {
 			}
 			if ( ! empty( $attachment['transformations'] ) ) {
 				$transformation_string = Api::generate_transformation_string( $attachment['transformations'] );
-				$new_atts              .= ' transformations="' . esc_attr( $transformation_string ) . '"';
+				$new_atts             .= ' transformations="' . esc_attr( $transformation_string ) . '"';
 			}
 			$html = str_replace( $shortcode['args'], $new_atts, $html );
 		}
