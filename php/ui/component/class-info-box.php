@@ -65,10 +65,10 @@ class Info_Box extends Panel {
 	protected function text( $struct ) {
 
 		$struct['element'] = 'p';
+		$struct['content'] = $this->setting->get_param( 'text' );
 
 		return $struct;
 	}
-
 
 	/**
 	 * Filter the body parts structure.

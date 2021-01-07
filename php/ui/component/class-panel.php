@@ -48,6 +48,7 @@ class Panel extends Component {
 	protected function title( $struct ) {
 
 		$struct['element'] = 'h2';
+		$struct['content'] = $this->setting->get_param( 'title' );
 		if ( $this->setting->has_param( 'collapsible' ) ) {
 			$struct['attributes']['class'][]  = 'collapsible';
 			$struct['attributes']['data-for'] = $this->setting->get_slug();
