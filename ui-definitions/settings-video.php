@@ -148,7 +148,7 @@ $settings = array(
 					'title'      => __( 'Custom Transformation', 'cloudinary' ),
 					'attributes' => array(
 						'data-context' => 'video',
-						'placeholder'  => __( 'w_90,r_max' ),
+						'placeholder'  => __( 'w_90,r_max', 'cloudinary' ),
 					),
 				),
 			),

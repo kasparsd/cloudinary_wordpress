@@ -53,7 +53,9 @@ class Page extends Panel {
 	protected function page_actions() {
 
 		$option_name = $this->get_option_name();
-		settings_errors( $option_name );
+		$errors      = wp_json_encode( get_settings_errors( $option_name ) );
+
+		wp_add_inline_script( 'cloudinary', "var CLOUDINARY_SETTINGS_ERROR = JSON.parse( '{$errors}' );", 'before' );
 
 		$inputs = array(
 			'option_page' => $this->get_part( 'input' ),
