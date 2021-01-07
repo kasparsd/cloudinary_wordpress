@@ -157,7 +157,7 @@ class Media_Status extends Component {
 
 			),
 		);
-		$query  = new \WP_Query( $params );
+		$query = new \WP_Query( $params );
 
 		return $query->found_posts;
 	}
