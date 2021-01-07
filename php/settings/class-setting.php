@@ -130,7 +130,7 @@ class Setting {
 		 *
 		 * @return array
 		 */
-		$setting_params = apply_filters( 'get_setting_params', $default_setting_params, $this );
+		$setting_params = apply_filters( 'cloudinary_get_setting_params', $default_setting_params, $this );
 
 		return $setting_params;
 	}
@@ -464,8 +464,8 @@ class Setting {
 			 * @param mixed   $current_value The setting current value.
 			 * @param Setting $value         The setting object.
 			 */
-			$new_value = apply_filters( "settings_save_setting_{$slug}", $new_value, $current_value, $setting );
-			$new_value = apply_filters( 'settings_save_setting', $new_value, $current_value, $setting );
+			$new_value = apply_filters( "cloudinary_settings_save_setting_{$slug}", $new_value, $current_value, $setting );
+			$new_value = apply_filters( 'cloudinary_settings_save_setting', $new_value, $current_value, $setting );
 			if ( $current_value !== $new_value ) {
 				// Only use the new value if it's different.
 				$data[ $slug ] = $new_value;
@@ -918,7 +918,7 @@ class Setting {
 	 * @param string $error_message The error text/message.
 	 * @param string $type          The error type.
 	 */
-	public function add_error_notice( string $error_code, string $error_message, string $type = 'error' ) {
+	public function add_error_notice( $error_code, $error_message, $type = 'error' ) {
 
 		$option_parent = $this->get_option_parent();
 		$errors        = $option_parent->get_param( '_error_notice', array() );
