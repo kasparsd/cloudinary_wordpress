@@ -1735,7 +1735,7 @@ class Media extends Settings_Component implements Setup {
 			);
 			$transformations    = $this->get_transformation_from_meta( $attachment_id );
 			if ( ! empty( $transformations ) ) {
-				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations );
+				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations, 'image' );
 			}
 			$breakpoints = array(
 				'public_id'              => $this->get_public_id( $attachment_id ),
