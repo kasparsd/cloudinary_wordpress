@@ -26,7 +26,7 @@ class Deactivation {
 	 *
 	 * @var string
 	 */
-	protected static $cld_endpoint = 'https://analytics.cloudinary.com/wp_deactivate_reason';
+	protected static $cld_endpoint = 'https://analytics-api.cloudinary.com/wp_deactivate_reason';
 
 	/**
 	 * The internal endpoint to capture the administrator feedback.
@@ -92,29 +92,29 @@ class Deactivation {
 		return array(
 			array(
 				'id'   => 'dont_understand_value',
-				'text' => __( "I don't understand the value of the plugin.", 'cloudinary' ),
+				'text' => __( 'I don’t get any value from the plugin.', 'cloudinary' ),
 			),
 			array(
 				'id'   => 'dont_know_how',
-				'text' => __( "I don't know how to use the plugin.", 'cloudinary' ),
+				'text' => __( 'I don’t know how to use the plugin.', 'cloudinary' ),
 			),
 			array(
 				'id'   => 'temporary',
-				'text' => __( "This is temporary. I'll use the plugin again soon.", 'cloudinary' ),
+				'text' => __( 'This is temporary. I’ll use the plugin again soon.', 'cloudinary' ),
 			),
 			array(
 				'id'   => 'technical_problems',
-				'text' => __( 'I encountered technical problems while using it.', 'cloudinary' ),
+				'text' => __( 'I encountered technical issues with the plugin.', 'cloudinary' ),
 				'more' => true,
 			),
 			array(
 				'id'   => 'other_plugins',
-				'text' => __( 'I use another plugin(s) that do(es) the job better.', 'cloudinary' ),
+				'text' => __( 'I use another plugin that works better for me.', 'cloudinary' ),
 				'more' => true,
 			),
 			array(
 				'id'   => 'other_reason',
-				'text' => __( 'Other', 'cloudinary' ),
+				'text' => __( 'Other.', 'cloudinary' ),
 				'more' => true,
 			),
 		);
@@ -132,7 +132,7 @@ class Deactivation {
 	<div class="cloudinary-deactivation">
 		<div class="modal-body">
 			<p>
-				<?php esc_html_e( 'We want to make it better for your next time!', 'cloudinary' ); ?>
+				<?php esc_html_e( 'Please select a reason for deactivating so we can make our plugin better:', 'cloudinary' ); ?>
 			</p>
 			<ul>
 			<?php foreach ( $this->get_reasons() as $reason ) : ?>
@@ -143,7 +143,7 @@ class Deactivation {
 					</label>
 					<?php if ( ! empty( $reason['more'] ) ) : ?>
 						<label for="more-<?php echo esc_attr( $reason['id'] ); ?>" class="more">
-							<?php esc_html_e( 'Can you please add more details.', 'cloudinary' ); ?><br>
+							<?php esc_html_e( 'Additional details:', 'cloudinary' ); ?><br>
 							<textarea name="reason-more" id="more-<?php echo esc_attr( $reason['id'] ); ?>" cols="50" rows="5"></textarea>
 						</label>
 					<?php endif; ?>
@@ -177,7 +177,7 @@ class Deactivation {
 		wp_enqueue_script( 'cloudinary-deactivation', $this->plugin->dir_url . 'js/deactivate.js', array(), $this->plugin->version, true );
 		wp_localize_script(
 			'cloudinary-deactivation',
-			'cloudinaryApi',
+			'CLD_Deactivate',
 			array(
 				'endpoint' => rest_url( REST_API::BASE . '/' . self::$internal_endpoint ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),

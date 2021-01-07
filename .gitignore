@@ -28,6 +28,9 @@ npm-debug.log
 /vendor/
 /dev-lib/
 phpcs.xml
+css/*.map
+js/*.map
+/bin
 
 # Tests
 tests/data/

@@ -9,11 +9,7 @@ namespace Cloudinary;
 
 global $cloudinary_plugin;
 
-if ( ! defined( 'DEBUG_SCRIPTS' ) ) {
-	define( 'CLDN_ASSET_DEBUG', '.min' );
-} else {
-	define( 'CLDN_ASSET_DEBUG', '' );
-}
+define( 'CLDN_ASSET_DEBUG', ! defined( 'DEBUG_SCRIPTS' ) ? '.min' : '' );
 
 require_once __DIR__ . '/php/class-plugin.php';
 

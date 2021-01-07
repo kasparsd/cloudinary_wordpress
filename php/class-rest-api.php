@@ -67,7 +67,7 @@ class REST_API {
 	 * @param array  $params   Array of parameters to send.
 	 * @param string $method   The method to use in the call.
 	 */
-	public function background_request( $endpoint, $params, $method = 'POST' ) {
+	public function background_request( $endpoint, $params = array(), $method = 'POST' ) {
 
 		$url = rest_url( static::BASE . '/' . $endpoint );
 		// Setup a call for a background sync.

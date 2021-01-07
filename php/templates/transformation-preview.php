@@ -15,7 +15,7 @@ $script_data = array(
 	'file'        => $sample,
 	'error'       => esc_html__( 'Invalid transformations or error loading preview.', 'cloudinary' ),
 	/* translators: %s is the transformation that breaks the preview. */
-	'warning'     => esc_html__( 'Preview cannot be generated because %s was used.', 'cloudinary' ),
+	'warning'     => esc_html__( 'Preview cannot be generated because %s transformation was used.', 'cloudinary' ),
 	'valid_types' => \Cloudinary\Connect\Api::$transformation_index['image'],
 );
 
@@ -36,3 +36,5 @@ wp_add_inline_script( 'cloudinary', 'CLD_GLOBAL_TRANSFORMATIONS.image = ' . wp_j
 		<a class="global-transformations-url-link" href="<?php echo esc_url( $src ); ?>" target="_blank">../<span class="global-transformations-url-resource">image/upload</span><span class="global-transformations-url-transformation" id="transformation-sample-image"></span><span class="global-transformations-url-file"><?php echo esc_html( $sample ); ?></span></a>
 	</div>
 </div>
+
+

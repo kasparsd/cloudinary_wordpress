@@ -2,9 +2,9 @@
 Contributors: Cloudinary, XWP, Automattic
 Tags: image, video, DAM, optimization, CDN
 Requires at least: 4.7
-Tested up to: 5.5.1
+Tested up to: 5.6
 Requires PHP: 5.6
-Stable tag: trunk
+Stable tag: 2.4.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,6 +122,30 @@ The following plugins/themes/page-builders might not be fully compatible with th
 9. Easily Configure Your Account
 
 == Changelog ==
+
+= 2.4.1 (07 Jan 2021) = 
+
+Fixes and improvements:
+
+* Improved server calling efficiency 
+* More fixes
+
+= 2.4.0 (10 Nov 2020) = 
+
+New Features:
+
+* Added breakpoints support for featured images
+* Global transformations on both Categories and Tags pages are now collapsible
+* On plugin deactivation, we will ask you to share with us the reason. It’s important to us :)
+
+Fixes and improvements:
+
+* Fixed an issue with syncing a deleted asset
+* Improved the mechanism for removing the Cloudinary account
+* The warning message for exceeding the annual unit plan was revised
+* Improved the Alt text syncronization from Cloudinary to WordPress
+* Fixed WPBakery error when inserting an image by the WordPress editor
+* Fixed AMP plugin conflict issue
 
 = 2.3.0 (05 Oct 2020) = 
 

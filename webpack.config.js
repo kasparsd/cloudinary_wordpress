@@ -4,6 +4,7 @@
 const path = require( 'path' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const OptimizeCSSAssetsPlugin = require( 'optimize-css-assets-webpack-plugin' );
+const RtlCssPlugin = require( 'rtlcss-webpack-plugin' );
 const TerserPlugin = require( 'terser-webpack-plugin' );
 
 /**
@@ -21,7 +22,7 @@ const sharedConfig = {
 		minimizer: [
 			new TerserPlugin( {
 				parallel: true,
-				sourceMap: false,
+				sourceMap: true,
 				cache: true,
 				terserOptions: {
 					output: {
@@ -30,15 +31,50 @@ const sharedConfig = {
 				},
 				extractComments: false,
 			} ),
-			new OptimizeCSSAssetsPlugin( { } ),
+			new OptimizeCSSAssetsPlugin( {} ),
 		],
 	},
+	module: {
+		...defaultConfig.module,
+		rules: [
+			// Remove the css/postcss loaders from `@wordpress/scripts` due to version conflicts.
+			...defaultConfig.module.rules.filter(
+				( rule ) => ! rule.test.toString().match( '.css' )
+			),
+			{
+				test: /\.css$/,
+				use: [
+					// prettier-ignore
+					MiniCssExtractPlugin.loader,
+					'css-loader',
+					'postcss-loader',
+				],
+			},
+		],
+	},
+	plugins: [
+		// Remove the CleanWebpackPlugin and  FixStyleWebpackPlugin plugins from `@wordpress/scripts` due to version conflicts.
+		...defaultConfig.plugins.filter(
+			( plugin ) =>
+				! [ 'CleanWebpackPlugin', 'FixStyleWebpackPlugin' ].includes(
+					plugin.constructor.name
+				)
+		),
+		new MiniCssExtractPlugin( {
+			filename: '../css/[name].css',
+		} ),
+		new RtlCssPlugin( {
+			filename: '../css/[name]-rtl.css',
+		} ),
+	],
 };
 
 const cldCore = {
+	...defaultConfig,
 	...sharedConfig,
 	entry: {
-		'cloudinary': './js/src/main.js',
+		cloudinary: './js/src/main.js',
+		video: './css/src/video.scss',
 	},
 	output: {
 		path: path.resolve( process.cwd(), 'js' ),
@@ -53,10 +89,10 @@ const cldCore = {
 						loader: 'file-loader',
 						options: {
 							name: '[name].[ext]',
-							outputPath: '../css/'
-						}
-					}
-				]
+							outputPath: '../css/',
+						},
+					},
+				],
 			},
 			{
 				test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -65,19 +101,16 @@ const cldCore = {
 						loader: 'file-loader',
 						options: {
 							name: '[name].[contenthash].[ext]',
-							outputPath: '../css/fonts/'
-						}
-					}
-				]
+							outputPath: '../css/fonts/',
+						},
+					},
+				],
 			},
 			{
 				test: /\.(sa|sc|c)ss$/,
 				use: [
 					{
 						loader: MiniCssExtractPlugin.loader,
-						options: {
-							hmr: process.env.NODE_ENV === 'development',
-						},
 					},
 					'css-loader',
 					'sass-loader',
@@ -91,7 +124,7 @@ const cldCore = {
 		} ),
 	],
 	optimization: {
-		...sharedConfig.optimization
+		...sharedConfig.optimization,
 	},
 };
 
@@ -102,9 +135,9 @@ const cldBlockEditor = {
 		'block-editor': './js/src/blocks.js',
 	},
 	module: {
-		...defaultConfig.module,
+		...sharedConfig.module,
 		rules: [
-			...defaultConfig.module.rules,
+			...sharedConfig.module.rules,
 			{
 				test: /\.(sa|sc|c)ss$/,
 				use: 'null-loader',
@@ -113,17 +146,56 @@ const cldBlockEditor = {
 	},
 };
 
+const cldGalleryBlock = {
+	...defaultConfig,
+	...sharedConfig,
+	entry: {
+		'gallery-block': './js/src/gallery-block/index.js',
+	},
+	output: {
+		path: path.resolve( process.cwd(), 'js' ),
+		filename: '[name].js',
+	},
+};
+
+const cldGalleryInit = {
+	...defaultConfig,
+	...sharedConfig,
+	entry: {
+		'gallery-init': './js/src/components/gallery-init.js',
+	},
+};
+
+const cldSettingsGallery = {
+	...defaultConfig,
+	...sharedConfig,
+	entry: {
+		gallery: './js/src/components/settings-gallery.js',
+	},
+};
+
 const cldDeactivate = {
 	...defaultConfig,
 	...sharedConfig,
 	entry: {
-		'deactivate': './js/src/deactivate.js',
-	}
+		deactivate: './js/src/deactivate.js',
+	},
 };
 
+const cldVideoInit = {
+	...defaultConfig,
+	...sharedConfig,
+	entry: {
+		'video-init': './js/src/video-init.js',
+	},
+};
 
 module.exports = [
 	cldBlockEditor,
 	cldCore,
-	cldDeactivate
+	cldGalleryBlock,
+	cldGalleryInit,
+	cldDeactivate,
+	cldVideoInit,
+	cldSettingsGallery,
 ];

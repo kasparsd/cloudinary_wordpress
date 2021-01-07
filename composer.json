@@ -3,7 +3,9 @@
 	"homepage": "https://wordpress.org/plugins/cloudinary-image-management-and-manipulation-in-the-cloud-cdn/",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
-	"require": {},
+	"require": {
+      "ext-json": "*"
+    },
 	"require-dev": {
 		"wp-coding-standards/wpcs": "^2.3",
 		"automattic/vipwpcs": "^2.2",
@@ -16,10 +18,10 @@
 	},
 	"scripts": {
 		"lint": [
-			"phpcs"
+			"phpcs --ignore=*js/*"
 		],
 		"fix": [
-			"phpcbf"
+			"phpcbf --ignore=*js/*"
 		]
 	}
 }
