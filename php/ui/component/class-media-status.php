@@ -10,6 +10,7 @@ namespace Cloudinary\UI\Component;
 use function Cloudinary\get_plugin_instance;
 use Cloudinary\UI\Component;
 use Cloudinary\Settings\Setting;
+use \Cloudinary\Sync;
 
 /**
  * Media Sync Status Component to render plan status.
@@ -33,12 +34,28 @@ class Media_Status extends Component {
 	protected $dir_url;
 
 	/**
+	 * Holds the media instance
+	 *
+	 * @var string
+	 */
+	protected $media;
+
+	/**
+	 * Holds the media sync data setting.
+	 *
+	 * @var string
+	 */
+	protected $data;
+
+	/**
 	 * Plan constructor.
 	 *
 	 * @param Setting $setting The parent Setting.
 	 */
 	public function __construct( $setting ) {
+
 		$plugin        = get_plugin_instance();
+		$this->media   = $plugin->get_component( 'media' );
 		$this->dir_url = $plugin->dir_url;
 
 		parent::__construct( $setting );
@@ -94,7 +111,7 @@ class Media_Status extends Component {
 			$status['content']             = sprintf(
 			// translators: number of synced media of all.
 				__( '%1$d of %2$d', 'cloudinary' ),
-				$this->get_media_to_synced(),
+				$this->get_total_synced_media(),
 				$this->get_total_of_media()
 			);
 
@@ -116,7 +133,7 @@ class Media_Status extends Component {
 	 * @return bool
 	 */
 	protected function is_all_sync() {
-		return ! ( $this->get_media_to_synced() < $this->get_total_of_media() );
+		return ! ( $this->get_total_synced_media() < $this->get_total_of_media() );
 	}
 
 	/**
@@ -124,10 +141,25 @@ class Media_Status extends Component {
 	 *
 	 * @return int
 	 */
-	protected function get_media_to_synced() {
-		// todo: implement logic.
+	protected function get_total_synced_media() {
 
-		return 15;
+		$params = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+			'post_mime_type' => array( 'image', 'video' ),
+			'posts_per_page' => 1,
+			'meta_query'     => array(
+				array(
+					'key'     => Sync::META_KEYS['public_id'],
+					'compare' => 'EXISTS',
+				),
+
+			),
+		);
+		$query  = new \WP_Query( $params );
+
+		return $query->found_posts;
 	}
 
 	/**
@@ -136,9 +168,16 @@ class Media_Status extends Component {
 	 * @return int
 	 */
 	protected function get_total_of_media() {
-		global $wpdb;
 
-		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'attachment'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$params = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+			'post_mime_type' => array( 'image', 'video' ),
+			'posts_per_page' => 1,
+		);
+		$query  = new \WP_Query( $params );
+
+		return $query->found_posts;
 	}
 }
-

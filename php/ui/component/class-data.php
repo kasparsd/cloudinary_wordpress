@@ -7,12 +7,14 @@
 
 namespace Cloudinary\UI\Component;
 
+use Cloudinary\UI\Component;
+
 /**
  * Data Component to hold data.
  *
  * @package Cloudinary\UI
  */
-class Data extends text {
+class Data extends Component {
 
 	/**
 	 * Holds the components build blueprint.
@@ -21,4 +23,21 @@ class Data extends text {
 	 */
 	protected $blueprint = '';
 
+	/**
+	 * Flag if component is a capture type.
+	 *
+	 * @var bool
+	 */
+	public $capture = true;
+
+	/**
+	 * Return stored data.
+	 *
+	 * @param string $value The value.
+	 *
+	 * @return string
+	 */
+	public function sanitize_value( $value ) {
+		return $value;
+	}
 }

@@ -366,7 +366,7 @@ class Media extends Settings_Component implements Setup {
 
 		if ( $as_sync_key ) {
 			$transformations = $this->get_transformations_from_string( $url );
-			$public_id      .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
+			$public_id       .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
 		}
 
 		return $public_id;
@@ -1349,14 +1349,14 @@ class Media extends Settings_Component implements Setup {
 		// Check for transformations.
 		$transformations = $this->get_transformations_from_string( $asset['url'] );
 		if ( ! empty( $transformations ) ) {
-			$asset['sync_key']       .= wp_json_encode( $transformations );
+			$asset['sync_key']        .= wp_json_encode( $transformations );
 			$asset['transformations'] = $transformations;
 		}
 
 		// Check Format.
 		$url_format = pathinfo( $asset['url'], PATHINFO_EXTENSION );
 		if ( strtolower( $url_format ) !== strtolower( $asset['format'] ) ) {
-			$asset['format']    = $url_format;
+			$asset['format']   = $url_format;
 			$asset['sync_key'] .= $url_format;
 		}
 
@@ -2047,11 +2047,14 @@ class Media extends Settings_Component implements Setup {
 
 		if ( 2.4 === $previous_version ) {
 			// Setup new data from old.
-			$images = get_option( 'cloudinary_global_transformations', array() );
-			$video  = get_option( 'cloudinary_global_video_transformations', array() );
-			$media  = array_merge( $images, $video );
-			// Get the setting.
-			$setting = $this->settings->get_setting( 'media_display' );
+			$images    = get_option( 'cloudinary_global_transformations', array() );
+			$video     = get_option( 'cloudinary_global_video_transformations', array() );
+			$old_media = array_merge( $images, $video );
+			$setting   = $this->settings->get_setting( 'media_display' );
+			// Get the current defaults.
+			$default = $setting->get_value();
+
+			$media = wp_parse_args( $old_media, $default );
 			// Update value.
 			$setting->set_value( $media );
 			// Save to DB.
