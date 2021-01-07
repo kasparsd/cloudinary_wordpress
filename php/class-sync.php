@@ -913,33 +913,6 @@ class Sync implements Setup, Assets {
 						'cld'       => __( 'Cloudinary only', 'cloudinary' ),
 					),
 				),
-				array(
-					'type'        => 'group',
-					'title'       => __( 'Advanced Options', 'cloudinary' ),
-					'collapsible' => 'closed',
-					array(
-						'type'         => 'number',
-						'title'        => __( 'Auto sync threads', 'cloudinary' ),
-						'suffix'       => __( 'Max background threads for Auto Sync.', 'cloudinary' ),
-						'tooltip_text' => __(
-							'The max amount of background threads to create when auto syncing assets. Adding more threads speeds up syncing, but increases server load.',
-							'cloudinary'
-						),
-						'slug'         => 'autosync_threads',
-						'default'      => 2,
-					),
-					array(
-						'type'         => 'number',
-						'title'        => __( 'Bulk sync threads', 'cloudinary' ),
-						'suffix'       => __( 'Max background threads for Bulk Sync.', 'cloudinary' ),
-						'tooltip_text' => __(
-							'The max amount of background threads to create when doing a bulk sync. Adding more threads speeds up syncing, but increases server load.',
-							'cloudinary'
-						),
-						'slug'         => 'bulksync_threads',
-						'default'      => 3,
-					),
-				),
 			),
 			array(
 				'type' => 'submit',
