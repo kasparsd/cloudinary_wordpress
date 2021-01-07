@@ -69,7 +69,6 @@ const GlobalTransformations = {
 				} else {
 					type = item.dataset.context;
 					if ( item.dataset.meta ) {
-						console.log( item.dataset );
 						value = item.dataset.meta + '_' + value;
 					}
 					if ( item.dataset.suffix ) {
