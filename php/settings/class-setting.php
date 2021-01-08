@@ -912,6 +912,24 @@ class Setting {
 	 */
 	public function add_admin_notice( $error_code, $error_message, $type = 'error', $dismissible = false, $duration = 0, $icon = null ) {
 
+		// Format message array into paragraphs.
+		if ( is_array( $error_message ) ) {
+			$message       = implode( "\n\r", $error_message );
+			$error_message = wpautop( $message );
+		}
+
+		$icons = array(
+			'success' => 'dashicons-yes-alt',
+			'created' => 'dashicons-saved',
+			'updated' => 'dashicons-saved',
+			'error'   => 'dashicons-no-alt',
+			'warning' => 'dashicons-warning',
+		);
+
+		if ( null === $icon && ! empty( $icons[ $type ] ) ) {
+			$icon = $icons[ $type ];
+		}
+
 		$option_parent  = $this->get_option_parent();
 		$option_notices = $option_parent->get_setting( '_notices' );
 		$notices        = $option_notices->get_param( '_notices', array() );
