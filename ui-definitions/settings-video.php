@@ -7,10 +7,11 @@
 
 $settings = array(
 	array(
-		'type'  => 'panel',
-		'title' => __( 'Video - Global Settings', 'cloudinary' ),
-		'icon'  => $this->plugin->dir_url . 'css/video.svg',
-		'slug'  => 'video_settings',
+		'type'   => 'panel',
+		'title'  => __( 'Video - Global Settings', 'cloudinary' ),
+		'icon'   => $this->plugin->dir_url . 'css/video.svg',
+		'slug'   => 'video_settings',
+		'anchor' => true,
 		array(
 			'type' => 'row',
 			array(

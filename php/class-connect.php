@@ -752,6 +752,14 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public function settings() {
 		$self = $this;
+		$url  = add_query_arg(
+			array(
+				'page' => 'media',
+				'tab'  => 'media_display',
+			),
+			admin_url( 'admin.php' )
+		);
+
 		$args = array(
 			'menu_title' => __( 'Getting Started', 'cloudinary' ),
 			'page_title' => __( 'Getting Started', 'cloudinary' ),
@@ -775,8 +783,8 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'Configure how your images are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as responsive images.',
 							'cloudinary'
 						),
-						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
-						'link_text' => __( 'See Examples', 'cloudinary' ),
+						'url'       => $url . '#panel-image-settings',
+						'link_text' => __( 'Image settings', 'cloudinary' ),
 					),
 					array(
 						'type'      => 'info_box',
@@ -786,8 +794,8 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'Configure how your videos are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as whether to use the Cloudinary video player.',
 							'cloudinary'
 						),
-						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
-						'link_text' => __( 'See Examples', 'cloudinary' ),
+						'url'       => $url . '#panel-video-settings',
+						'link_text' => __( 'Video settings', 'cloudinary' ),
 					),
 					array(
 						'type'      => 'info_box',

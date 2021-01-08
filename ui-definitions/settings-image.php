@@ -7,10 +7,11 @@
 
 $settings = array(
 	array(
-		'type'  => 'panel',
-		'title' => __( 'Image - Global Settings', 'cloudinary' ),
-		'icon'  => $this->plugin->dir_url . 'css/image.svg',
-		'slug'  => 'image_settings',
+		'type'   => 'panel',
+		'title'  => __( 'Image - Global Settings', 'cloudinary' ),
+		'icon'   => $this->plugin->dir_url . 'css/image.svg',
+		'slug'   => 'image_settings',
+		'anchor' => true,
 		array(
 			'type' => 'row',
 			array(
