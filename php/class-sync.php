@@ -807,6 +807,22 @@ class Sync implements Setup, Assets {
 	}
 
 	/**
+	 * Filter the Cloudinary Folder.
+	 *
+	 * @param string $value The set folder.
+	 * @param string $slug  The setting slug.
+	 *
+	 * @return string
+	 */
+	public function filter_get_cloudinary_folder( $value, $slug ) {
+		if ( '.' === $value && 'cloudinary_folder' === $slug ) {
+			$value = '';
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Checks if auto sync feature is enabled.
 	 *
 	 * @return bool
@@ -846,6 +862,8 @@ class Sync implements Setup, Assets {
 			$this->register_settings();
 			// Setup sync queue.
 			$this->managers['queue']->setup( $this );
+
+			add_filter( 'cloudinary_setting_get_value', array( $this, 'filter_get_cloudinary_folder' ), 10, 2 );
 		}
 	}
 
