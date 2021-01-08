@@ -28,7 +28,7 @@ class WooCommerceGallery {
 	public function __construct( Gallery $gallery ) {
 		$this->gallery = $gallery;
 
-		if ( $this->woocommerce_active() && $this->enabled() ) {
+		if ( self::woocommerce_active() && $this->enabled() ) {
 			$this->setup_hooks();
 		}
 	}
@@ -51,7 +51,7 @@ class WooCommerceGallery {
 	 *
 	 * @return bool
 	 */
-	protected function woocommerce_active() {
+	public static function woocommerce_active() {
 		return class_exists( 'WooCommerce' ) && function_exists( 'wc_get_product' );
 	}
 
@@ -79,7 +79,7 @@ class WooCommerceGallery {
 			}
 		);
 
-		if ( ! is_admin() && $this->woocommerce_active() ) {
+		if ( ! is_admin() && self::woocommerce_active() ) {
 			add_filter( 'woocommerce_single_product_image_thumbnail_html', '__return_empty_string' );
 		}
 	}
