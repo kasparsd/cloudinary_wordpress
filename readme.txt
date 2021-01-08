@@ -2,9 +2,9 @@
 Contributors: Cloudinary, XWP, Automattic
 Tags: image, video, DAM, optimization, CDN
 Requires at least: 4.7
-Tested up to: 5.5.3
+Tested up to: 5.6
 Requires PHP: 5.6
-Stable tag: trunk
+Stable tag: 2.4.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,6 +122,13 @@ The following plugins/themes/page-builders might not be fully compatible with th
 9. Easily Configure Your Account
 
 == Changelog ==
+
+= 2.4.1 (07 Jan 2021) = 
+
+Fixes and improvements:
+
+* Improved server calling efficiency 
+* More fixes
 
 = 2.4.0 (10 Nov 2020) = 
 

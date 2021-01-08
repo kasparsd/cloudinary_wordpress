@@ -101,7 +101,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		$this->plugin        = $plugin;
 		$this->settings_slug = 'dashboard';
 		add_filter( 'pre_update_option_cloudinary_connect', array( $this, 'verify_connection' ) );
-		add_filter( 'cron_schedules', array( $this, 'get_status_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval
 		add_action( 'update_option_cloudinary_connect', array( $this, 'updated_option' ) );
 		add_action( 'cloudinary_status', array( $this, 'check_status' ) );
 		add_action( 'cloudinary_version_upgrade', array( $this, 'upgrade_connection' ) );
@@ -514,28 +513,12 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	}
 
 	/**
-	 * Add our every minute schedule.
-	 *
-	 * @param array $schedules Array of schedules.
-	 *
-	 * @return array
-	 */
-	public function get_status_schedule( $schedules ) {
-		$schedules['every_minute'] = array(
-			'interval' => MINUTE_IN_SECONDS,
-			'display'  => __( 'Every Minute', 'cloudinary' ),
-		);
-
-		return $schedules;
-	}
-
-	/**
 	 * Setup Status cron.
 	 */
 	protected function setup_status_cron() {
 		if ( false === wp_get_schedule( 'cloudinary_status' ) ) {
 			$now = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
-			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'every_minute', 'cloudinary_status' );
+			wp_schedule_event( $now + ( MINUTE_IN_SECONDS ), 'hourly', 'cloudinary_status' );
 		}
 	}
 
@@ -553,13 +536,14 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
-				set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
-				$last_usage->save_value( $stats );// Save the last successful call to prevent crashing.
+				$last_usage->save_value( $stats );// Save the last successful call to prevgent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.
 				$stats = $last_usage->get_value();
 			}
+			// Set useage state to the results, either new or the last, to prevent API hits.
+			set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
 		}
 		$this->usage = $stats;
 	}

@@ -508,8 +508,8 @@ class Filter {
 				$new_atts .= ' loop="true"';
 			}
 			if ( ! empty( $attachment['transformations'] ) ) {
-				$transformation_string = Api::generate_transformation_string( $attachment['transformations'] );
-				$new_atts              .= ' transformations="' . esc_attr( $transformation_string ) . '"';
+				$transformation_string = Api::generate_transformation_string( $attachment['transformations'], 'video' );
+				$new_atts             .= ' transformations="' . esc_attr( $transformation_string ) . '"';
 			}
 			$html = str_replace( $shortcode['args'], $new_atts, $html );
 		}

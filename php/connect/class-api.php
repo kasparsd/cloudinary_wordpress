@@ -260,7 +260,7 @@ class Api {
 		);
 
 		if ( ! empty( $args['transformation'] ) ) {
-			$url_parts[] = self::generate_transformation_string( $args['transformation'] );
+			$url_parts[] = self::generate_transformation_string( $args['transformation'], $args['resource_type'] );
 		}
 		$base = pathinfo( $public_id );
 		if ( 'image' === $args['resource_type'] ) {
@@ -269,7 +269,7 @@ class Api {
 		}
 		// Add size.
 		if ( ! empty( $size ) && is_array( $size ) ) {
-			$url_parts[] = self::generate_transformation_string( array( $size ) );
+			$url_parts[] = self::generate_transformation_string( array( $size ), $args['resource_type'] );
 			// add size to ID if scaled.
 			if ( ! empty( $size['file'] ) ) {
 				$public_id = str_replace( $base['basename'], $size['file'], $public_id );
@@ -662,8 +662,9 @@ class Api {
 	 * @return array|\WP_Error
 	 */
 	private function call( $url, $args = array(), $method = 'get' ) {
-		$args['method']     = strtoupper( $method );
-		$args['user-agent'] = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . ' (' . $this->plugin_version . ')';
+		$args['method']             = strtoupper( $method );
+		$args['user-agent']         = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . ' (' . $this->plugin_version . ')';
+		$args['headers']['referer'] = get_site_url();
 		if ( 'GET' === $args['method'] ) {
 			$url = 'https://' . $this->credentials['api_key'] . ':' . $this->credentials['api_secret'] . '@' . $url;
 		} else {
