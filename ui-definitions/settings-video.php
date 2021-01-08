@@ -96,11 +96,12 @@ $settings = array(
 				array(
 					'type' => 'group',
 					array(
-						'type'        => 'on_off',
-						'slug'        => 'video_optimization',
-						'title'       => __( 'Video Optimization', 'cloudinary' ),
-						'description' => __( 'Optimize videos on my site.', 'cloudinary' ),
-						'attributes'  => array(
+						'type'         => 'on_off',
+						'slug'         => 'video_optimization',
+						'title'        => __( 'Video Optimization', 'cloudinary' ),
+						'tooltip_text' => __( 'Videos will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
+						'description'  => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'attributes'   => array(
 							'data-context' => 'video',
 						),
 					),
@@ -116,7 +117,7 @@ $settings = array(
 						'type'         => 'select',
 						'slug'         => 'video_format',
 						'title'        => __( 'Video format', 'cloudinary' ),
-						'tooltip_text' => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'tooltip_text' => __( "The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.", 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
 							'none' => __( 'Not Set', 'cloudinary' ),
@@ -131,7 +132,7 @@ $settings = array(
 						'type'         => 'select',
 						'slug'         => 'video_quality',
 						'title'        => __( 'Video quality', 'cloudinary' ),
-						'tooltip_text' => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'tooltip_text' => __( 'The compression quality to apply when delivering videos. Leave as Auto to apply an algorithm that finds the best tradeoff between visual quality and file size.', 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
 							'none'      => __( 'Not Set', 'cloudinary' ),
@@ -154,10 +155,11 @@ $settings = array(
 
 				),
 				array(
-					'type'       => 'text',
-					'slug'       => 'video_freeform',
-					'title'      => __( 'Custom Transformation', 'cloudinary' ),
-					'attributes' => array(
+					'type'         => 'text',
+					'slug'         => 'video_freeform',
+					'title'        => __( 'Custom Transformation', 'cloudinary' ),
+					'tooltip_text' => __( 'The set of transformations to apply to all video assets, as a URL transformation string.', 'cloudinary' ),
+					'attributes'   => array(
 						'data-context' => 'video',
 						'placeholder'  => 'fps_15-25,ac_none',
 					),
