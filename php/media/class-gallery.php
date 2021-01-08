@@ -283,16 +283,16 @@ class Gallery {
 			'type'        => 'page',
 			'page_title'  => __( 'Gallery Settings', 'cloudinary' ),
 			'option_name' => 'cloudinary_gallery',
-			array(
-				'type'  => 'panel',
-				'title' => __( 'Gallery Settings', 'cloudinary' ),
-				'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
-			),
-			
+		);
+
+		$panel = array(
+			'type'  => 'panel',
+			'title' => __( 'Gallery Settings', 'cloudinary' ),
+			'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
 		);
 
 		if ( WooCommerceGallery::woocommerce_active() ) {
-			$settings[] = array(
+			$panel[] = array(
 				'type'        => 'on_off',
 				'slug'        => 'gallery_woocommerce_enabled',
 				'title'       => __( 'Enable Gallery', 'cloudinary' ),
@@ -300,7 +300,7 @@ class Gallery {
 			);
 		}
 
-		$settings[] = array(
+		$panel[] = array(
 			'type'   => 'react',
 			'slug'   => 'gallery_config',
 			'script' => array(
@@ -309,9 +309,8 @@ class Gallery {
 			),
 		);
 
-		$settings[] = array(
-			'type' => 'submit',
-		);
+		$settings[] = $panel;
+		$settings[] = array( 'type' => 'submit' );
 
 		return $settings;
 	}
