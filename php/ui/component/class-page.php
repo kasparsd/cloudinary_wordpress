@@ -59,7 +59,7 @@ class Page extends Panel {
 			return null;
 		}
 		$html = array();
-		foreach ( $this->setting->get_admin_notices() as $setting ) {
+		foreach ( (array) $this->setting->get_admin_notices() as $setting ) {
 			$html[] = $setting->get_component()->render();
 			$setting->set_param( 'enabled', false );
 		}

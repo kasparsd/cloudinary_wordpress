@@ -362,7 +362,9 @@ class Media extends Settings_Component implements Setup {
 		// The remaining items should be the file.
 		$file      = implode( '/', $parts );
 		$path_info = pathinfo( $file );
-		$public_id = trim( $path_info['dirname'], './' );
+
+		$public_id = '.' !== $path_info['dirname'] ? $path_info['dirname'] : $path_info['filename'];
+		$public_id = trim( $public_id, './' );
 
 		if ( $as_sync_key ) {
 			$transformations = $this->get_transformations_from_string( $url );
