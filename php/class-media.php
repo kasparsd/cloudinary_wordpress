@@ -366,7 +366,7 @@ class Media extends Settings_Component implements Setup {
 
 		if ( $as_sync_key ) {
 			$transformations = $this->get_transformations_from_string( $url );
-			$public_id       .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
+			$public_id      .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
 		}
 
 		return $public_id;
@@ -1389,14 +1389,14 @@ class Media extends Settings_Component implements Setup {
 		// Check for transformations.
 		$transformations = $this->get_transformations_from_string( $asset['url'] );
 		if ( ! empty( $transformations ) ) {
-			$asset['sync_key']        .= wp_json_encode( $transformations );
+			$asset['sync_key']       .= wp_json_encode( $transformations );
 			$asset['transformations'] = $transformations;
 		}
 
 		// Check Format.
 		$url_format = pathinfo( $asset['url'], PATHINFO_EXTENSION );
 		if ( strtolower( $url_format ) !== strtolower( $asset['format'] ) ) {
-			$asset['format']   = $url_format;
+			$asset['format']    = $url_format;
 			$asset['sync_key'] .= $url_format;
 		}
 
