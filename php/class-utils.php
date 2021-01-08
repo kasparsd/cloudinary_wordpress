@@ -7,12 +7,15 @@
 
 namespace Cloudinary;
 
+use Cloudinary\Settings\Setting;
+
 /**
  * Class that includes utility methods.
  *
  * @package Cloudinary
  */
 class Utils {
+
 	/**
 	 * Filter an array recursively
 	 *
@@ -36,5 +39,20 @@ class Utils {
 		}
 
 		return array_filter( $input, $callback );
+	}
+
+	/**
+	 * Gets the active child setting.
+	 *
+	 * @return Setting
+	 */
+	public static function get_active_setting() {
+		$settings = get_plugin_instance()->settings;
+		$setting  = $settings->get_param( 'active_setting', $settings );
+		if ( $setting->has_param( 'has_tabs' ) ) {
+			$setting = $setting->get_param( 'active_tab', $setting );
+		}
+
+		return $setting;
 	}
 }

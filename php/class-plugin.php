@@ -465,57 +465,28 @@ final class Plugin {
 	 * @since  0.1
 	 */
 	public function admin_notices() {
+
+		$setting = Utils::get_active_setting();
 		/**
 		 * An array of classes that implement the Notice interface.
 		 *
 		 * @var $components Notice[]
 		 */
-		$components              = array_filter( $this->components, array( $this, 'is_notice_component' ) );
-		$default                 = array(
+		$components = array_filter( $this->components, array( $this, 'is_notice_component' ) );
+		$default    = array(
 			'message'     => '',
 			'type'        => 'error',
-			'dismissible' => true,
+			'dismissible' => false,
 			'duration'    => 10, // Default dismissible duration is 10 Seconds for save notices etc...
+			'icon'        => null,
 		);
-		$has_dismissible_notices = false;
+
 		foreach ( $components as $component ) {
 			$notices = $component->get_notices();
 			foreach ( $notices as $notice ) {
-				if ( ! empty( $notice ) && ! empty( $notice['message'] ) ) {
-					$notice = wp_parse_args( $notice, $default );
-					if ( true === $notice['dismissible'] ) {
-						// Convert the whole notice data into a string, and make it a hash.
-						// This allows the same notice to show if it has a change, i.e Quota limits change.
-						$notice_key = md5( wp_json_encode( $notice ) );
-						if ( ! get_transient( $notice_key ) ) {
-							$html = sprintf(
-								'<div class="notice-%1$s settings-error notice is-dismissible cld-notice" dismiss="alert" data-dismiss="%3$s" data-duration="%4$d"><p><strong>%2$s</strong></p></div>',
-								esc_attr( $notice['type'] ),
-								$notice['message'],
-								esc_attr( $notice_key ),
-								esc_attr( $notice['duration'] )
-							);
-							// Flag a dismissible notice has been shown.
-							$has_dismissible_notices = true;
-						}
-					} else {
-						$html = sprintf(
-							'<div class="notice-%1$s settings-error notice"><p><strong>%2$s</strong></p></div>',
-							esc_attr( $notice['type'] ),
-							$notice['message']
-						);
-					}
-					echo wp_kses_post( $html );
-				}
+				$notice = wp_parse_args( $notice, $default );
+				$setting->add_admin_notice( 'cld_general', $notice['message'], $notice['type'], $notice['dismissible'], $notice['duration'], $notice['icon'] );
 			}
-		}
-		// Output notice endpoint data only if a dismissible notice has been shown.
-		if ( $has_dismissible_notices ) {
-			$args = array(
-				'url'   => rest_url( REST_API::BASE . '/dismiss_notice' ),
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			);
-			wp_add_inline_script( 'cloudinary', 'var CLDIS = ' . wp_json_encode( $args ), 'before' );
 		}
 	}
 

@@ -7,6 +7,8 @@
 
 namespace Cloudinary\UI\Component;
 
+use Cloudinary\Utils;
+
 /**
  * Page Class Component
  *
@@ -19,7 +21,7 @@ class Page extends Panel {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|header/|tabs/|form|body|/body|settings/|/form|/wrap';
+	protected $blueprint = 'wrap|header/|tabs/|form|notice/|body|/body|settings/|/form|/wrap';
 
 	/**
 	 * Filter the form parts structure.
@@ -46,6 +48,28 @@ class Page extends Panel {
 	}
 
 	/**
+	 * Filter the notice part structure.
+	 *
+	 * @param array $struct The array structure.
+	 *
+	 * @return array
+	 */
+	protected function notice( $struct ) {
+		if ( Utils::get_active_setting() !== $this->setting ) {
+			return null;
+		}
+		$html = array();
+		foreach ( $this->setting->get_admin_notices() as $setting ) {
+			$html[] = $setting->get_component()->render();
+			$setting->set_param( 'enabled', false );
+		}
+		$struct['element'] = null;
+		$struct['content'] = self::compile_html( $html );
+
+		return $struct;
+	}
+
+	/**
 	 * Creates the options page and action inputs.
 	 *
 	 * @return array
@@ -53,9 +77,7 @@ class Page extends Panel {
 	protected function page_actions() {
 
 		$option_name = $this->get_option_name();
-		settings_errors( $option_name );
-
-		$inputs = array(
+		$inputs      = array(
 			'option_page' => $this->get_part( 'input' ),
 			'action'      => $this->get_part( 'input' ),
 		);
@@ -92,7 +114,7 @@ class Page extends Panel {
 		// Get the options setting input field.
 		$option_name = $this->setting->get_option_name();
 		if ( $this->setting->has_param( 'has_tabs' ) ) {
-			$option_name = $this->get_active_setting()->get_option_name();
+			$option_name = Utils::get_active_setting()->get_option_name();
 		}
 
 		return $option_name;
@@ -201,6 +223,5 @@ class Page extends Panel {
 
 		return parent::settings( $struct );
 	}
-
 }
 

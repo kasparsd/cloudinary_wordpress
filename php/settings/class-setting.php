@@ -291,7 +291,9 @@ class Setting {
 	 * @return Setting[]
 	 */
 	public function get_settings() {
-		return $this->settings;
+		$settings = array_filter( $this->settings, array( $this, 'is_public' ) );
+
+		return $settings;
 	}
 
 	/**
@@ -336,7 +338,7 @@ class Setting {
 	public function setting_exists( $slug ) {
 		$exists  = false;
 		$setting = $this->get_root_setting()->get_setting( $slug, false );
-		if ( ! is_null( $setting ) && $setting->get_param( 'is_setup', false ) ) {
+		if ( ! $this->is_private_slug( $slug ) && ! is_null( $setting ) && $setting->get_param( 'is_setup', false ) ) {
 			$exists = true;
 		}
 
@@ -500,11 +502,6 @@ class Setting {
 				}
 			}
 			$set_errors[ $setting_slug ] = true;
-		}
-
-		$other_errors = $this->get_error_notices();
-		foreach ( $other_errors as $error_code => $error ) {
-			add_settings_error( $setting_slug, $error_code, $error['message'], $error['type'] );
 		}
 
 		return $value;
@@ -701,14 +698,6 @@ class Setting {
 	 * @return string
 	 */
 	public function render_component() {
-		$notices = $this->get_error_notices();
-		if ( ! empty( $notices ) ) {
-			foreach ( $notices as $error_slug => $error_notice ) {
-				add_settings_error( $this->get_slug(), $error_notice['message'], $error_notice['type'] );
-			}
-			settings_errors( $this->get_slug() );
-		}
-
 		return $this->get_component()->render();
 	}
 
@@ -900,7 +889,7 @@ class Setting {
 		if ( $this->setting_exists( $slug ) ) {
 			// translators: Placeholder is the slug.
 			$message = sprintf( __( 'Duplicate setting slug %s. This setting will not be usable.', 'cloudinary' ), $slug );
-			$this->add_error_notice( 'duplicate_setting', $message, 'warning' );
+			$this->add_admin_notice( 'duplicate_setting', $message, 'warning' );
 		}
 		$new_setting = new Setting( $slug, $params, $this->root_setting );
 		$new_setting->set_value( $new_setting->get_param( 'default', null ) ); // Set value to null.
@@ -917,28 +906,62 @@ class Setting {
 	 * @param string $error_code    The error code/slug.
 	 * @param string $error_message The error text/message.
 	 * @param string $type          The error type.
+	 * @param bool   $dismissible   If notice is dismissible.
+	 * @param int    $duration      How long it's dismissible for.
+	 * @param string $icon          Optional icon.
 	 */
-	public function add_error_notice( $error_code, $error_message, $type = 'error' ) {
+	public function add_admin_notice( $error_code, $error_message, $type = 'error', $dismissible = false, $duration = 0, $icon = null ) {
 
-		$option_parent = $this->get_option_parent();
-		$errors        = $option_parent->get_param( '_error_notice', array() );
-		if ( empty( $errors[ $error_code ] ) ) {
-			$errors[ $error_code ] = array();
+		// Format message array into paragraphs.
+		if ( is_array( $error_message ) ) {
+			$message       = implode( "\n\r", $error_message );
+			$error_message = wpautop( $message );
 		}
-		$errors[ $error_code ] = array(
-			'message' => $error_message,
-			'type'    => $type,
+
+		$icons = array(
+			'success' => 'dashicons-yes-alt',
+			'created' => 'dashicons-saved',
+			'updated' => 'dashicons-saved',
+			'error'   => 'dashicons-no-alt',
+			'warning' => 'dashicons-warning',
 		);
-		$option_parent->set_param( '_error_notice', $errors );
+
+		if ( null === $icon && ! empty( $icons[ $type ] ) ) {
+			$icon = $icons[ $type ];
+		}
+
+		$option_parent  = $this->get_option_parent();
+		$option_notices = $option_parent->get_setting( '_notices' );
+		$notices        = $option_notices->get_param( '_notices', array() );
+
+		// Set new notice.
+		$params                  = array(
+			'type'     => 'notice',
+			'level'    => $type,
+			'message'  => $error_message,
+			'code'     => $error_code,
+			'dismiss'  => $dismissible,
+			'duration' => $duration,
+			'icon'     => $icon,
+		);
+		$notice_slug             = md5( wp_json_encode( $params ) );
+		$notices[ $notice_slug ] = $this->create_setting( $notice_slug, $params );
+		$option_notices->set_param( '_notices', $notices );
 	}
 
 	/**
-	 * Get error notices.
+	 * Get admin notices.
 	 *
-	 * @return array
+	 * @return Setting[]
 	 */
-	protected function get_error_notices() {
-		return $this->get_param( '_error_notice', array() );
+	public function get_admin_notices() {
+		$option_parent   = $this->get_option_parent();
+		$setting_notices = get_settings_errors( $option_parent->get_option_name() );
+		foreach ( $setting_notices as $key => $notice ) {
+			$option_parent->add_admin_notice( $notice['code'], $notice['message'], $notice['type'], true );
+		}
+
+		return $option_parent->get_setting( '_notices' )->get_param( '_notices' );
 	}
 
 	/**
@@ -1072,5 +1095,23 @@ class Setting {
 		}
 
 		return $capture;
+	}
+
+	/**
+	 * Check if the slug is private. i.e starts with _.
+	 *
+	 * @param string $slug the slug to check.
+	 *
+	 * @return bool
+	 */
+	protected function is_private_slug( $slug ) {
+		return '_' === substr( $slug, 0, 1 );
+	}
+
+	/**
+	 * Check if a setting is public.
+	 */
+	protected function is_public() {
+		return ! $this->is_private_slug( $this->get_slug() );
 	}
 }
