@@ -43,6 +43,8 @@ const UI = {
 		input.addEventListener( 'input', function () {
 			UI.compare( element, input, condition );
 		} );
+		// fire change event.
+		input.dispatchEvent( new Event( 'change' ) );
 	},
 	_alias( element ) {
 		element.addEventListener( 'click', function () {
@@ -77,6 +79,7 @@ const UI = {
 		UI.toggle( element, input, action );
 	},
 	toggle( wrap, element, action ) {
+		const inputs = wrap.getElementsByClassName( 'cld-ui-input' );
 		if ( 'closed' === action ) {
 			wrap.classList.remove( 'open' );
 			wrap.classList.add( 'closed' );
@@ -84,6 +87,9 @@ const UI = {
 				element.classList.remove( 'dashicons-arrow-up-alt2' );
 				element.classList.add( 'dashicons-arrow-down-alt2' );
 			}
+			[ ...inputs ].forEach( function ( input ) {
+				input.dataset.disabled = true;
+			} );
 		} else {
 			wrap.classList.remove( 'closed' );
 			wrap.classList.add( 'open' );
@@ -91,6 +97,9 @@ const UI = {
 				element.classList.remove( 'dashicons-arrow-down-alt2' );
 				element.classList.add( 'dashicons-arrow-up-alt2' );
 			}
+			[ ...inputs ].forEach( function ( input ) {
+				input.dataset.disabled = false;
+			} );
 		}
 	},
 };

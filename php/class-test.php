@@ -7,12 +7,10 @@
 
 namespace Cloudinary;
 
-use Cloudinary\Component\Setup;
-
 /**
  * Plugin Exception class.
  */
-class Test extends Settings_Component implements Setup {
+class Test extends Settings_Component {
 
 	/**
 	 * Define the settings.
@@ -26,7 +24,7 @@ class Test extends Settings_Component implements Setup {
 			'option_name' => 'test_settings',
 			'priority'    => 20,
 			'tabs'        => array(
-				'fields'     => array(
+				'fields'   => array(
 					'type'       => 'page',
 					'page_title' => __( 'Input Settings', 'cloudinary' ),
 					array(
@@ -143,7 +141,7 @@ class Test extends Settings_Component implements Setup {
 						'type' => 'submit',
 					),
 				),
-				'contents'   => array(
+				'contents' => array(
 					'type'       => 'page',
 					'page_title' => __( 'Content Settings', 'cloudinary' ),
 					array(
@@ -155,61 +153,6 @@ class Test extends Settings_Component implements Setup {
 							'clear'   => '',
 						),
 					),
-				),
-				'react_test' => array(
-					'type'       => 'page',
-					'page_title' => __( 'React', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'React example', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/video.svg',
-						array(
-							'type'   => 'react',
-							'slug'   => 'gallery',
-							'script' => array(
-								'slug' => 'gallery-widget',
-								'src'  => $this->plugin->dir_url . 'js/gallery.js',
-							),
-						),
-					),
-					array(
-						'type' => 'submit',
-					),
-				),
-				'col_test'   => array(
-					'type'       => 'page',
-					'page_title' => __( 'Columns', 'cloudinary' ),
-					array(
-						'type'  => 'panel',
-						'title' => __( 'Columns example', 'cloudinary' ),
-						'icon'  => $this->plugin->dir_url . 'css/crop.svg',
-						array(
-							'type' => 'row',
-							array(
-								'type'  => 'column',
-								'width' => '50%',
-								array(
-									'type'  => 'text',
-									'title' => 'Firstname',
-								),
-							),
-							array(
-								'type'  => 'column',
-								'width' => '50%',
-								array(
-									'type'  => 'text',
-									'title' => 'last name',
-								),
-							),
-						),
-					),
-					array(
-						'type' => 'submit',
-					),
-				),
-				'notices'    => array(
-					'type'       => 'page',
-					'page_title' => __( 'Notice and Error tests', 'cloudinary' ),
 				),
 			),
 		);
@@ -229,21 +172,5 @@ class Test extends Settings_Component implements Setup {
 		<?php
 
 		return ob_get_clean();
-	}
-
-	/**
-	 * Setup method.
-	 */
-	public function setup() {
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'test', __( 'Notice : success', 'cloudinary' ), 'success' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : updated', 'cloudinary' ), 'updated' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : created', 'cloudinary' ), 'created' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : error', 'cloudinary' ), 'error' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : warning', 'cloudinary' ), 'warning' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : info', 'cloudinary' ), 'info' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice : neutral', 'cloudinary' ), 'neutral' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Dismissed for 5 seconds', 'cloudinary' ), 'info', true, 5 );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice with dashicon.', 'cloudinary' ), 'info', true, 0, 'dashicons-wordpress-alt' );
-		$this->settings->get_setting( 'notices' )->add_admin_notice( 'text', __( 'Notice with image icon.', 'cloudinary' ), 'error', true, 0, $this->plugin->dir_url . 'css/video.svg' );
 	}
 }

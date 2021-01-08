@@ -16,6 +16,10 @@ const GlobalTransformations = {
 		image: document.getElementById( 'image-loader' ),
 		video: document.getElementById( 'video-loader' ),
 	},
+	optimization: {
+		image: document.getElementById( 'image_optimization' ),
+		video: document.getElementById( 'video_optimization' ),
+	},
 	error_container: document.getElementById( 'cld-preview-error' ),
 	activeItem: null,
 	elements: {
@@ -46,18 +50,30 @@ const GlobalTransformations = {
 		this.sample[ type ].innerHTML = '';
 		this.elements[ type ] = [];
 		for ( const item of this.fields ) {
-			if ( type !== item.dataset.context ) {
+			if (
+				type !== item.dataset.context ||
+				( item.dataset.disabled && 'true' === item.dataset.disabled )
+			) {
 				continue;
 			}
 			let value = item.value.trim();
 			if ( value.length ) {
 				if ( 'select-one' === item.type ) {
-					if ( 'none' === value ) {
+					if (
+						'none' === value ||
+						false === this.optimization[ type ].checked
+					) {
 						continue;
 					}
 					value = item.dataset.meta + '_' + value;
 				} else {
 					type = item.dataset.context;
+					if ( item.dataset.meta ) {
+						value = item.dataset.meta + '_' + value;
+					}
+					if ( item.dataset.suffix ) {
+						value += item.dataset.suffix;
+					}
 					value = this._transformations( value, type, true );
 				}
 				// Apply value if valid.

@@ -536,7 +536,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
-				$last_usage->save_value( $stats );// Save the last successful call to prevent crashing.
+				$last_usage->save_value( $stats );// Save the last successful call to prevgent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.

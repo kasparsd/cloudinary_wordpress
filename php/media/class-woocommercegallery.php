@@ -28,7 +28,7 @@ class WooCommerceGallery {
 	public function __construct( Gallery $gallery ) {
 		$this->gallery = $gallery;
 
-		if ( $this->woocommerce_active() && $this->gallery->gallery_enabled() ) {
+		if ( $this->woocommerce_active() && $this->enabled() ) {
 			$this->setup_hooks();
 		}
 	}
@@ -56,10 +56,28 @@ class WooCommerceGallery {
 	}
 
 	/**
+	 * Whether the replacement toggle is on or off
+	 *
+	 * @return bool
+	 */
+	public function enabled() {
+		return ! empty( $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) ) ?
+			(bool) $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) :
+			false;
+	}
+
+	/**
 	 * Setup hooks for the gallery.
 	 */
 	public function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
+
+		add_filter(
+			'cloudinary_gallery_html_container',
+			static function () {
+				return '.woocommerce-product-gallery';
+			}
+		);
 
 		if ( ! is_admin() && $this->woocommerce_active() ) {
 			add_filter( 'woocommerce_single_product_image_thumbnail_html', '__return_empty_string' );
