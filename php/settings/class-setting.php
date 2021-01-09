@@ -854,7 +854,13 @@ class Setting {
 			}
 		}
 
-		return $this->value;
+		/**
+		 * Filter the setting value.
+		 *
+		 * @param mixed  $value The setting value.
+		 * @param string $slug  The setting slug.
+		 */
+		return apply_filters( 'cloudinary_setting_get_value', $this->value, $this->get_slug() );
 	}
 
 	/**

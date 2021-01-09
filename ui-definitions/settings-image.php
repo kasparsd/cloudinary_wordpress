@@ -7,10 +7,11 @@
 
 $settings = array(
 	array(
-		'type'  => 'panel',
-		'title' => __( 'Image - Global Settings', 'cloudinary' ),
-		'icon'  => $this->plugin->dir_url . 'css/image.svg',
-		'slug'  => 'image_settings',
+		'type'   => 'panel',
+		'title'  => __( 'Image - Global Settings', 'cloudinary' ),
+		'icon'   => $this->plugin->dir_url . 'css/image.svg',
+		'slug'   => 'image_settings',
+		'anchor' => true,
 		array(
 			'type' => 'row',
 			array(
@@ -21,9 +22,9 @@ $settings = array(
 					array(
 						'type'         => 'on_off',
 						'slug'         => 'image_optimization',
-						'title'        => __( 'Image Optimization', 'cloudinary' ),
+						'title'        => __( 'Image optimization', 'cloudinary' ),
 						'tooltip_text' => __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
-						'description'  => __( 'Optimize Images on my site.', 'cloudinary' ),
+						'description'  => __( 'Optimize images on my site.', 'cloudinary' ),
 						'attributes'   => array(
 							'data-context' => 'image',
 						),
@@ -32,7 +33,7 @@ $settings = array(
 				),
 				array(
 					'type'        => 'group',
-					'title'       => __( 'Advanced Optimization', 'cloudinary' ),
+					'title'       => __( 'Advanced optimization', 'cloudinary' ),
 					'collapsible' => 'open',
 					'condition'   => array(
 						'image_optimization' => true,
@@ -44,7 +45,7 @@ $settings = array(
 						'tooltip_text' => __( "The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.", 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
-							'none' => __( 'Not Set', 'cloudinary' ),
+							'none' => __( 'Not set', 'cloudinary' ),
 							'auto' => __( 'Auto', 'cloudinary' ),
 							'png'  => __( 'PNG', 'cloudinary' ),
 							'jpg'  => __( 'JPG', 'cloudinary' ),
@@ -59,16 +60,16 @@ $settings = array(
 					array(
 						'type'         => 'select',
 						'slug'         => 'image_quality',
-						'title'        => __( 'Image Quality', 'cloudinary' ),
+						'title'        => __( 'Image quality', 'cloudinary' ),
 						'tooltip_text' => __( 'The compression quality to apply when delivering images. Leave as Auto to apply an algorithm that finds the best tradeoff between visual quality and file size.', 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
-							'none'      => __( 'Not Set', 'cloudinary' ),
+							'none'      => __( 'Not set', 'cloudinary' ),
 							'auto'      => __( 'Auto', 'cloudinary' ),
-							'auto:best' => __( 'Auto Best', 'cloudinary' ),
-							'auto:good' => __( 'Auto Good', 'cloudinary' ),
-							'auto:eco'  => __( 'Auto Eco', 'cloudinary' ),
-							'auto:low'  => __( 'Auto Low', 'cloudinary' ),
+							'auto:best' => __( 'Auto best', 'cloudinary' ),
+							'auto:good' => __( 'Auto good', 'cloudinary' ),
+							'auto:eco'  => __( 'Auto eco', 'cloudinary' ),
+							'auto:low'  => __( 'Auto low', 'cloudinary' ),
 							'100'       => '100',
 							'80'        => '80',
 							'60'        => '60',
@@ -87,13 +88,13 @@ $settings = array(
 					array(
 						'type'         => 'on_off',
 						'slug'         => 'enable_breakpoints',
-						'title'        => __( 'Image Breakpoints', 'cloudinary' ),
+						'title'        => __( 'Image breakpoints', 'cloudinary' ),
 						'tooltip_text' => __( 'Automatically generate multiple sizes based on the configured breakpoints to enable your images to responsively adjust to different screen sizes. Note that your Cloudinary usage will increase when enabling responsive images.', 'cloudinary' ),
 						'description'  => __( 'Enable responsive images.', 'cloudinary' ),
 					),
 					array(
 						'type'      => 'group',
-						'title'     => __( 'Image Breakpoints', 'cloudinary' ),
+						'title'     => __( 'Image breakpoints', 'cloudinary' ),
 						'condition' => array(
 							'enable_breakpoints' => true,
 						),
@@ -138,8 +139,8 @@ $settings = array(
 				array(
 					'type'         => 'text',
 					'slug'         => 'image_freeform',
-					'title'        => __( 'Custom Transformation', 'cloudinary' ),
-					'tooltip_text' => __( 'The set of transformations to apply to all image assets, as a URL transformation string.', 'cloudinary' ),
+					'title'        => __( 'Custom transformation', 'cloudinary' ),
+					'tooltip_text' => __( 'The set of transformations to apply to all image assets, as a URL transformation string', 'cloudinary' ),
 					'attributes'   => array(
 						'data-context' => 'image',
 						'placeholder'  => 'w_90,r_max',
@@ -151,7 +152,7 @@ $settings = array(
 				'width' => '55%',
 				array(
 					'type'  => 'image_preview',
-					'title' => __( 'Image Preview', 'cloudinary' ),
+					'title' => __( 'Image preview', 'cloudinary' ),
 				),
 			),
 
