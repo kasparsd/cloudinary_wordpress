@@ -137,8 +137,6 @@ final class Plugin {
 		$this->components['media']        = new Media( $this );
 		$this->components['api']          = new REST_API( $this );
 		$this->components['storage']      = new Storage( $this );
-		// Testing Settings.
-		$this->components['testing'] = new Test( $this );
 	}
 
 	/**
