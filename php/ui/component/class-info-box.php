@@ -30,13 +30,15 @@ class Info_Box extends Panel {
 	 */
 	protected function link( $struct ) {
 
-		$struct['element']              = 'a';
-		$struct['content']              = $this->setting->get_param( 'link_text' );
-		$struct['attributes']['href']   = esc_url( $this->setting->get_param( 'url' ) );
-		$struct['attributes']['target'] = '_blank';
-		$struct['attributes']['class']  = array(
-			'button',
-		);
+		$struct['element']             = 'a';
+		$struct['content']             = $this->setting->get_param( 'link_text' );
+		$struct['attributes']['href']  = esc_url( $this->setting->get_param( 'url' ) );
+		$struct['attributes']['class'] = array( 'button' );
+
+		if ( true === $this->setting->get_param( 'blank', true ) ) {
+			$struct['attributes']['target'] = '_blank';
+			$struct['attributes']['rel']    = 'noreferrer';
+		}
 
 		return $struct;
 	}

@@ -784,6 +784,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'cloudinary'
 						),
 						'url'       => $url . '#panel-image-settings',
+						'blank'     => false,
 						'link_text' => __( 'Image settings', 'cloudinary' ),
 					),
 					array(
@@ -795,6 +796,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'cloudinary'
 						),
 						'url'       => $url . '#panel-video-settings',
+						'blank'     => false,
 						'link_text' => __( 'Video settings', 'cloudinary' ),
 					),
 					array(

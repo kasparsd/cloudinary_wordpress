@@ -10,12 +10,9 @@ namespace Cloudinary;
 use Cloudinary\Component\Assets;
 use Cloudinary\Component\Config;
 use Cloudinary\Component\Notice;
-use Cloudinary\Component\Settings;
 use Cloudinary\Component\Setup;
 use Cloudinary\Settings\Setting;
 use Cloudinary\Sync\Storage;
-use Cloudinary\Deactivation;
-use Cloudinary\Settings_Component;
 use WP_REST_Request;
 use WP_REST_Server;
 use const E_USER_WARNING;
@@ -171,7 +168,7 @@ final class Plugin {
 			'icon'        => 'dashicons-cloudinary',
 			'option_name' => $this->slug,
 			'page_header' => array(
-				'content' => '<img src="' . esc_url( $this->dir_url ) . 'css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="#">' . esc_html__( 'Need help?', 'cloudinary' ) . '</a></p>',
+				'content' => '<img src="' . esc_url( $this->dir_url ) . 'css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="https://cloudinary.com/documentation/wordpress_integration" target="_blank" rel="noreferrer">' . esc_html__( 'Need help?', 'cloudinary' ) . '</a></p>',
 			),
 			'page_footer' => array(
 				'content' => __( 'Thanks for using Cloudinary, please take a minute to rate our plugin.', 'cloudinary' ),
