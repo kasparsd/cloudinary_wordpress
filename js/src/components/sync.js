@@ -1,4 +1,4 @@
-/* global window wp */
+/* global cloudinaryApi */
 
 const Sync = {
 	progress: document.getElementById( 'progress-wrapper' ),
@@ -9,76 +9,85 @@ const Sync = {
 	hide: 'none',
 	isRunning: false,
 	getStatus: function getStatus() {
-		var self = this,
-			resourceType = [],
-			url = cloudinaryApi.restUrl + 'cloudinary/v1/attachments',
-			params;
+		const url = cloudinaryApi.restUrl + 'cloudinary/v1/attachments';
 
-		wp.ajax.send( {
-			url: url,
-			type: 'GET',
-			beforeSend: function( request ) {
-				request.setRequestHeader( 'X-WP-Nonce', cloudinaryApi.nonce );
-			},
-		} ).done( function( data ) {
-			Sync.isRunning = data.is_running;
-			if ( Sync.isRunning ) {
-				setTimeout( Sync.getStatus, 10000 );
-			}
-			Sync._updateUI( data );
-		} );
+		wp.ajax
+			.send( {
+				url,
+				type: 'GET',
+				beforeSend( request ) {
+					request.setRequestHeader(
+						'X-WP-Nonce',
+						cloudinaryApi.nonce
+					);
+				},
+			} )
+			.done( function ( data ) {
+				Sync.isRunning = data.is_running;
+				if ( Sync.isRunning ) {
+					setTimeout( Sync.getStatus, 10000 );
+				}
+				Sync._updateUI( data );
+			} );
 	},
 	stopSync: function stopSync() {
-		var self = this,
-			url = cloudinaryApi.restUrl + 'cloudinary/v1/sync';
+		const url = cloudinaryApi.restUrl + 'cloudinary/v1/sync';
 
 		Sync.isRunning = false;
 
-		wp.ajax.send( {
-			url: url,
-			data: {
-				stop: true,
-			},
-			beforeSend: function( request ) {
-				request.setRequestHeader( 'X-WP-Nonce', cloudinaryApi.nonce );
-			},
-		} ).done( function( data ) {
-			Sync._updateUI( data );
-		} );
+		wp.ajax
+			.send( {
+				url,
+				data: {
+					stop: true,
+				},
+				beforeSend( request ) {
+					request.setRequestHeader(
+						'X-WP-Nonce',
+						cloudinaryApi.nonce
+					);
+				},
+			} )
+			.done( function ( data ) {
+				Sync._updateUI( data );
+			} );
 	},
 	pushAttachments: function pushAttachments() {
-		var self = this,
-			url = cloudinaryApi.restUrl + 'cloudinary/v1/sync';
+		const url = cloudinaryApi.restUrl + 'cloudinary/v1/sync';
 
 		Sync.isRunning = true;
 		Sync.progress.style.display = Sync.show;
 
-		wp.ajax.send( {
-			url: url,
-			beforeSend: function( request ) {
-				request.setRequestHeader( 'X-WP-Nonce', cloudinaryApi.nonce );
-			},
-		} ).done( function ( data ) {
-			setTimeout( Sync.getStatus, 10000 );
-		} );
+		wp.ajax
+			.send( {
+				url,
+				beforeSend( request ) {
+					request.setRequestHeader(
+						'X-WP-Nonce',
+						cloudinaryApi.nonce
+					);
+				},
+			} )
+			.done( function () {
+				setTimeout( Sync.getStatus, 10000 );
+			} );
 	},
 	_updateUI: function _updateUI( data ) {
 		if ( data.percent < 100 && typeof data.started !== 'undefined' ) {
 			this.submitButton.style.display = this.hide;
 			this.stopButton.style.display = this.show;
-		}
-		else if ( data.percent >= 100 && typeof data.started !== 'undefined' ) {
+		} else if (
+			data.percent >= 100 &&
+			typeof data.started !== 'undefined'
+		) {
 			this.submitButton.style.display = this.hide;
 			this.stopButton.style.display = this.show;
-		}
-		else if ( data.pending > 0 ) {
+		} else if ( data.pending > 0 ) {
 			this.submitButton.style.display = this.show;
 			this.stopButton.style.display = this.hide;
-		}
-		else if ( data.processing > 0 ) {
+		} else if ( data.processing > 0 ) {
 			this.stopButton.style.display = this.show;
-		}
-		else {
+		} else {
 			this.stopButton.style.display = this.hide;
 		}
 
@@ -88,8 +97,7 @@ const Sync = {
 
 		if ( this.isRunning ) {
 			this.progress.style.display = this.show;
-		}
-		else {
+		} else {
 			this.progress.style.display = this.hide;
 		}
 	},
@@ -99,17 +107,19 @@ const Sync = {
 		Sync.submitButton.style.display = Sync.hide;
 		Sync.pushAttachments();
 	},
-	_reset: function _reset( e ) {
+	_reset: function _reset() {
 		Sync.submitButton.style.display = Sync.hide;
 		Sync.getStatus();
 	},
-	_init: function( fn ) {
-
+	_init( fn ) {
 		if ( typeof cloudinaryApi !== 'undefined' ) {
-			if ( document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading' ) {
+			if (
+				document.attachEvent
+					? document.readyState === 'complete'
+					: document.readyState !== 'loading'
+			) {
 				fn();
-			}
-			else {
+			} else {
 				document.addEventListener( 'DOMContentLoaded', fn );
 			}
 		}
@@ -119,19 +129,38 @@ const Sync = {
 export default Sync;
 
 // Add it a trigger watch to stop deactivation.
-let triggers = document.getElementsByClassName( 'cld-deactivate' );
+const triggers = document.getElementsByClassName( 'cld-deactivate' );
 [ ...triggers ].forEach( ( trigger ) => {
-    trigger.addEventListener( 'click', function( ev ) {
-        if ( !confirm( wp.i18n.__( 'Caution: Your storage setting is currently set to "Cloudinary only", disabling the plugin will result in broken links to media assets. Are you sure you want to continue?', 'cloudinary' ) ) ) {
-            ev.preventDefault();
-            // Close the feedback form.
-            document.getElementById( 'TB_closeWindowButton' ).click();
-        }
-    } );
+	trigger.addEventListener( 'click', function ( ev ) {
+		if (
+			! confirm(
+				wp.i18n.__(
+					'Caution: Your storage setting is currently set to "Cloudinary only", disabling the plugin will result in broken links to media assets. Are you sure you want to continue?',
+					'cloudinary'
+				)
+			)
+		) {
+			ev.preventDefault();
+		}
+	} );
+	trigger.addEventListener( 'click', function ( ev ) {
+		if (
+			! confirm(
+				wp.i18n.__(
+					'Caution: Your storage setting is currently set to "Cloudinary only", disabling the plugin will result in broken links to media assets. Are you sure you want to continue?',
+					'cloudinary'
+				)
+			)
+		) {
+			ev.preventDefault();
+			// Close the feedback form.
+			document.getElementById( 'TB_closeWindowButton' ).click();
+		}
+	} );
 } );
 
 // Init.
-Sync._init( function() {
+Sync._init( function () {
 	Sync._reset();
 	Sync.submitButton.addEventListener( 'click', Sync._start );
 	Sync.stopButton.addEventListener( 'click', Sync.stopSync );

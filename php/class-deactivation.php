@@ -26,7 +26,7 @@ class Deactivation {
 	 *
 	 * @var string
 	 */
-	protected static $cld_endpoint = 'https://analytics.cloudinary.com/wp_deactivate_reason';
+	protected static $cld_endpoint = 'https://analytics-api.cloudinary.com/wp_deactivate_reason';
 
 	/**
 	 * The internal endpoint to capture the administrator feedback.

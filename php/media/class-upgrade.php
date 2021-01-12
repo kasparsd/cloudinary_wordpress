@@ -73,7 +73,7 @@ class Upgrade {
 					$cloud_name = md5( $val );
 					continue;
 				}
-				if ( in_array( $val, array( 'image', 'video', 'upload' ), true ) ) {
+				if ( in_array( $val, array( 'images', 'image', 'video', 'upload' ), true ) ) {
 					continue;
 				}
 				$transformation_maybe = $media->get_transformations_from_string( $val );
@@ -86,7 +86,11 @@ class Upgrade {
 					continue;
 				}
 
-				$id_parts[] = $val;
+				// Filter out file name.
+				$path = pathinfo( $val, PATHINFO_FILENAME );
+				if ( ! in_array( $path, $id_parts, true ) ) {
+					$id_parts[] = pathinfo( $val, PATHINFO_FILENAME );
+				}
 			}
 			// Build public_id.
 			$parts     = array_filter( $id_parts );
@@ -136,7 +140,6 @@ class Upgrade {
 		return $public_id;
 	}
 
-
 	/**
 	 * Setup hooks for the filters.
 	 */
@@ -152,7 +155,7 @@ class Upgrade {
 						wp_safe_redirect( admin_url( '?page=cloudinary' ) );
 						die;
 					}
-				} 
+				}
 			);
 		}
 	}

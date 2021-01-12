@@ -101,7 +101,7 @@ class Storage implements Notice {
 			if ( 'dual_full' !== $this->settings['offload'] ) {
 				$field['suffix']      = null;
 				$field['description'] = sprintf(
-					// translators: Placeholders are <a> tags.
+				// translators: Placeholders are <a> tags.
 					__( 'You can’t currently change your environment variable as your storage setting is set to "Cloudinary only". Update your %1$s storage settings %2$s and sync your assets to WordPress storage to enable this setting.', 'cloudinary' ),
 					sprintf(
 						'<a href="%s">',
@@ -182,6 +182,10 @@ class Storage implements Notice {
 
 		// Get the previous state of the attachment.
 		$previous_state = $this->media->get_post_meta( $attachment_id, Sync::META_KEYS['storage'], true );
+
+		// don't apply the default transformations here.
+		add_filter( 'cloudinary_apply_default_transformations', '__return_false' );
+
 		switch ( $this->settings['offload'] ) {
 			case 'cld':
 				$this->remove_local_assets( $attachment_id );
@@ -194,17 +198,20 @@ class Storage implements Notice {
 					// Add low quality transformations.
 					$transformations[] = array( 'quality' => 'auto:low' );
 				}
-				$url = $this->media->cloudinary_url( $attachment_id, '', $transformations, null, false );
+				$url = $this->media->cloudinary_url( $attachment_id, '', $transformations );
 				break;
 			case 'dual_full':
 				$exists = get_attached_file( $attachment_id );
 				if ( ! empty( $previous_state ) && ! file_exists( $exists ) ) {
 					// Only do this is it's changing a state.
 					$transformations = $this->media->get_transformation_from_meta( $attachment_id );
-					$url             = $this->media->cloudinary_url( $attachment_id, '', $transformations, null, false );
+					$url             = $this->media->cloudinary_url( $attachment_id, '', $transformations );
 				}
 				break;
 		}
+
+		// start applying default transformations again.
+		remove_filter( 'cloudinary_apply_default_transformations', '__return_false' );
 
 		// If we have a URL, it means we have a new source to pull from.
 		if ( ! empty( $url ) ) {
@@ -280,7 +287,7 @@ class Storage implements Notice {
 
 				$notices[] = array(
 					'message'     => sprintf(
-						// translators: Placeholders are <a> tags.
+					// translators: Placeholders are <a> tags.
 						__( 'You have reached one or more of your quota limits. Your Cloudinary media will soon stop being delivered. Your current storage setting is "Cloudinary only" and this will therefore result in broken links to media assets. To prevent any issues upgrade your account or change your %1$s storage settings.%2$s', 'cloudinary' ),
 						'<a href="' . esc_url( admin_url( 'admin.php?page=cld_sync_media' ) ) . '">',
 						'</a>'
@@ -334,7 +341,7 @@ class Storage implements Notice {
 			$defaults       = array(
 				'offload' => 'dual_full',
 			);
-			$settings       = isset( $this->plugin->config['settings']['sync_media'] ) ? $this->plugin->config['settings']['sync_media'] : array();
+			$settings       = $this->media->get_settings()->get_value( 'sync_media' );
 			$this->settings = wp_parse_args( $settings, $defaults );
 			$structure      = array(
 				'generate' => array( $this, 'generate_signature' ),
