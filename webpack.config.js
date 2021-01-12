@@ -171,6 +171,12 @@ const cldSettingsGallery = {
 	...sharedConfig,
 	entry: {
 		gallery: './js/src/components/settings-gallery.js',
+	},
+};
+
+const cldGalleryUI = {
+	...cldCore,
+	entry: {
 		'gallery-ui': './css/src/gallery-ui.scss',
 	},
 };
@@ -199,4 +205,5 @@ module.exports = [
 	cldDeactivate,
 	cldVideoInit,
 	cldSettingsGallery,
+	cldGalleryUI,
 ];
