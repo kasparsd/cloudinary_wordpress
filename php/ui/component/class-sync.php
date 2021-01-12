@@ -28,6 +28,7 @@ class Sync extends Text {
 		$to_sync = $this->count_to_sync();
 		if ( empty( $to_sync ) ) {
 
+			$message            = $this->get_part( 'span' );
 			$message['content'] = __( 'All assets are synced', 'cloudinary' );
 
 			$struct['element']             = 'div';

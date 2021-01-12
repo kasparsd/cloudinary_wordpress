@@ -293,10 +293,15 @@ class Gallery {
 
 		if ( WooCommerceGallery::woocommerce_active() ) {
 			$panel[] = array(
-				'type'        => 'on_off',
-				'slug'        => 'gallery_woocommerce_enabled',
-				'title'       => __( 'Enable Gallery', 'cloudinary' ),
-				'description' => __( 'Replace WooCommerce Gallery', 'cloudinary' ),
+				'type' => 'group',
+				'title' => 'WooCommerce',
+				array(
+					'type'        => 'on_off',
+					'slug'        => 'gallery_woocommerce_enabled',
+					'title'       => __( 'Replace Gallery', 'cloudinary' ),
+					'description'  => __( "Enable Cloudinary's Product Gallery to replace default WooCommerce gallery.", 'cloudinary' ),
+					'tooltip_text' => __( 'Replace the default WooCommerce gallery on the product page', 'cloudinary' ),
+				),
 			);
 		}
 

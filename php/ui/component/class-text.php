@@ -108,6 +108,7 @@ class Text extends Component {
 
 		$struct['element']               = 'p';
 		$struct['attributes']['class'][] = 'description';
+		$struct['content']               = $this->setting->get_param( 'description' );
 
 		return $struct;
 	}
