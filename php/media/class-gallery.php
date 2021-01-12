@@ -171,6 +171,50 @@ class Gallery {
 	}
 
 	/**
+	 * Enqueue admin UI scripts if needed.
+	 */
+	public function enqueue_admin_scripts() {
+		if ( Utils::get_active_setting() === $this->settings ) {
+			$this->block_editor_scripts_styles();
+			wp_enqueue_style(
+				'cloudinary-gallery-settings-css',
+				$this->media->plugin->dir_url . 'css/gallery-ui.css',
+				array(),
+				$this->media->plugin->version
+			);
+
+			$script = array(
+				'slug'      => 'gallery_config',
+				'src'       => $this->media->plugin->dir_url . 'js/gallery.js',
+				'in_footer' => true,
+			);
+			$asset  = $this->get_asset();
+			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
+
+			$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
+			wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
+		}
+	}
+
+	/**
+	 * Retrieve asset dependencies.
+	 *
+	 * @return array
+	 */
+	private function get_asset() {
+		$asset = require $this->media->plugin->dir_path . 'js/gallery.asset.php';
+
+		$asset['dependencies'] = array_filter(
+			$asset['dependencies'],
+			static function ( $dependency ) {
+				return false === strpos( $dependency, '/' );
+			}
+		);
+
+		return $asset;
+	}
+
+	/**
 	 * Register blocked editor assets for the gallery.
 	 */
 	public function block_editor_scripts_styles() {
@@ -345,6 +389,7 @@ class Gallery {
 		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 
 		// Register Settings.
 		$this->register_settings();
