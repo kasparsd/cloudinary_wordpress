@@ -7,6 +7,8 @@
 
 namespace Cloudinary\Media;
 
+use Cloudinary\Settings\Setting;
+
 /**
  * Class Global Transformations.
  *
@@ -24,13 +26,13 @@ class Global_Transformations {
 	private $media;
 
 	/**
-	 * Holds the fields defined in settings.
+	 * Holds the taxonomy fields defined in settings.
 	 *
 	 * @since   0.1
 	 *
 	 * @var     array
 	 */
-	private $fields;
+	private $taxonomy_fields;
 
 	/**
 	 * Holds the global settings (lowest level).
@@ -57,22 +59,42 @@ class Global_Transformations {
 	const META_FEATURED_IMAGE_KEY = '_cloudinary_featured_overwrite';
 
 	/**
+	 * Holds the media settings.
+	 *
+	 * @var Setting
+	 */
+	protected $media_settings;
+
+	/**
 	 * Global Transformations constructor.
 	 *
 	 * @param \Cloudinary\Media $media The plugin.
 	 */
 	public function __construct( \Cloudinary\Media $media ) {
 		$this->media            = $media;
-		$settings               = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG );
-		$this->globals['image'] = $settings->get_setting( 'image_settings' );
-		$this->globals['video'] = $settings->get_setting( 'video_settings' );
-
-		$field_slugs = array_keys( $settings->get_value() );
+		$this->media_settings   = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG );
+		$this->globals['image'] = $this->media_settings->get_setting( 'image_settings' );
+		$this->globals['video'] = $this->media_settings->get_setting( 'video_settings' );
+		// Set value to null, to rebuild data to get defaults.
+		$this->media_settings->set_value( null );
+		$field_slugs = array_keys( $this->media_settings->get_value() );
 		foreach ( $field_slugs as $slug ) {
-			$setting = $settings->get_setting( $slug );
-			if ( $setting->has_param( 'attributes:data-context' ) ) {
-				$this->fields[ $slug ] = $setting;
+			$setting = $this->media_settings->get_setting( $slug );
+			if ( $setting->has_param( 'taxonomy_field' ) ) {
+				$context  = $setting->get_param( 'taxonomy_field:context', 'global' );
+				$priority = intval( $setting->get_param( 'taxonomy_field:priority', 10 ) ) * 1000;
+				while ( isset( $this->taxonomy_fields[ $context ][ $priority ] ) ) {
+					$priority ++;
+				}
+				if ( ! isset( $this->taxonomy_fields[ $context ] ) ) {
+					$this->taxonomy_fields[ $context ] = array();
+				}
+				$this->taxonomy_fields[ $context ][ $priority ] = $setting;
 			}
+		}
+
+		foreach ( $this->taxonomy_fields as $context => $set ) {
+			ksort( $this->taxonomy_fields[ $context ] );
 		}
 		$this->setup_hooks();
 	}
@@ -106,26 +128,28 @@ class Global_Transformations {
 	 */
 	public function save_taxonomy_custom_meta( $term_id ) {
 
-		$setting_slug = $this->media->plugin->components['settings']->setting_slug();
-		$args         = array(
-			$setting_slug => array(
-				'filter' => FILTER_SANITIZE_STRING,
-				'flags'  => FILTER_REQUIRE_ARRAY,
-			),
-		);
-		$input        = filter_input_array( INPUT_POST, $args );
-		foreach ( $this->fields as $field_slug => $field ) {
-			if ( ! isset( $field['contextual'] ) || ! isset( $input[ $setting_slug ][ $field_slug ] ) ) {
-				continue;
-			}
-			$value = $input[ $setting_slug ][ $field_slug ];
-			if ( ! empty( $field['choices'] ) && ! isset( $field['choices'][ $value ] ) ) {
-				$value = null; // Reset the value if not a choice.
-			}
+		foreach ( $this->taxonomy_fields as $context => $set ) {
 
-			// Update the metadata.
-			$meta_key = self::META_ORDER_KEY . '_' . $field_slug;
-			update_term_meta( $term_id, $meta_key, $value );
+			foreach ( $set as $setting ) {
+
+				$meta_key = self::META_ORDER_KEY . '_' . $setting->get_slug();
+				$value    = $setting->get_submitted_value();
+
+				// Check if it's option based.
+				if ( $setting->has_param( 'options' ) ) {
+					$options = $setting->get_param( 'options', array() );
+					if ( ! in_array( $value, $options, true ) ) {
+						$value = null;
+					}
+				}
+
+				// If null, skip it.
+				if ( is_null( $value ) ) {
+					continue;
+				}
+				// Update the metadata.
+				update_term_meta( $term_id, $meta_key, $value );
+			}
 		}
 	}
 
@@ -138,11 +162,13 @@ class Global_Transformations {
 	 * @return array
 	 */
 	private function get_term_transformations( $term_id, $type ) {
-		$keys      = array_keys( $this->fields );
 		$meta_data = array();
-		foreach ( $keys as $key ) {
-			$meta_key          = self::META_ORDER_KEY . '_' . $key;
-			$meta_data[ $key ] = get_term_meta( $term_id, $meta_key, true );
+		foreach ( $this->taxonomy_fields[ $type ] as $setting ) {
+			$slug     = $setting->get_slug();
+			$meta_key = self::META_ORDER_KEY . '_' . $slug;
+			$value    = get_term_meta( $term_id, $meta_key, true );
+			$setting->set_value( $value );
+			$meta_data[ $slug ] = $value;
 		}
 
 		// Clear out empty items.
@@ -152,13 +178,23 @@ class Global_Transformations {
 	}
 
 	/**
+	 * Init term meta field values.
+	 */
+	public function init_term_transformations() {
+		$types = array_keys( $this->taxonomy_fields );
+		foreach ( $types as $type ) {
+			$this->set_transformations( $type );
+		}
+	}
+
+	/**
 	 * Get the transformations.
 	 *
-	 * @param string $type The type to get.
+	 * @param string $type The context type to get transformations for.
 	 *
 	 * @return array
 	 */
-	public function get_transformations( $type ) {
+	public function set_transformations( $type ) {
 
 		$transformations = isset( $this->globals[ $type ] ) ? $this->globals[ $type ] : array();
 		if ( function_exists( 'get_current_screen' ) ) {
