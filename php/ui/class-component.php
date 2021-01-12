@@ -303,8 +303,12 @@ abstract class Component {
 
 	/**
 	 * Renders the component.
+	 *
+	 * @param bool $echo Flag to echo output or return it.
+	 *
+	 * @return string
 	 */
-	public function render() {
+	public function render( $echo = false ) {
 		// Setup the component.
 		$this->pre_render();
 
@@ -322,7 +326,11 @@ abstract class Component {
 		$this->compile_structures( $struct );
 
 		// Output html.
-		return self::compile_html( $this->html );
+		$return = self::compile_html( $this->html );
+		if ( false === $echo ) {
+			return $return;
+		}
+		echo $return; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	/**

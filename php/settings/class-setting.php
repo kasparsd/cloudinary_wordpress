@@ -981,14 +981,18 @@ class Setting {
 
 		$setting->set_parent( $this );
 
-		// Get the position in which to insert the new setting.
+		/**
+		 * PHP array sorting methods vary between versions. Sorting ASC, where the value is equal, is sometimes randomized.
+		 * Since multiple priority 10 items are equal, their placement may not be as they are added.
+		 * I.E an item added as 10 while other 10 priorities exist, might get added to the top rather than the expected bottom.
+		 * Here, we are determining the index based on the next highest priority, guaranteeing correct placement.
+		 */
 		$index = $this->get_position_index( $setting->get_param( 'priority', 10 ) );
 
 		$new_setting = array(
 			$setting->get_slug() => $setting,
 		);
-
-		// Add the new setting at the index based on the priority position.
+		// Splice in setting based on the position index.
 		$this->settings = array_slice( $this->settings, 0, $index, true ) + $new_setting + array_slice( $this->settings, $index, null, true );
 
 		return $setting;
@@ -1120,4 +1124,26 @@ class Setting {
 	protected function is_public() {
 		return ! $this->is_private_slug( $this->get_slug() );
 	}
+
+	/**
+	 * Get the submitted value.
+	 *
+	 * @param null|mixed $default The default value if submission is not available.
+	 *
+	 * @return mixed|null
+	 */
+	public function get_submitted_value( $default = null ) {
+
+		$input_slug = $this->get_option_name();
+		$args       = array(
+			$input_slug => array(
+				'filter' => FILTER_SANITIZE_STRING,
+				'flags'  => FILTER_REQUIRE_ARRAY,
+			),
+		);
+		$input      = filter_input_array( INPUT_POST, $args );
+
+		return isset( $input[ $input_slug ][ $this->get_slug() ] ) ? $input[ $input_slug ][ $this->get_slug() ] : $default;
+	}
+
 }
