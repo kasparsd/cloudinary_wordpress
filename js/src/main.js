@@ -2,7 +2,7 @@
  * External dependencies
  */
 import 'loading-attribute-polyfill';
-
+import './components/taxonomies';
 /**
  * Internal dependencies
  */
