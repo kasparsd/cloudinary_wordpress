@@ -666,7 +666,13 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		if ( empty( $slg ) ) {
 			$page_base = $this->settings->get_root_setting()->get_slug();
 			if ( is_object( $screen ) && $page_base === $screen->parent_base ) {
-				$url             = $this->settings->find_setting( 'connect' )->get_component()->get_url();
+				$url             = add_query_arg(
+					array(
+						'page' => 'dashboard',
+						'tab'  => 'connect',
+					),
+					admin_url( 'admin.php' )
+				);
 				$link            = '<a href="' . esc_url( $url ) . '">' . __( 'Connect', 'cloudinary' ) . '</a> ';
 				$this->notices[] = array(
 					'message'     => $link . __( 'your Cloudinary account with WordPress to get started.', 'cloudinary' ),
