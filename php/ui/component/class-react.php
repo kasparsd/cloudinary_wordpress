@@ -72,36 +72,10 @@ class React extends Text {
 				'ver'       => $this->setting->get_root_setting()->get_param( 'version' ),
 				'in_footer' => true,
 			);
-
-			$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
-
 			$script = wp_parse_args( $this->setting->get_param( 'script' ), $script_default );
-			$asset  = $this->get_asset();
-
-			$gallery = new Gallery( get_plugin_instance()->get_component( 'media' ) );
-			$gallery->block_editor_scripts_styles();
-			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
-			wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
+			wp_enqueue_script( $script['slug'], $script['src'], $script['depts'], $script['ver'], $script['in_footer'] );
 		}
 
 		return $struct;
-	}
-
-	/**
-	 * Retrieve asset dependencies.
-	 *
-	 * @return array
-	 */
-	private function get_asset() {
-		$asset = require __DIR__ . '/../../../js/gallery.asset.php';
-
-		$asset['dependencies'] = array_filter(
-			$asset['dependencies'],
-			static function ( $dependency ) {
-				return false === strpos( $dependency, '/' );
-			}
-		);
-
-		return $asset;
 	}
 }
