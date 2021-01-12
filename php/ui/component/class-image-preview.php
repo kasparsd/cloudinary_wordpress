@@ -38,7 +38,12 @@ class Image_Preview extends Component {
 	 * @var string
 	 */
 	protected $preview_type = 'image';
-
+	/**
+	 * Flag if component is a capture type.
+	 *
+	 * @var bool
+	 */
+	public $capture = true;
 	/**
 	 * Filter the notice parts structure.
 	 *
