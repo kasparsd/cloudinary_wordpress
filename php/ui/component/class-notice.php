@@ -85,11 +85,13 @@ class Notice extends Component {
 	}
 
 	/**
-	 * REnder component and output scripts for dismiss if needed.
+	 * Renders the component.
 	 *
-	 * @return string|null
+	 * @param bool $echo Flag to echo output or return it.
+	 *
+	 * @return string
 	 */
-	public function render() {
+	public function render( $echo = false ) {
 		// Render component via parent.
 		$return = parent::render();
 		$this->setting->set_param( 'rendered', true );
