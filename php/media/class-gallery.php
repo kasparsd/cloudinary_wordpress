@@ -299,8 +299,7 @@ class Gallery {
 					'type'        => 'on_off',
 					'slug'        => 'gallery_woocommerce_enabled',
 					'title'       => __( 'Replace Gallery', 'cloudinary' ),
-					'description'  => __( "Enable Cloudinary's Product Gallery to replace default WooCommerce gallery.", 'cloudinary' ),
-					'tooltip_text' => __( 'Replace the default WooCommerce gallery on the product page', 'cloudinary' ),
+					'tooltip_text' => __( 'Replace the default WooCommerce gallery with the Cloudinary Product Gallery on product pages.', 'cloudinary' ),
 				),
 			);
 		}
