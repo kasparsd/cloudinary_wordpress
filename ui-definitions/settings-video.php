@@ -7,10 +7,11 @@
 
 $settings = array(
 	array(
-		'type'  => 'panel',
-		'title' => __( 'Video - Global Settings', 'cloudinary' ),
-		'icon'  => $this->plugin->dir_url . 'css/video.svg',
-		'slug'  => 'video_settings',
+		'type'   => 'panel',
+		'title'  => __( 'Video - Global Settings', 'cloudinary' ),
+		'icon'   => $this->plugin->dir_url . 'css/video.svg',
+		'slug'   => 'video_settings',
+		'anchor' => true,
 		array(
 			'type' => 'row',
 			array(
@@ -25,8 +26,8 @@ $settings = array(
 						'tooltip_text' => __( 'Which video player to use on all videos.', 'cloudinary' ),
 						'default'      => 'wp',
 						'options'      => array(
-							'wp'  => __( 'WordPress Player', 'cloudinary' ),
-							'cld' => __( 'Cloudinary Player', 'cloudinary' ),
+							'wp'  => __( 'WordPress player', 'cloudinary' ),
+							'cld' => __( 'Cloudinary player', 'cloudinary' ),
 						),
 					),
 					array(
@@ -55,7 +56,7 @@ $settings = array(
 							'options'     => array(
 								'off'       => __( 'Off', 'cloudinary' ),
 								'always'    => __( 'Always', 'cloudinary' ),
-								'on-scroll' => __( 'On-Scroll (Autoplay when in view)', 'cloudinary' ),
+								'on-scroll' => __( 'On-scroll (autoplay when in view)', 'cloudinary' ),
 							),
 							'description' => sprintf(
 								// translators: Placeholders are <a> tags.
@@ -96,18 +97,19 @@ $settings = array(
 				array(
 					'type' => 'group',
 					array(
-						'type'        => 'on_off',
-						'slug'        => 'video_optimization',
-						'title'       => __( 'Video Optimization', 'cloudinary' ),
-						'description' => __( 'Optimize videos on my site.', 'cloudinary' ),
-						'attributes'  => array(
+						'type'         => 'on_off',
+						'slug'         => 'video_optimization',
+						'title'        => __( 'Video optimization', 'cloudinary' ),
+						'tooltip_text' => __( 'Videos will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
+						'description'  => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'attributes'   => array(
 							'data-context' => 'video',
 						),
 					),
 				),
 				array(
 					'type'        => 'group',
-					'title'       => __( 'Advanced Optimization', 'cloudinary' ),
+					'title'       => __( 'Advanced optimization', 'cloudinary' ),
 					'collapsible' => 'open',
 					'condition'   => array(
 						'video_optimization' => true,
@@ -116,10 +118,10 @@ $settings = array(
 						'type'         => 'select',
 						'slug'         => 'video_format',
 						'title'        => __( 'Video format', 'cloudinary' ),
-						'tooltip_text' => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'tooltip_text' => __( "The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.", 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
-							'none' => __( 'Not Set', 'cloudinary' ),
+							'none' => __( 'Not set', 'cloudinary' ),
 							'auto' => __( 'Auto', 'cloudinary' ),
 						),
 						'attributes'   => array(
@@ -131,15 +133,15 @@ $settings = array(
 						'type'         => 'select',
 						'slug'         => 'video_quality',
 						'title'        => __( 'Video quality', 'cloudinary' ),
-						'tooltip_text' => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'tooltip_text' => __( 'The compression quality to apply when delivering videos. Leave as Auto to apply an algorithm that finds the best tradeoff between visual quality and file size.', 'cloudinary' ),
 						'default'      => 'auto',
 						'options'      => array(
-							'none'      => __( 'Not Set', 'cloudinary' ),
+							'none'      => __( 'Not set', 'cloudinary' ),
 							'auto'      => __( 'Auto', 'cloudinary' ),
-							'auto:best' => __( 'Auto Best', 'cloudinary' ),
-							'auto:good' => __( 'Auto Good', 'cloudinary' ),
-							'auto:eco'  => __( 'Auto Eco', 'cloudinary' ),
-							'auto:low'  => __( 'Auto Low', 'cloudinary' ),
+							'auto:best' => __( 'Auto best', 'cloudinary' ),
+							'auto:good' => __( 'Auto good', 'cloudinary' ),
+							'auto:eco'  => __( 'Auto eco', 'cloudinary' ),
+							'auto:low'  => __( 'Auto low', 'cloudinary' ),
 							'100'       => '100',
 							'80'        => '80',
 							'60'        => '60',
@@ -154,10 +156,11 @@ $settings = array(
 
 				),
 				array(
-					'type'       => 'text',
-					'slug'       => 'video_freeform',
-					'title'      => __( 'Custom Transformation', 'cloudinary' ),
-					'attributes' => array(
+					'type'         => 'text',
+					'slug'         => 'video_freeform',
+					'title'        => __( 'Custom transformation', 'cloudinary' ),
+					'tooltip_text' => __( 'The set of transformations to apply to all video assets, as a URL transformation string.', 'cloudinary' ),
+					'attributes'   => array(
 						'data-context' => 'video',
 						'placeholder'  => 'fps_15-25,ac_none',
 					),
@@ -168,7 +171,7 @@ $settings = array(
 				'width' => '55%',
 				array(
 					'type'  => 'video_preview',
-					'title' => __( 'Video Preview', 'cloudinary' ),
+					'title' => __( 'Video preview', 'cloudinary' ),
 				),
 			),
 

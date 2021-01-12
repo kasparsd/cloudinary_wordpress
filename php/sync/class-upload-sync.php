@@ -234,8 +234,7 @@ class Upload_Sync {
 		}
 
 		// Run the upload Call.
-		$options['public_id'] = str_replace( './', '', $options['public_id'] );
-		$result               = $this->connect->api->upload( $attachment_id, $options, array(), $try_remote );
+		$result = $this->connect->api->upload( $attachment_id, $options, array(), $try_remote );
 
 		remove_filter( 'cloudinary_doing_upload', '__return_true' );
 

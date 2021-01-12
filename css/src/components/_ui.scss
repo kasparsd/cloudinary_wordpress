@@ -11,6 +11,12 @@
 
 .cld {
 
+	&-tooltip {
+		margin-left: 2px;
+		margin-top: 1px;
+		font-size: 1rem;
+	}
+
 	&-notice-box {
 		box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
 		position: relative;
