@@ -214,16 +214,22 @@ class Gallery {
 		foreach ( $images as $index => $image ) {
 			$image_id = is_int( $image ) ? $image : $image['id'];
 
+			$transformations      = null;
+			$image_data[ $index ] = array();
+
 			if ( ! $this->media->sync->is_synced( $image_id ) ) {
-				continue;
+				$res = $this->media->sync->managers['upload']->upload_asset( $image_id );
+
+				if ( ! is_wp_error( $res ) ) {
+					$image_data[ $index ]['publicId'] = $this->media->get_public_id_from_url( $res['url'] );
+					$transformations                  = $this->media->get_transformations_from_string( $res['url'] );
+				}
+			} else {
+				$image_data[ $index ]['publicId'] = $this->media->get_public_id( $image_id, true );
+
+				$image_url       = is_int( $image ) ? $this->media->cloudinary_url( $image_id ) : $image['url'];
+				$transformations = $this->media->get_transformations_from_string( $image_url );
 			}
-
-			$image_url = is_int( $image ) ? $this->media->cloudinary_url( $image_id ) : $image['url'];
-
-			$image_data[ $index ]             = array();
-			$image_data[ $index ]['publicId'] = $this->media->get_public_id( $image_id, true );
-
-			$transformations = $this->media->get_transformations_from_string( $image_url );
 
 			if ( $transformations ) {
 				$image_data[ $index ]['transformation'] = array( 'transformation' => $transformations );

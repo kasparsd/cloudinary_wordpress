@@ -222,7 +222,7 @@ class Upload_Sync {
 		$type       = $this->sync->get_sync_type( $attachment_id );
 		$options    = $this->media->get_upload_options( $attachment_id );
 		$public_id  = $options['public_id'];
-		$try_remote = 'cloud_name' === $type ? false : true;
+		$try_remote = 'cloud_name' !== $type;
 
 		// Add the suffix before uploading.
 		if ( $this->media->get_public_id( $attachment_id ) === $public_id ) {
