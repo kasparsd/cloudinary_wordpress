@@ -137,13 +137,17 @@ $settings = array(
 					),
 				),
 				array(
-					'type'         => 'text',
-					'slug'         => 'image_freeform',
-					'title'        => __( 'Custom transformation', 'cloudinary' ),
-					'tooltip_text' => __( 'The set of transformations to apply to all image assets, as a URL transformation string', 'cloudinary' ),
-					'attributes'   => array(
+					'type'           => 'text',
+					'slug'           => 'image_freeform',
+					'title'          => __( 'Custom transformation', 'cloudinary' ),
+					'tooltip_text'   => __( 'The set of transformations to apply to all image assets, as a URL transformation string', 'cloudinary' ),
+					'attributes'     => array(
 						'data-context' => 'image',
 						'placeholder'  => 'w_90,r_max',
+					),
+					'taxonomy_field' => array(
+						'context'  => 'image',
+						'priority' => 10,
 					),
 				),
 			),
@@ -151,8 +155,14 @@ $settings = array(
 				'type'  => 'column',
 				'width' => '55%',
 				array(
-					'type'  => 'image_preview',
-					'title' => __( 'Image preview', 'cloudinary' ),
+					'type'           => 'image_preview',
+					'title'          => __( 'Image preview', 'cloudinary' ),
+					'slug'           => 'image_preview',
+					'default'        => 'https://res.cloudinary.com/demo/image/upload/w_600/sample.jpg',
+					'taxonomy_field' => array(
+						'context'  => 'image',
+						'priority' => 10,
+					),
 				),
 			),
 

@@ -164,14 +164,23 @@ $settings = array(
 						'data-context' => 'video',
 						'placeholder'  => 'fps_15-25,ac_none',
 					),
+					'taxonomy_field' => array(
+						'context'  => 'video',
+						'priority' => 10,
+					),
 				),
 			),
 			array(
 				'type'  => 'column',
 				'width' => '55%',
 				array(
-					'type'  => 'video_preview',
-					'title' => __( 'Video preview', 'cloudinary' ),
+					'type'           => 'video_preview',
+					'title'          => __( 'Video preview', 'cloudinary' ),
+					'slug'           => 'video_preview',
+					'taxonomy_field' => array(
+						'context'  => 'video',
+						'priority' => 10,
+					),
 				),
 			),
 
