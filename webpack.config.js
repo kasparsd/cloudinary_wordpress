@@ -171,6 +171,7 @@ const cldSettingsGallery = {
 	...sharedConfig,
 	entry: {
 		gallery: './js/src/components/settings-gallery.js',
+		'gallery-ui': './css/src/gallery-ui.scss',
 	},
 };
 
