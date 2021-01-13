@@ -105,6 +105,7 @@ class Global_Transformations {
 	public function add_taxonomy_fields() {
 		$template_file = $this->media->plugin->template_path . 'taxonomy-transformation-fields.php';
 		if ( file_exists( $template_file ) ) {
+			// Initialise the settings to be within the terms context, and not contain or alter the global setting value.
 			$this->init_term_transformations();
 			include $template_file; // phpcs:ignore
 		}
@@ -112,12 +113,11 @@ class Global_Transformations {
 
 	/**
 	 * Add fields to Edit taxonomy term screen.
-	 *
-	 * @param \WP_Term $term The tern being edited.
 	 */
-	public function edit_taxonomy_fields( $term ) {
+	public function edit_taxonomy_fields() {
 		$template_file = $this->media->plugin->template_path . 'taxonomy-term-transformation-fields.php';
 		if ( file_exists( $template_file ) ) {
+			// Initialise the settings to be within the terms context, and not contain or alter the global setting value.
 			$this->init_term_transformations();
 			include $template_file; // phpcs:ignore
 		}
@@ -179,15 +179,22 @@ class Global_Transformations {
 	}
 
 	/**
-	 * Init term meta field values.
+	 * Resets the taxonomy fields values.
 	 */
-	public function init_term_transformations() {
-
+	protected function reset_taxonomy_field_values() {
 		foreach ( $this->taxonomy_fields as $context => $set ) {
 			foreach ( $set as $setting ) {
 				$setting->set_value( null );
 			}
 		}
+	}
+
+	/**
+	 * Init term meta field values.
+	 */
+	public function init_term_transformations() {
+
+		$this->reset_taxonomy_field_values();
 
 		$types = array_keys( $this->taxonomy_fields );
 		foreach ( $types as $type ) {
