@@ -25,9 +25,16 @@ if ( cloudinaryPostContent ) {
 		'text/xml'
 	);
 
-	let currentConfig = htmlDoc
-		.querySelector( '[data-cloudinary-gallery-config]' )
-		.getAttribute( 'data-cloudinary-gallery-config' );
+	const configEl = htmlDoc.querySelector(
+		'[data-cloudinary-gallery-config]'
+	);
+	let currentConfig = '';
+
+	if ( configEl ) {
+		currentConfig = configEl.getAttribute(
+			'data-cloudinary-gallery-config'
+		);
+	}
 
 	if ( currentConfig ) {
 		currentConfig = JSON.parse( currentConfig );
