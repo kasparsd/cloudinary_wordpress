@@ -9,10 +9,6 @@ wp_enqueue_style( 'cld-player' );
 wp_enqueue_script( 'cld-player' );
 
 wp_add_inline_script( 'cloudinary', 'var CLD_GLOBAL_TRANSFORMATIONS = CLD_GLOBAL_TRANSFORMATIONS ? CLD_GLOBAL_TRANSFORMATIONS : {};', 'before' );
-$show_desc = true;
-
-$media_settings = $this->media->get_settings();
-
 ?>
 <div class="cloudinary-collapsible">
 	<div class="cloudinary-collapsible__toggle">
