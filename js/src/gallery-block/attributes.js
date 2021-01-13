@@ -22,7 +22,7 @@ if ( ! ( 'displayProps_columns' in blockAttributes ) ) {
 if ( cloudinaryPostContent ) {
 	const htmlDoc = new DOMParser().parseFromString(
 		cloudinaryPostContent,
-		'text/xml'
+		'text/html'
 	);
 
 	const configEl = htmlDoc.querySelector(
