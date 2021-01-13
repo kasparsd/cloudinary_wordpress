@@ -661,18 +661,13 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public function get_notices() {
 		$this->usage_notices();
-		$screen = get_current_screen();
-		$slg    = $this->settings->find_setting( 'cloudinary_url' )->get_value();
-		if ( empty( $slg ) ) {
+		$screen             = get_current_screen();
+		$connection_setting = $this->settings->find_setting( self::META_KEYS['url'] );
+		$cloudinary_url     = $connection_setting->get_value();
+		if ( empty( $cloudinary_url ) ) {
 			$page_base = $this->settings->get_root_setting()->get_slug();
 			if ( is_object( $screen ) && $page_base === $screen->parent_base ) {
-				$url             = add_query_arg(
-					array(
-						'page' => 'dashboard',
-						'tab'  => 'connect',
-					),
-					admin_url( 'admin.php' )
-				);
+				$url             = $connection_setting->get_option_parent()->get_component()->get_url();
 				$link            = '<a href="' . esc_url( $url ) . '">' . __( 'Connect', 'cloudinary' ) . '</a> ';
 				$this->notices[] = array(
 					'message'     => $link . __( 'your Cloudinary account with WordPress to get started.', 'cloudinary' ),
@@ -846,7 +841,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							),
 							array(
 								'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
-								'slug'         => 'cloudinary_url',
+								'slug'         => self::META_KEYS['url'],
 								'title'        => __( 'Connection string', 'cloudinary' ),
 								'tooltip_text' => __(
 									'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.',
