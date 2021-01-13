@@ -888,7 +888,7 @@ class Sync implements Setup, Assets {
 					'tooltip_text' => __( 'Auto sync: Ensures that all of your WordPress assets are automatically synced with Cloudinary when they are added to the WordPress Media Library. Manual sync: Assets must be synced manually using the WordPress Media Library', 'cloudinary' ),
 					'slug'         => 'auto_sync',
 					'no_cached'    => true,
-					'default'      => 'off',
+					'default'      => 'on',
 					'options'      => array(
 						'on'  => __( 'Auto sync', 'cloudinary' ),
 						'off' => __( 'Manual sync', 'cloudinary' ),

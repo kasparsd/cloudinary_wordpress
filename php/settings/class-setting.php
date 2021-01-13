@@ -817,11 +817,16 @@ class Setting {
 	 */
 	public function load_value() {
 		if ( ! $this->is_root_setting() && $this->has_param( 'option_name' ) ) {
-			$root                            = $this->get_root_setting();
-			$root_value                      = (array) $root->get_value();
-			$default_value                   = $this->get_param( 'default', null );
-			$option                          = $this->get_param( 'option_name' );
-			$data                            = get_option( $option, $default_value );
+			$root          = $this->get_root_setting();
+			$root_value    = (array) $root->get_value();
+			$default_value = $this->get_param( 'default', null );
+			$option        = $this->get_param( 'option_name' );
+			$data          = get_option( $option, $default_value );
+			// If has settings, get value defaults and merge with found data.
+			if ( $this->has_settings() ) {
+				$default_val = $this->get_value();
+				$data        = array_filter( wp_parse_args( $data, $default_val ) );
+			}
 			$root_value[ $this->get_slug() ] = $data;
 			$root->set_value( $root_value );
 		}
