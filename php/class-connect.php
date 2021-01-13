@@ -825,7 +825,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							return ! $self->switch_account() && $this->is_connected();
 						},
 						array(
-							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
 							'type'  => 'panel',
 							array(
 								'type' => 'connect',
