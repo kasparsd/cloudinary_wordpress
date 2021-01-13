@@ -21,7 +21,7 @@ class Page_Header extends Component {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap';
+	protected $blueprint = 'wrap|settings/|/wrap';
 
 	/**
 	 * Filter the wrap parts structure.

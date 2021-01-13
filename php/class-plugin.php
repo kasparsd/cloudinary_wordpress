@@ -158,6 +158,19 @@ final class Plugin {
 	 * @return array
 	 */
 	private function get_settings_page_structure() {
+
+		$parts = array(
+			'header' => array(),
+			'pages'  => array(),
+			'footer' => array(),
+		);
+
+		foreach ( $parts as $slug => $part ) {
+			if ( file_exists( $this->dir_path . "ui-definitions/settings-{$slug}.php" ) ) {
+				$parts[ $slug ] = include $this->dir_path . "ui-definitions/settings-{$slug}.php";
+			}
+		}
+
 		$structure = array(
 			'version'     => $this->version,
 			'page_title'  => __( 'Cloudinary', 'cloudinary' ),
@@ -165,45 +178,9 @@ final class Plugin {
 			'capability'  => 'manage_options',
 			'icon'        => 'dashicons-cloudinary',
 			'option_name' => $this->slug,
-			'page_header' => array(
-				'content' => '<img src="' . esc_url( $this->dir_url ) . 'css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="https://cloudinary.com/documentation/wordpress_integration" target="_blank" rel="noreferrer">' . esc_html__( 'Need help?', 'cloudinary' ) . '</a></p>',
-			),
-			'page_footer' => array(
-				'content' => __( 'Thanks for using Cloudinary, please take a minute to rate our plugin.', 'cloudinary' ),
-			),
-			'pages'       => array(
-				$this->slug => array(
-					'page_title' => __( 'Cloudinary Dashboard', 'cloudinary' ),
-					'menu_title' => __( 'Dashboard', 'cloudinary' ),
-					'priority'   => 0,
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'plan',
-							'title' => __( 'Your Current Plan', 'cloudinary' ),
-						),
-						array(
-							'type'    => 'link',
-							'url'     => 'https://cloudinary.com/console/lui/upgrade_options',
-							'content' => __( 'Upgrade Plan', 'cloudinary' ),
-						),
-					),
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'plan_status',
-							'title' => __( 'Your Plan Status', 'cloudinary' ),
-						),
-					),
-					array(
-						'type' => 'panel_short',
-						array(
-							'type'  => 'media_status',
-							'title' => __( 'Your Media Sync Status', 'cloudinary' ),
-						),
-					),
-				),
-			),
+			'page_header' => $parts['header'],
+			'page_footer' => $parts['footer'],
+			'pages'       => $parts['pages'],
 		);
 
 		return $structure;
