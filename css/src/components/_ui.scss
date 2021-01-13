@@ -11,6 +11,32 @@
 
 .cld {
 
+	&-footer {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 0;
+		color: #555d66;
+		margin-left: 160px;
+
+		.cld-notice-box.is-success{
+			border: 0;
+			background-color: $color-white;
+			color: #555;
+			margin: 0;
+			padding: 10px 20px 10px 0;
+			.cld-stars{
+				margin-left: 12px;
+				text-decoration: none;
+				.dashicons {
+					position: inherit;
+					color: $color-orange;
+				}
+			}
+		}
+	}
+
 	&-tooltip {
 		margin-left: 2px;
 		margin-top: 1px;

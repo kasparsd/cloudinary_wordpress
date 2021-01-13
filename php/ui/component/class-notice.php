@@ -22,7 +22,7 @@ class Notice extends Component {
 	 *
 	 * @var string
 	 */
-	protected $blueprint = 'wrap|div|icon/|message/|dismiss/|/div|/wrap';
+	protected $blueprint = 'wrap|div|icon/|message/|settings/|dismiss/|/div|/wrap';
 
 	/**
 	 * Filter the wrap parts structure.
