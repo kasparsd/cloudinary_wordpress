@@ -261,6 +261,10 @@ class Gallery {
 			$transformations      = null;
 			$image_data[ $index ] = array();
 
+			// Send back the attachment id.
+			$image_data[ $index ]['attachmentId'] = $image_id;
+
+			// Fetch the public id by either syncing NOW or getting the current public id.
 			if ( ! $this->media->sync->is_synced( $image_id ) ) {
 				$res = $this->media->sync->managers['upload']->upload_asset( $image_id );
 
