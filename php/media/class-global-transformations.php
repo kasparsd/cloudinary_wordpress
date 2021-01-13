@@ -166,10 +166,9 @@ class Global_Transformations {
 	private function get_term_transformations( $term_id, $type ) {
 		$meta_data = array();
 		foreach ( $this->taxonomy_fields[ $type ] as $setting ) {
-			$slug     = $setting->get_slug();
-			$meta_key = self::META_ORDER_KEY . '_' . $slug;
-			$value    = get_term_meta( $term_id, $meta_key, true );
-			$setting->set_value( $value );
+			$slug               = $setting->get_slug();
+			$meta_key           = self::META_ORDER_KEY . '_' . $slug;
+			$value              = get_term_meta( $term_id, $meta_key, true );
 			$meta_data[ $slug ] = $value;
 		}
 
@@ -183,9 +182,19 @@ class Global_Transformations {
 	 * Init term meta field values.
 	 */
 	public function init_term_transformations() {
+
+		foreach ( $this->taxonomy_fields as $context => $set ) {
+			foreach ( $set as $setting ) {
+				$setting->set_value( null );
+			}
+		}
+
 		$types = array_keys( $this->taxonomy_fields );
 		foreach ( $types as $type ) {
-			$this->set_transformations( $type );
+			$transformations = $this->get_transformations( $type );
+			foreach ( $transformations as $slug => $transformation ) {
+				$this->media_settings->get_setting( $slug )->set_value( $transformation );
+			}
 		}
 	}
 
@@ -196,7 +205,7 @@ class Global_Transformations {
 	 *
 	 * @return array
 	 */
-	public function set_transformations( $type ) {
+	public function get_transformations( $type ) {
 
 		$transformations = isset( $this->globals[ $type ] ) ? $this->globals[ $type ] : array();
 		if ( function_exists( 'get_current_screen' ) ) {
@@ -208,17 +217,8 @@ class Global_Transformations {
 						$term_id         = filter_input( INPUT_GET, 'tag_ID', FILTER_SANITIZE_NUMBER_INT );
 						$transformations = $this->get_term_transformations( $term_id, $type );
 						break;
-					case 'toplevel_page_cloudinary':
-						$transformations = $this->globals[ $type ];
-						break;
 					default:
-						$transformations = array_map(
-							function ( $value ) {
-								return null;
-							},
-							$this->globals[ $type ]
-						);
-
+						$transformations = array();
 						break;
 				}
 			}
