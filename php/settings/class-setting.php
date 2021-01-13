@@ -102,10 +102,12 @@ class Setting {
 	protected function register_with_root() {
 		if ( ! $this->is_root_setting() ) {
 			// Add to root index.
-			$root                       = $this->get_root_setting();
-			$index                      = $root->get_param( 'index', array() );
-			$index[ $this->get_slug() ] = $this;
-			$root->set_param( 'index', $index );
+			$root  = $this->get_root_setting();
+			$index = $root->get_param( 'index', array() );
+			if ( ! isset( $index[ $this->get_slug() ] ) ) {
+				$index[ $this->get_slug() ] = $this;
+				$root->set_param( 'index', $index );
+			}
 		}
 	}
 

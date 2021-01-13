@@ -12,7 +12,8 @@ module.exports = function ( grunt ) {
 		copy: {
 			dist: {
 				src: [
-					'dist/**',
+					'css/**',
+					'js/**',
 					'php/**',
 					'ui-definitions/**',
 					'*.php',

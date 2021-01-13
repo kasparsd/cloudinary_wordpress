@@ -5,7 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import '@wordpress/components/build-style/style.css';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import { InspectorControls, MediaPlaceholder } from '@wordpress/block-editor';
 
 /**
@@ -32,6 +32,16 @@ function galleryWidgetConfig( config, container ) {
 
 const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
+
+	const getAttachmentIds = useMemo( () => {
+		if ( ! attributes.selectedImages.length ) {
+			return [];
+		}
+
+		return attributes.selectedImages.map( ( image ) => ( {
+			id: image.attachmentId,
+		} ) );
+	}, [ attributes ] );
 
 	const onSelect = ( images ) => {
 		fetch( cloudinaryGalleryApi.endpoint, {
@@ -111,6 +121,7 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 						addToGallery={ hasImages }
 						isAppender={ hasImages }
 						onSelect={ onSelect }
+						value={ getAttachmentIds }
 						multiple
 					/>
 				</div>

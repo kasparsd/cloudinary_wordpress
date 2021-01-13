@@ -5,7 +5,6 @@
  * @package Cloudinary
  */
 
-$this->init_term_transformations();
 ?>
 <?php foreach ( $this->taxonomy_fields as $context => $set ) : ?>
 	<tr>
