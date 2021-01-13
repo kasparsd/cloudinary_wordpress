@@ -353,7 +353,18 @@ class Gallery {
 					'type'        => 'on_off',
 					'slug'        => 'gallery_woocommerce_enabled',
 					'title'       => __( 'Replace Gallery', 'cloudinary' ),
-					'tooltip_text' => __( 'Replace the default WooCommerce gallery with the Cloudinary Product Gallery on product pages.', 'cloudinary' ),
+					'tooltip_text' => __( 'Replace the default WooCommerce gallery with the Cloudinary Gallery on product pages.', 'cloudinary' ),
+				),
+			);
+		} else {
+			$panel[] = array(
+				array(
+					'type' => 'tag',
+					'element' => 'h3',
+					'content' => __( 'Cloudinary Gallery block defaults', 'cloudinary' ),
+				),
+				array(
+					'content' => __( 'The Cloudinary Gallery is available as a new block type which can be inserted to any post or page. Note, this is not available when using the classic editor.', 'cloudinary' ),
 				),
 			);
 		}
