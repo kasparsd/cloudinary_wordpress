@@ -105,6 +105,7 @@ class Global_Transformations {
 	public function add_taxonomy_fields() {
 		$template_file = $this->media->plugin->template_path . 'taxonomy-transformation-fields.php';
 		if ( file_exists( $template_file ) ) {
+			$this->init_term_transformations();
 			include $template_file; // phpcs:ignore
 		}
 	}
@@ -117,6 +118,7 @@ class Global_Transformations {
 	public function edit_taxonomy_fields( $term ) {
 		$template_file = $this->media->plugin->template_path . 'taxonomy-term-transformation-fields.php';
 		if ( file_exists( $template_file ) ) {
+			$this->init_term_transformations();
 			include $template_file; // phpcs:ignore
 		}
 	}
