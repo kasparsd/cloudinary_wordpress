@@ -663,8 +663,8 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		$this->usage_notices();
 		$screen             = get_current_screen();
 		$connection_setting = $this->settings->find_setting( self::META_KEYS['url'] );
-		$slg                = $connection_setting->get_value();
-		if ( empty( $slg ) ) {
+		$cloudinary_url     = $connection_setting->get_value();
+		if ( empty( $cloudinary_url ) ) {
 			$page_base = $this->settings->get_root_setting()->get_slug();
 			if ( is_object( $screen ) && $page_base === $screen->parent_base ) {
 				$url             = $connection_setting->get_option_parent()->get_component()->get_url();
