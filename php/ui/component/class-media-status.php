@@ -149,7 +149,7 @@ class Media_Status extends Component {
 			'fields'         => 'ids',
 			'post_mime_type' => array( 'image', 'video' ),
 			'posts_per_page' => 1,
-			'meta_query'     => array(
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
 				array(
 					'key'     => Sync::META_KEYS['public_id'],
 					'compare' => 'EXISTS',
