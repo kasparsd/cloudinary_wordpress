@@ -4,7 +4,7 @@ Tags: image, video, DAM, optimization, CDN
 Requires at least: 4.7
 Tested up to: 5.6
 Requires PHP: 5.6
-Stable tag: 2.4.1
+Stable tag: STABLETAG
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
