@@ -66,6 +66,24 @@ class Sync extends Text {
 	}
 
 	/**
+	 * Filter the suffix part structure.
+	 *
+	 * @param array $struct The part structure.
+	 *
+	 * @return array
+	 */
+	protected function suffix( $struct ) {
+
+		if ( $this->setting->get_param( 'queue' )->is_enabled() ) {
+			$struct['element']             = 'span';
+			$struct['attributes']['class'] = 'cld-syncing';
+			$struct['render']              = true;
+		}
+
+		return $struct;
+	}
+
+	/**
 	 * Filter the label parts structure.
 	 *
 	 * @param array $struct The array structure.
