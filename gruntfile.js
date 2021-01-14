@@ -2,6 +2,10 @@ module.exports = function ( grunt ) {
 	// Load all Grunt plugins.
 	require( 'load-grunt-tasks' )( grunt );
 
+	const pluginVersion = grunt.file
+		.read( 'cloudinary.php' )
+		.match( /Version:\s*(.+)$/im )[ 1 ];
+
 	grunt.initConfig( {
 		dist_dir: 'build',
 
@@ -22,6 +26,19 @@ module.exports = function ( grunt ) {
 				],
 				dest: '<%= dist_dir %>',
 				expand: true,
+			},
+		},
+
+		replace: {
+			version: {
+				src: '<%= dist_dir %>/readme.txt',
+				overwrite: true,
+				replacements: [
+					{
+						from: 'STABLETAG',
+						to: pluginVersion,
+					},
+				],
 			},
 		},
 
@@ -57,7 +74,7 @@ module.exports = function ( grunt ) {
 		},
 	} );
 
-	grunt.registerTask( 'package', [ 'clean', 'copy', 'compress' ] );
+	grunt.registerTask( 'package', [ 'clean', 'copy', 'replace', 'compress' ] );
 
 	grunt.registerTask( 'deploy', [ 'package', 'wp_deploy' ] );
 
