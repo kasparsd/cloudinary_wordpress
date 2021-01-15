@@ -15,15 +15,13 @@ jobs:
 
   include:
 
-    - php: "5.6"
+    - stage: test
+      name: Default Test and Build
       script:
         - npm run lint
+        - npm run test
         - npm run build
-
-    - php: "7.4"
-      script:
-        - npm run lint
-        - npm run build
+        - npm run package
 
 notifications:
   email: false
