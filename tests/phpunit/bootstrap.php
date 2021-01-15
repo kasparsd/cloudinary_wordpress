@@ -1,6 +1,8 @@
 <?php
 /**
  * Bootstrap the WP instance and core PHPUnit helpers.
+ *
+ * @package Cloudinary
  */
 
 // Composer autoloader must be loaded before WP_PHPUNIT__DIR will be available.
