@@ -8,6 +8,8 @@
 	<arg name="extensions" value="php" />
 	<arg name="colors" />
 	<arg value="s" /><!-- Show sniff codes in all reports. -->
+	<arg value="p" /><!-- Show progress during the checks. -->
+	<arg name="parallel" value="4" />
 
 	<!-- Includes WordPress-Core, WordPress-Docs and WordPress-Extra rulesets. -->
 	<rule ref="WordPress" />
