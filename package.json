@@ -11,11 +11,11 @@
 		"node": ">=12"
 	},
 	"scripts": {
-		"postinstall": "composer install",
+		"postinstall": "wp-env run composer install",
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
 		"test": "wp-env help",
-		"lint": "composer lint",
+		"lint": "wp-env run composer lint",
 		"env": "wp-env",
 		"package": "npm run build && grunt package",
 		"deploy": "npm run build && grunt deploy",
