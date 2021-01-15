@@ -11,6 +11,17 @@
 
 .cld {
 
+	&-syncing {
+		background-image: url("./loading.svg");
+		background-repeat: no-repeat;
+		background-position: center center;
+		width: 30px;
+		height: 20px;
+		margin-left: 12px;
+		padding: 4px;
+		display: inline-block;
+	}
+
 	&-footer {
 		position: absolute;
 		bottom: 0;
@@ -551,15 +562,41 @@
 			}
 		}
 
-		.notification-success {
-			background-color: transparentize($color-notification-success, 0.8);
-			border: 2px solid $color-notification-success;
+		.notification {
 			display: inline-flex;
 			font-weight: 700;
 			padding: 1.5rem;
 
+			&-success {
+				background-color: transparentize($color-notification-success, 0.8);
+				border: 2px solid $color-notification-success;
+
+				&::before {
+					color: $color-notification-success;
+				}
+			}
+
+			&-syncing {
+				background-color: transparentize($color-wp-blue, 0.8);
+				border: 2px solid $color-wp-blue;
+				text-decoration: none;
+				color: #444;
+
+				&::before {
+					color: $color-wp-blue;
+					-webkit-animation: spin 1s running infinite;
+					-moz-animation: spin 1s linear infinite;
+					animation: spin 1s linear infinite;
+					@keyframes spin {
+						100% {
+							-webkit-transform: rotate(360deg);
+							transform: rotate(360deg);
+						}
+					}
+				}
+			}
+
 			&::before {
-				color: $color-notification-success;
 				margin-right: 0.5em;
 			}
 		}

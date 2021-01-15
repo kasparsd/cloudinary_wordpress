@@ -7,8 +7,6 @@
 
 namespace Cloudinary\UI\Component;
 
-use function Cloudinary\get_plugin_instance;
-
 /**
  * Sync Component to hold data.
  *
@@ -17,42 +15,79 @@ use function Cloudinary\get_plugin_instance;
 class Sync extends Text {
 
 	/**
+	 * Holds the components build blueprint.
+	 *
+	 * @var string
+	 */
+	protected $blueprint = 'wrap|icon/|div|label|title|tooltip/|/title|/label|/div|status/|action/|/wrap';
+
+	/**
 	 * Filter the input parts structure.
 	 *
 	 * @param array $struct The array structure.
 	 *
 	 * @return array
 	 */
-	protected function input( $struct ) {
+	protected function status( $struct ) {
 
 		$to_sync = $this->count_to_sync();
-		if ( empty( $to_sync ) ) {
 
-			$message            = $this->get_part( 'span' );
-			$message['content'] = __( 'All assets are synced', 'cloudinary' );
+		$struct['attributes']['class'] = array(
+			'notification',
+			'dashicons-before',
+		);
 
-			$struct['element']             = 'div';
-			$struct['attributes']['class'] = array(
-				'notification-success',
-				'dashicons-before',
-				'dashicons-yes-alt',
-			);
+		if ( empty( $to_sync ) || $this->setting->get_param( 'queue' )->is_enabled() ) {
+			$struct['element'] = 'div';
+
+			// Set basis.
+			$state      = 'notification-success';
+			$icon       = 'dashicons-yes-alt';
+			$state_text = __( 'All assets are synced', 'cloudinary' );
+
+			if ( $this->setting->get_param( 'queue' )->is_enabled() ) {
+				$state      = 'notification-syncing';
+				$icon       = 'dashicons-update';
+				$state_text = __( 'Syncing now', 'cloudinary' );
+			}
+
+			$message                         = $this->get_part( 'span' );
+			$message['content']              = $state_text;
+			$struct['attributes']['class'][] = $state;
+			$struct['attributes']['class'][] = $icon;
+
 			$struct['children']['message'] = $message;
+		}
 
-			return $struct;
+		return $struct;
+	}
+
+	/**
+	 * Filter the action part structure.
+	 *
+	 * @param array $struct The array structure.
+	 *
+	 * @return array
+	 */
+	protected function action( $struct ) {
+
+		if ( empty( $this->count_to_sync() ) ) {
+			return null;
 		}
 
 		$struct['element'] = 'a';
 		$href              = $this->setting->find_setting( 'sync_media' )->get_component()->get_url();
 		$args              = array();
+
 		if ( ! $this->setting->get_param( 'queue' )->is_enabled() ) {
 			$args['enable-bulk'] = true;
 			$struct['content']   = $this->setting->get_param( 'enable_text', __( 'Sync Now', 'cloudinary' ) );
-		} else {
-			$args['disable-bulk'] = true;
-			$struct['content']    = $this->setting->get_param( 'disable_text', __( 'Stop Sync', 'cloudinary' ) );
-		}
 
+		} else {
+			$args['disable-bulk']          = true;
+			$struct['content']             = $this->setting->get_param( 'disable_text', __( 'Stop Sync', 'cloudinary' ) );
+			$struct['attributes']['style'] = 'margin:21px;';
+		}
 		$struct['attributes']['class'][] = 'button';
 		if ( 'off' === $this->setting->find_setting( 'auto_sync' )->get_value() ) {
 			$struct['attributes']['disabled'] = 'disabled';
@@ -105,6 +140,10 @@ class Sync extends Text {
 	 * @return int
 	 */
 	protected function count_to_sync() {
+		static $count;
+		if ( ! is_null( $count ) ) {
+			return $count;
+		}
 		$params = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -119,7 +158,7 @@ class Sync extends Text {
 
 			),
 		);
-		$query = new \WP_Query( $params );
+		$query  = new \WP_Query( $params );
 
 		return $query->found_posts;
 	}
