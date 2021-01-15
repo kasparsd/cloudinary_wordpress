@@ -16,6 +16,7 @@
 	},
 	"scripts": {
 		"lint": [
+			"composer validate",
 			"phpcs"
 		],
 		"fix": [
