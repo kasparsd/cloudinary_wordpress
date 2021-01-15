@@ -2,6 +2,8 @@ dist: xenial
 
 language: php
 
+php: "7.4"
+
 before_install:
   - nvm install
   - nvm use
