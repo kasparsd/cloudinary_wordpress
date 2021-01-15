@@ -397,28 +397,26 @@ class Gallery {
 	}
 
 	/**
-	 * Setup hooks for the gallery.
+	 * Inits the cloudinary gallery using block attributes.
+	 *
+	 * @param string $content The post content.
+	 * @param array  $block   Block data.
+	 *
+	 * @return string
 	 */
-	public function setup_hooks() {
-		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
-		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
-		add_filter(
-			'render_block',
-			function ( $content, $block ) {
-				if ( 'cloudinary/gallery' !== $block['blockName'] ) {
-					return $content;
-				}
+	public function prepare_block_render( $content, $block ) {
+		if ( 'cloudinary/gallery' !== $block['blockName'] ) {
+			return $content;
+		}
 
-				$attributes                = Utils::expand_dot_notation( $block['attrs'], '_' );
-				$attributes                = array_merge( self::$default_config, $attributes );
-				$attributes['mediaAssets'] = $attributes['selectedImages'];
-				$attributes['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
-				unset( $attributes['selectedImages'], $attributes['customSettings'] );
+		$attributes                = Utils::expand_dot_notation( $block['attrs'], '_' );
+		$attributes                = array_merge( self::$default_config, $attributes );
+		$attributes['mediaAssets'] = $attributes['selectedImages'];
+		$attributes['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
+		unset( $attributes['selectedImages'], $attributes['customSettings'] );
 
-				ob_start();
-				?>
+		ob_start();
+		?>
 <script>
 	(function () {
 		const attributes = JSON.parse( '<?php echo wp_json_encode( $attributes ); ?>' );
@@ -426,13 +424,20 @@ class Gallery {
 		cloudinary.galleryWidget( attributes ).render();
 	})()
 </script>
-				<?php
+		<?php
 
-				return $content . ob_get_clean();
-			},
-			10,
-			2
-		);
+		return $content . ob_get_clean();
+	}
+
+	/**
+	 * Setup hooks for the gallery.
+	 */
+	public function setup_hooks() {
+		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_filter( 'render_block', array( $this, 'prepare_block_render' ), 10, 2 );
 
 		// Register Settings.
 		$this->register_settings();
