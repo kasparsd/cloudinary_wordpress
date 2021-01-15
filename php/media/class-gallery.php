@@ -9,7 +9,6 @@ namespace Cloudinary\Media;
 
 use Cloudinary\Component\Settings;
 use Cloudinary\Media;
-use Cloudinary\REST_API;
 use Cloudinary\Utils;
 
 /**
@@ -103,6 +102,13 @@ class Gallery {
 	protected $config = array();
 
 	/**
+	 * Where the gallery script should be enqueued. false = header; true = footer.
+	 *
+	 * @var bool
+	 */
+	protected $gallery_in_footer = false;
+
+	/**
 	 * Init gallery.
 	 *
 	 * @param Media $media Media class instance.
@@ -153,18 +159,18 @@ class Gallery {
 			self::GALLERY_LIBRARY_URL,
 			array(),
 			$this->media->plugin->version,
-			true
+			$this->gallery_in_footer
 		);
 
 		$json_config = wp_json_encode( $this->get_config() );
-		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryGalleryConfig = JSON.parse( '{$json_config}' );" );
+		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var CLD_GALLERY_CONFIG = JSON.parse( '{$json_config}' );" );
 
 		wp_enqueue_script(
 			'cloudinary-gallery-init',
 			$this->media->plugin->dir_url . 'js/gallery-init.js',
 			array( self::GALLERY_LIBRARY_HANDLE ),
 			$this->media->plugin->version,
-			true
+			$this->gallery_in_footer
 		);
 	}
 
@@ -220,6 +226,7 @@ class Gallery {
 	 * Register blocked editor assets for the gallery.
 	 */
 	public function block_editor_scripts_styles() {
+		$this->gallery_in_footer = true;
 		$this->enqueue_gallery_library();
 
 		wp_enqueue_style(
@@ -235,15 +242,6 @@ class Gallery {
 			array( 'wp-blocks', 'wp-editor', 'wp-element', self::GALLERY_LIBRARY_HANDLE ),
 			$this->media->plugin->version,
 			true
-		);
-
-		wp_localize_script(
-			'cloudinary-gallery-block-js',
-			'cloudinaryGalleryApi',
-			array(
-				'endpoint' => rest_url( REST_API::BASE . '/image_data' ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-			)
 		);
 	}
 
@@ -406,6 +404,35 @@ class Gallery {
 		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_filter(
+			'render_block',
+			function ( $content, $block ) {
+				if ( 'cloudinary/gallery' !== $block['blockName'] ) {
+					return $content;
+				}
+
+				$attributes                = Utils::expand_dot_notation( $block['attrs'], '_' );
+				$attributes                = array_merge( self::$default_config, $attributes );
+				$attributes['mediaAssets'] = $attributes['selectedImages'];
+				$attributes['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
+				unset( $attributes['selectedImages'], $attributes['customSettings'] );
+
+				ob_start();
+				?>
+<script>
+	(function () {
+		const attributes = JSON.parse( '<?php echo wp_json_encode( $attributes ); ?>' );
+		attributes.container = '.' + attributes.container;
+		cloudinary.galleryWidget( attributes ).render();
+	})()
+</script>
+				<?php
+
+				return $content . ob_get_clean();
+			},
+			10,
+			2
+		);
 
 		// Register Settings.
 		$this->register_settings();
