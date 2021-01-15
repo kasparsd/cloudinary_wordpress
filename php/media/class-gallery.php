@@ -102,13 +102,6 @@ class Gallery {
 	protected $config = array();
 
 	/**
-	 * Where the gallery script should be enqueued. false = header; true = footer.
-	 *
-	 * @var bool
-	 */
-	protected $gallery_in_footer = false;
-
-	/**
 	 * Init gallery.
 	 *
 	 * @param Media $media Media class instance.
@@ -159,18 +152,18 @@ class Gallery {
 			self::GALLERY_LIBRARY_URL,
 			array(),
 			$this->media->plugin->version,
-			$this->gallery_in_footer
+			true
 		);
 
 		$json_config = wp_json_encode( $this->get_config() );
-		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var CLD_GALLERY_CONFIG = JSON.parse( '{$json_config}' );" );
+		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var CLD_GALLERY_CONFIG = {$json_config};" );
 
 		wp_enqueue_script(
 			'cloudinary-gallery-init',
 			$this->media->plugin->dir_url . 'js/gallery-init.js',
 			array( self::GALLERY_LIBRARY_HANDLE ),
 			$this->media->plugin->version,
-			$this->gallery_in_footer
+			true
 		);
 	}
 
@@ -226,7 +219,6 @@ class Gallery {
 	 * Register blocked editor assets for the gallery.
 	 */
 	public function block_editor_scripts_styles() {
-		$this->gallery_in_footer = true;
 		$this->enqueue_gallery_library();
 
 		wp_enqueue_style(
@@ -417,13 +409,13 @@ class Gallery {
 
 		ob_start();
 		?>
-<script>
-	(function () {
-		const attributes = JSON.parse( '<?php echo wp_json_encode( $attributes ); ?>' );
-		attributes.container = '.' + attributes.container;
-		cloudinary.galleryWidget( attributes ).render();
-	})()
-</script>
+		<script>
+			window.addEventListener( 'load', function () {
+				var attributes = <?php echo wp_json_encode( $attributes ); ?>;
+				attributes.container = '.' + attributes.container;
+				cloudinary.galleryWidget( attributes ).render();
+			}, false );
+		</script>
 		<?php
 
 		return $content . ob_get_clean();
