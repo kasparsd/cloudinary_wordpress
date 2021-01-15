@@ -1,0 +1,15 @@
+
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Start XDebug",
+			"type": "php",
+			"request": "launch",
+			"port": 9003,
+			"pathMappings": {
+				"/var/www/html/wp-content/plugins/${workspaceFolderBasename}": "${workspaceFolder}"
+			}
+		}
+	]
+}
