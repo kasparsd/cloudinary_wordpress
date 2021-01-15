@@ -14,6 +14,7 @@
 		"postinstall": "composer install",
 		"dev": "webpack --mode=development --watch",
 		"build": "webpack --mode=production",
+		"test": "wp-env help",
 		"lint": "composer lint",
 		"env": "wp-env",
 		"package": "npm run build && grunt package",
