@@ -1,0 +1,9 @@
+{
+	"core": "./wordpress",
+	"plugins": [
+		"."
+	],
+	"config": {
+		"WORDPRESS_DB_HOST": "mysql"
+	}
+}

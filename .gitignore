@@ -27,17 +27,17 @@ npm-debug.log
 # Dev
 /vendor/
 /dev-lib/
-phpcs.xml
+/wordpress/
+/phpcs.xml
+/phpunit.xml
+/.wp-env.override.json
 
 # Tests
-tests/data/
-tests/includes/
-coverage/html/
+/tests/phpunit/coverage
 
 # ENV files
 .env
 
 # IDE
-.vscode
 cloudinary-image-management-and-manipulation-in-the-cloud-cdn
 cloudinary-image-management-and-manipulation-in-the-cloud-cdn.zip
