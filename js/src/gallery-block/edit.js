@@ -1,4 +1,4 @@
-/* global cloudinaryGalleryApi CLD_GALLERY_CONFIG */
+/* global cloudinaryGalleryApi CLD_GALLERY_CONFIG CLD_REST_ENDPOINT */
 
 /**
  * External dependencies
@@ -70,7 +70,7 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 
 		try {
 			const selectedImages = await apiFetch( {
-				path: '/cloudinary/v1/image_data',
+				path: CLD_REST_ENDPOINT + '/image_data',
 				method: 'POST',
 				data: { images },
 			} );

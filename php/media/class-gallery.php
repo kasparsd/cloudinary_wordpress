@@ -9,6 +9,7 @@ namespace Cloudinary\Media;
 
 use Cloudinary\Component\Settings;
 use Cloudinary\Media;
+use Cloudinary\REST_API;
 use Cloudinary\Utils;
 
 /**
@@ -194,7 +195,7 @@ class Gallery {
 		wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
 
 		$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
-		wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
+		wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = $color_palette;", 'before' );
 	}
 
 	/**
@@ -235,6 +236,8 @@ class Gallery {
 			$this->media->plugin->version,
 			true
 		);
+
+		wp_add_inline_script( 'cloudinary-gallery-block-js', 'var CLD_REST_ENDPOINT = "/' . REST_API::BASE . '";' );
 	}
 
 	/**
