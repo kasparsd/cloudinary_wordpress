@@ -33,6 +33,7 @@ class Sync extends Text {
 
 			$struct['element']             = 'div';
 			$struct['attributes']['class'] = array(
+				'notification',
 				'notification-success',
 				'dashicons-before',
 				'dashicons-yes-alt',
@@ -46,14 +47,26 @@ class Sync extends Text {
 		$href              = $this->setting->find_setting( 'sync_media' )->get_component()->get_url();
 		$args              = array();
 		if ( ! $this->setting->get_param( 'queue' )->is_enabled() ) {
-			$args['enable-bulk'] = true;
-			$struct['content']   = $this->setting->get_param( 'enable_text', __( 'Sync Now', 'cloudinary' ) );
+			$args['enable-bulk']             = true;
+			$struct['content']               = $this->setting->get_param( 'enable_text', __( 'Sync Now', 'cloudinary' ) );
+			$struct['attributes']['class'][] = 'button';
 		} else {
-			$args['disable-bulk'] = true;
-			$struct['content']    = $this->setting->get_param( 'disable_text', __( 'Stop Sync', 'cloudinary' ) );
+
+			$message            = $this->get_part( 'span' );
+			$message['content'] = __( 'Syncing now', 'cloudinary' );
+
+			$struct['attributes']['class'] = array(
+				'notification',
+				'notification-syncing',
+				'dashicons-before',
+				'dashicons-update',
+			);
+			$struct['children']['message'] = $message;
+
+			$args['disable-bulk']          = true;
+			$struct['attributes']['title'] = $this->setting->get_param( 'disable_text', __( 'Stop Sync', 'cloudinary' ) );
 		}
 
-		$struct['attributes']['class'][] = 'button';
 		if ( 'off' === $this->setting->find_setting( 'auto_sync' )->get_value() ) {
 			$struct['attributes']['disabled'] = 'disabled';
 		} else {
@@ -61,24 +74,6 @@ class Sync extends Text {
 			$struct['attributes']['href'] = $href;
 		}
 		$struct['render'] = true;
-
-		return $struct;
-	}
-
-	/**
-	 * Filter the suffix part structure.
-	 *
-	 * @param array $struct The part structure.
-	 *
-	 * @return array
-	 */
-	protected function suffix( $struct ) {
-
-		if ( $this->setting->get_param( 'queue' )->is_enabled() ) {
-			$struct['element']             = 'span';
-			$struct['attributes']['class'] = 'cld-syncing';
-			$struct['render']              = true;
-		}
 
 		return $struct;
 	}
@@ -137,7 +132,7 @@ class Sync extends Text {
 
 			),
 		);
-		$query = new \WP_Query( $params );
+		$query  = new \WP_Query( $params );
 
 		return $query->found_posts;
 	}
