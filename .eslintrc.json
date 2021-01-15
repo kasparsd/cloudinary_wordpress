@@ -16,6 +16,7 @@
   "rules": {
     "no-alert": "off",
     "no-console": "off",
+    "no-unused-vars": "off",
     "no-nested-ternary": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "react-hooks/rules-of-hooks": "error",
