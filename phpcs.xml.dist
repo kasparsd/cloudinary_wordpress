@@ -16,6 +16,10 @@
 	<rule ref="WordPress-VIP-Go" />
 	<rule ref="WordPressVIPMinimum" />
 
+	<!-- Ensure compatibility with versions of PHP supported by WP core. -->
+	<rule ref="PHPCompatibilityWP" />
+	<config name="testVersion" value="5.6-" />
+
 	<exclude-pattern>/wordpress/</exclude-pattern>
 	<exclude-pattern>/node_modules/</exclude-pattern>
 	<exclude-pattern>/vendor/</exclude-pattern>
