@@ -9,9 +9,7 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import edit from './edit';
 import save from './save';
-import attributes from './attributes';
-
-attributes.container = { type: 'string' };
+import attributes from './attributes.json';
 
 registerBlockType( 'cloudinary/gallery', {
 	title: __( 'Cloudinary Gallery', 'cloudinary' ),

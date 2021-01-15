@@ -1,9 +1,15 @@
-/* global cloudinaryGalleryApi */
+/* global cloudinaryGalleryApi cloudinaryGalleryConfig */
+
+/**
+ * External dependencies
+ */
+import Dot from 'dot-object';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Spinner } from '@wordpress/components';
 import '@wordpress/components/build-style/style.css';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { InspectorControls, MediaPlaceholder } from '@wordpress/block-editor';
@@ -16,51 +22,72 @@ import Controls from './controls';
 import { ALLOWED_MEDIA_TYPES } from './options';
 import { generateId, setupAttributesForRendering, showNotice } from './utils';
 
+const dot = new Dot( '_' );
+
 const PLACEHOLDER_TEXT = __(
 	'Drag images, upload new ones or select files from your library.',
 	'cloudinary'
 );
 
-function galleryWidgetConfig( config, container ) {
-	return {
-		cloudName: CLDN.mloptions.cloud_name,
-		...config,
-		container: '.' + container,
-		zoom: false,
-	};
-}
+const galleryWidgetConfig = ( config, container ) => ( {
+	...config,
+	container: '.' + container,
+	zoom: false,
+} );
 
 const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [ loading, setLoading ] = useState( false );
+
+	const preparedAttributes = useMemo( () => {
+		const defaultAttrs = {};
+
+		// eslint-disable-next-line no-unused-vars
+		const { container, ...flattenedAttrs } = dot.dot(
+			cloudinaryGalleryConfig
+		);
+
+		Object.keys( flattenedAttrs ).forEach( ( attr ) => {
+			if ( ! attributes[ attr ] ) {
+				defaultAttrs[ attr ] = flattenedAttrs[ attr ];
+			}
+		} );
+
+		return { ...attributes, ...defaultAttrs };
+	}, [ attributes ] );
 
 	const getAttachmentIds = useMemo( () => {
 		if ( ! attributes.selectedImages.length ) {
 			return [];
 		}
 
-		return attributes.selectedImages.map( ( image ) => ( {
-			id: image.attachmentId,
+		return attributes.selectedImages.map( ( { attachmentId } ) => ( {
+			id: attachmentId,
 		} ) );
 	}, [ attributes ] );
 
-	const onSelect = ( images ) => {
-		fetch( cloudinaryGalleryApi.endpoint, {
-			method: 'POST',
-			body: JSON.stringify( { images } ),
-			headers: {
-				'X-WP-Nonce': cloudinaryGalleryApi.nonce,
-			},
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( selectedImages ) => setAttributes( { selectedImages } ) )
-			.catch( () =>
-				setErrorMessage(
-					__(
-						'Could not load selected images. Please try again.',
-						'cloudinary'
-					)
+	const onSelect = async ( images ) => {
+		setLoading( true );
+
+		try {
+			const res = await fetch( cloudinaryGalleryApi.endpoint, {
+				method: 'POST',
+				body: JSON.stringify( { images } ),
+				headers: {
+					'X-WP-Nonce': cloudinaryGalleryApi.nonce,
+				},
+			} );
+
+			const selectedImages = await res.json();
+			setAttributes( { selectedImages } );
+		} catch {
+			setErrorMessage(
+				__(
+					'Could not load selected images. Please try again.',
+					'cloudinary'
 				)
 			);
+		}
 	};
 
 	useEffect( () => {
@@ -76,12 +103,6 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 				attributes
 			);
 
-			if ( ! attributes.container ) {
-				setAttributes( {
-					container: `${ className }${ generateId( 15 ) }`,
-				} );
-			}
-
 			try {
 				gallery = cloudinary.galleryWidget(
 					galleryWidgetConfig(
@@ -96,12 +117,21 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 			}
 
 			gallery.render();
+			setLoading( false );
 
 			return () => gallery.destroy();
 		}
 	}, [ errorMessage, attributes, setAttributes, className ] );
 
 	const hasImages = !! attributes.selectedImages.length;
+
+	if ( ! attributes.container ) {
+		setAttributes( {
+			container: `${ className }${ generateId( 15 ) }`,
+		} );
+	}
+
+	setAttributes( preparedAttributes );
 
 	return (
 		<>
@@ -120,10 +150,16 @@ const Edit = ( { setAttributes, attributes, className, isSelected } ) => {
 						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						addToGallery={ hasImages }
 						isAppender={ hasImages }
-						onSelect={ onSelect }
+						onSelect={ ( images ) => onSelect( images ) }
 						value={ getAttachmentIds }
 						multiple
-					/>
+					>
+						{ loading && (
+							<div className="loading-spinner-container">
+								<Spinner />
+							</div>
+						) }
+					</MediaPlaceholder>
 				</div>
 			</>
 			<InspectorControls>

@@ -1,32 +1,35 @@
-/*global CLD_THEME_COLORS */
+/*global CLD_THEME_COLORS, cloudinaryGalleryConfig */
 
 import React from 'react';
+import Dot from 'dot-object';
 import { render, useEffect, useState } from '@wordpress/element';
-import attributes from '../gallery-block/attributes';
 import GalleryControls from '../gallery-block/controls';
-import { setupAttributesForRendering } from '../gallery-block/utils';
 
-delete attributes.cloudName;
-delete attributes.mediaAssets;
+import {
+	setupAttributesForRendering,
+	toBlockAttributes,
+} from '../gallery-block/utils';
+
+const { cloudName, mediaAssets, ...attributes } = toBlockAttributes(
+	new Dot( '_' ).dot( cloudinaryGalleryConfig )
+);
 
 const parsedAttrs = {};
 Object.keys( attributes ).forEach( ( attr ) => {
 	parsedAttrs[ attr ] = attributes[ attr ]?.default;
 } );
 
-function galleryWidgetConfig( config ) {
-	return {
-		cloudName: 'demo',
-		...config,
-		mediaAssets: [
-			{
-				tag: 'shoes_product_gallery_demo',
-				mediaType: 'image',
-			},
-		],
-		container: '.gallery-preview',
-	};
-}
+const galleryWidgetConfig = ( config ) => ( {
+	cloudName: 'demo',
+	...config,
+	mediaAssets: [
+		{
+			tag: 'shoes_product_gallery_demo',
+			mediaType: 'image',
+		},
+	],
+	container: '.gallery-preview',
+} );
 
 const StatefulGalleryControls = () => {
 	const [ statefulAttrs, setStatefulAttrs ] = useState( parsedAttrs );

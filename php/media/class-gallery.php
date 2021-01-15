@@ -61,7 +61,10 @@ class Gallery {
 		'carouselLocation' => 'top',
 		'carouselOffset'   => 5,
 		'carouselStyle'    => 'thumbnails',
-		'displayProps'     => array( 'mode' => 'classic' ),
+		'displayProps'     => array(
+			'mode'    => 'classic',
+			'columns' => 1,
+		),
 		'indicatorProps'   => array( 'shape' => 'round' ),
 		'themeProps'       => array(
 			'primary'   => '#cf2e2e',
@@ -156,11 +159,6 @@ class Gallery {
 		$json_config = wp_json_encode( $this->get_config() );
 		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryGalleryConfig = JSON.parse( '{$json_config}' );" );
 
-		$post         = get_post();
-		$post_content = $post ? "'" . implode( '', explode( "\n", $post->post_content ) ) . "'" : 'null';
-
-		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryPostContent = {$post_content};" );
-
 		wp_enqueue_script(
 			'cloudinary-gallery-init',
 			$this->media->plugin->dir_url . 'js/gallery-init.js',
@@ -174,26 +172,30 @@ class Gallery {
 	 * Enqueue admin UI scripts if needed.
 	 */
 	public function enqueue_admin_scripts() {
-		if ( Utils::get_active_setting() === $this->settings ) {
-			$this->block_editor_scripts_styles();
-			wp_enqueue_style(
-				'cloudinary-gallery-settings-css',
-				$this->media->plugin->dir_url . 'css/gallery-ui.css',
-				array(),
-				$this->media->plugin->version
-			);
-
-			$script = array(
-				'slug'      => 'gallery_config',
-				'src'       => $this->media->plugin->dir_url . 'js/gallery.js',
-				'in_footer' => true,
-			);
-			$asset  = $this->get_asset();
-			wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
-
-			$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
-			wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
+		if ( Utils::get_active_setting() !== $this->settings ) {
+			return;
 		}
+
+		$this->block_editor_scripts_styles();
+
+		wp_enqueue_style(
+			'cloudinary-gallery-settings-css',
+			$this->media->plugin->dir_url . 'css/gallery-ui.css',
+			array(),
+			$this->media->plugin->version
+		);
+
+		$script = array(
+			'slug'      => 'gallery_config',
+			'src'       => $this->media->plugin->dir_url . 'js/gallery.js',
+			'in_footer' => true,
+		);
+
+		$asset = $this->get_asset();
+		wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
+
+		$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
+		wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = JSON.parse( '$color_palette' );", 'before' );
 	}
 
 	/**
