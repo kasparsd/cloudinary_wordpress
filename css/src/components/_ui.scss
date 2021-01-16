@@ -36,7 +36,7 @@
 			background-color: $color-white;
 			color: #555;
 			margin: 0;
-			padding: 10px 20px 10px 0;
+			padding: 0;
 			.cld-stars{
 				margin-left: 12px;
 				text-decoration: none;
@@ -45,6 +45,12 @@
 					color: $color-orange;
 				}
 			}
+		}
+
+		.notice-dismiss::before{
+			padding: 6px 0 0;
+			content: "\f335";
+			font-size: 1.4rem;
 		}
 	}
 

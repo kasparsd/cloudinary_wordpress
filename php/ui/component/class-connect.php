@@ -62,6 +62,7 @@ class Connect extends Component {
 		);
 
 		$struct['attributes']['class'] = array(
+			'notification',
 			'notification-success',
 			'dashicons-before',
 			'dashicons-yes-alt',
