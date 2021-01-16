@@ -8,7 +8,7 @@
 	 */
 	const { galleryWidget } = cloudinary;
 
-	window.onload = () => {
+	window.addEventListener( 'load', function () {
 		if (
 			document.querySelector( '.woocommerce-page' ) &&
 			CLD_GALLERY_CONFIG &&
@@ -16,5 +16,5 @@
 		) {
 			galleryWidget( CLD_GALLERY_CONFIG ).render();
 		}
-	};
+	} );
 } )();

@@ -237,7 +237,7 @@ class Gallery {
 			true
 		);
 
-		wp_add_inline_script( 'cloudinary-gallery-block-js', 'var CLD_REST_ENDPOINT = "/' . REST_API::BASE . '";' );
+		wp_add_inline_script( 'cloudinary-gallery-block-js', 'var CLD_REST_ENDPOINT = "/' . REST_API::BASE . '";', 'before' );
 	}
 
 	/**
@@ -404,8 +404,14 @@ class Gallery {
 			return $content;
 		}
 
-		$attributes                = Utils::expand_dot_notation( $block['attrs'], '_' );
-		$attributes                = array_merge( self::$default_config, $attributes );
+		$attributes = Utils::expand_dot_notation( $block['attrs'], '_' );
+		$attributes = array_merge( self::$default_config, $attributes );
+
+		// Gallery without images. Don't render.
+		if ( empty( $attributes['selectedImages'] ) ) {
+			return $content;
+		}
+
 		$attributes['mediaAssets'] = $attributes['selectedImages'];
 		$attributes['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
 		unset( $attributes['selectedImages'], $attributes['customSettings'] );
@@ -414,9 +420,11 @@ class Gallery {
 		?>
 		<script>
 			window.addEventListener( 'load', function () {
-				var attributes = <?php echo wp_json_encode( $attributes ); ?>;
-				attributes.container = '.' + attributes.container;
-				cloudinary.galleryWidget( attributes ).render();
+				if ( cloudinary?.galleryWidget ) {
+					var attributes = <?php echo wp_json_encode( $attributes ); ?>;
+					attributes.container = '.' + attributes.container;
+					cloudinary.galleryWidget( attributes ).render();
+				}
 			}, false );
 		</script>
 		<?php
