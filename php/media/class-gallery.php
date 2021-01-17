@@ -420,7 +420,7 @@ class Gallery {
 		?>
 		<script>
 			window.addEventListener( 'load', function () {
-				if ( cloudinary?.galleryWidget ) {
+				if ( cloudinary && cloudinary.galleryWidget ) {
 					var attributes = <?php echo wp_json_encode( $attributes ); ?>;
 					attributes.container = '.' + attributes.container;
 					cloudinary.galleryWidget( attributes ).render();
