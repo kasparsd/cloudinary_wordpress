@@ -89,6 +89,7 @@ class Media_Status extends Component {
 
 			$struct['element']             = 'div';
 			$struct['attributes']['class'] = array(
+				'notification',
 				'notification-success',
 				'dashicons-before',
 				'dashicons-yes-alt',
