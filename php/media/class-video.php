@@ -76,7 +76,7 @@ class Video {
 	 */
 	public function __construct( Media $media ) {
 		$this->media  = $media;
-		$this->config = $this->media->get_settings()->get_setting( $media::MEDIA_SETTINGS_SLUG )->get_value();
+		$this->config = $this->media->get_settings()->get_setting( 'video_settings' )->get_value();
 
 		$this->setup_hooks();
 	}

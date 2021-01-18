@@ -25,7 +25,7 @@ $settings = array(
 						'title'        => __( 'Image optimization', 'cloudinary' ),
 						'tooltip_text' => __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
 						'description'  => __( 'Optimize images on my site.', 'cloudinary' ),
-						'default'      => 'on',
+						'default'      => true,
 						'attributes'   => array(
 							'data-context' => 'image',
 						),
