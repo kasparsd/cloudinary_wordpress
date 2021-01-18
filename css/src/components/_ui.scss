@@ -496,6 +496,11 @@
 				&:last-of-type {
 					border-bottom: none;
 				}
+
+				.cld-ui-icon{
+					width: 35px;
+					height: 35px;
+				}
 			}
 
 			.icon {
@@ -565,6 +570,11 @@
 				font-size: 2rem;
 				font-weight: 700;
 				margin-right: 0.5em;
+			}
+
+			.cld-ui-icon{
+				width: 35px;
+				height: 35px;
 			}
 		}
 
