@@ -65,6 +65,9 @@ class Gallery {
 			'mode'    => 'classic',
 			'columns' => 1,
 		),
+		'transformation'   => array(
+			'crop' => 'fill',
+		),
 		'indicatorProps'   => array( 'shape' => 'round' ),
 		'themeProps'       => array(
 			'primary'   => '#cf2e2e',
