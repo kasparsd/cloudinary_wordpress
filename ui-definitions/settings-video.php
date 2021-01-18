@@ -102,6 +102,7 @@ $settings = array(
 						'title'        => __( 'Video optimization', 'cloudinary' ),
 						'tooltip_text' => __( 'Videos will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
 						'description'  => __( 'Optimize videos on my site.', 'cloudinary' ),
+						'default'      => 'on',
 						'attributes'   => array(
 							'data-context' => 'video',
 						),
