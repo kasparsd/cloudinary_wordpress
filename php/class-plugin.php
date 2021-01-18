@@ -198,6 +198,19 @@ final class Plugin {
 
 		// Init settings.
 		\Cloudinary\Settings::init_setting( $this->slug );
+
+		// Add count notice if not connected.
+		if ( ! $this->get_component( 'connect' )->is_connected() ) {
+			$count      = sprintf( ' <span class="update-plugins count-%d"><span class="update-count">%d</span></span>', 1, number_format_i18n( 1 ) );
+			$main_title = $this->settings->get_param( 'menu_title' ) . $count;
+			$this->settings->set_param( 'menu_title', $main_title );
+			$this->settings->set_param( 'connect_count', $count );
+
+			// Set the Getting Started title.
+			$connect       = $this->settings->find_setting( 'dashboard' );
+			$connect_title = $connect->get_param( 'menu_title' ) . $count;
+			$connect->set_param( 'menu_title', $connect_title );
+		}
 	}
 
 	/**
