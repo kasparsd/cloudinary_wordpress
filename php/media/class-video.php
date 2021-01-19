@@ -442,10 +442,10 @@ class Video {
 	 */
 	public function default_video_transformations( $default ) {
 
-		if ( ! empty( $this->config['video_limit_bitrate'] ) ) {
+		if ( 'on' === $this->config['video_limit_bitrate'] ) {
 			$default['bit_rate'] = $this->config['video_bitrate'] . 'k';
 		}
-		if ( ! empty( $this->config['video_optimization'] ) && true === $this->config['video_optimization'] ) {
+		if ( 'on' === $this->config['video_optimization'] ) {
 			if ( 'auto' === $this->config['video_format'] ) {
 				$default['fetch_format'] = 'auto';
 			}
