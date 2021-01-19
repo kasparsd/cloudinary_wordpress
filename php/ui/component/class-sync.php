@@ -45,7 +45,7 @@ class Sync extends Text {
 			$icon       = 'dashicons-yes-alt';
 			$state_text = __( 'All assets are synced', 'cloudinary' );
 
-			if ( $this->setting->get_param( 'queue' )->is_enabled() ) {
+			if ( ! empty( $to_sync ) && $this->setting->get_param( 'queue' )->is_enabled() ) {
 				$state      = 'notification-syncing';
 				$icon       = 'dashicons-update';
 				$state_text = __( 'Syncing now', 'cloudinary' );
