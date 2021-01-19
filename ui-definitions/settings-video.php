@@ -46,7 +46,7 @@ $settings = array(
 							'slug'        => 'video_loop',
 							'description' => __( ' Repeat video', 'cloudinary' ),
 							'type'        => 'on_off',
-							'default'     => false,
+							'default'     => 'off',
 						),
 						array(
 							'slug'        => 'video_autoplay_mode',
@@ -72,7 +72,7 @@ $settings = array(
 						'title'        => __( 'Bitrate', 'cloudinary' ),
 						'description'  => __( 'Enable bitrate limiter', 'cloudinary' ),
 						'tooltip_text' => __( 'If set, all videos will be delivered in the defined bitrate.', 'cloudinary' ),
-						'default'      => false,
+						'default'      => 'off',
 						'attributes'   => array(
 							'data-context' => 'video',
 						),
@@ -102,7 +102,7 @@ $settings = array(
 						'title'        => __( 'Video optimization', 'cloudinary' ),
 						'tooltip_text' => __( 'Videos will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
 						'description'  => __( 'Optimize videos on my site.', 'cloudinary' ),
-						'default'      => true,
+						'default'      => 'on',
 						'attributes'   => array(
 							'data-context' => 'video',
 						),

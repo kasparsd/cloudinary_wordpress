@@ -773,7 +773,7 @@ class Media extends Settings_Component implements Setup {
 
 		$config = $this->settings->get_value( 'image_settings' );
 
-		if ( true === $config['image_optimization'] ) {
+		if ( 'on' === $config['image_optimization'] ) {
 			if ( 'auto' === $config['image_format'] ) {
 				$default['fetch_format'] = 'auto';
 			}
