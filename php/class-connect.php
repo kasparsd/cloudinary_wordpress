@@ -615,19 +615,15 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				if ( empty( $usage ) ) {
 					continue;
 				}
-				$link      = null;
-				$link_text = null;
+				$link      = 'https://cloudinary.com/console/lui/upgrade_options';
+				$link_text = __( 'upgrade your account', 'cloudinary' );
 				if ( 90 <= $usage ) {
 					// 90% used - show error.
-					$level     = 'error';
-					$link      = 'https://cloudinary.com/console/lui/upgrade_options';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'error';
 				} elseif ( 80 <= $usage ) {
-					$level     = 'warning';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'warning';
 				} elseif ( 70 <= $usage ) {
-					$level     = 'neutral';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'neutral';
 				} else {
 					continue;
 				}
