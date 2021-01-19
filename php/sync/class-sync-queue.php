@@ -101,7 +101,8 @@ class Sync_Queue {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		return $this->is_running();
+		$status = $this->get_queue_status();
+		return $status['is_running'];
 	}
 
 	/**
