@@ -773,7 +773,7 @@ class Media extends Settings_Component implements Setup {
 
 		$config = $this->settings->get_value( 'image_settings' );
 
-		if ( true === $config['image_optimization'] ) {
+		if ( 'on' === $config['image_optimization'] ) {
 			if ( 'auto' === $config['image_format'] ) {
 				$default['fetch_format'] = 'auto';
 			}
@@ -1145,7 +1145,7 @@ class Media extends Settings_Component implements Setup {
 
 		$image_meta['overwrite_transformations'] = ! empty( $image_meta['overwrite_transformations'] ) ? $image_meta['overwrite_transformations'] : false;
 
-		if ( $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
+		if ( 'on' === $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
 			$meta = $this->get_post_meta( $attachment_id, Sync::META_KEYS['breakpoints'], true );
 			if ( ! empty( $meta ) ) {
 				// Since srcset is primary and src is a fallback, we need to set the first srcset with the main image.
@@ -1718,7 +1718,7 @@ class Media extends Settings_Component implements Setup {
 		$breakpoints = array();
 		$settings    = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 
-		if ( ! empty( $settings['enable_breakpoints'] ) && wp_attachment_is_image( $attachment_id ) ) {
+		if ( 'on' === $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
 			$meta = wp_get_attachment_metadata( $attachment_id );
 			// Get meta image size if non exists.
 			if ( empty( $meta ) ) {

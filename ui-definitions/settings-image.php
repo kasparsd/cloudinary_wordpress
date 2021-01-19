@@ -25,12 +25,11 @@ $settings = array(
 						'title'        => __( 'Image optimization', 'cloudinary' ),
 						'tooltip_text' => __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.', 'cloudinary' ),
 						'description'  => __( 'Optimize images on my site.', 'cloudinary' ),
-						'default'      => true,
+						'default'      => 'on',
 						'attributes'   => array(
 							'data-context' => 'image',
 						),
 					),
-
 				),
 				array(
 					'type'        => 'group',
@@ -92,6 +91,7 @@ $settings = array(
 						'title'        => __( 'Image breakpoints', 'cloudinary' ),
 						'tooltip_text' => __( 'Automatically generate multiple sizes based on the configured breakpoints to enable your images to responsively adjust to different screen sizes. Note that your Cloudinary usage will increase when enabling responsive images.', 'cloudinary' ),
 						'description'  => __( 'Enable responsive images.', 'cloudinary' ),
+						'default'      => 'off',
 					),
 					array(
 						'type'      => 'group',
