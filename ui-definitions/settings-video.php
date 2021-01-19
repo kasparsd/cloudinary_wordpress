@@ -85,7 +85,7 @@ $settings = array(
 						'default'     => '500',
 						'suffix'      => 'k',
 						'condition'   => array(
-							'video_limit_bitrate' => 'on',
+							'video_limit_bitrate' => true,
 						),
 						'attributes'  => array(
 							'data-context' => 'video',
@@ -113,7 +113,7 @@ $settings = array(
 					'title'       => __( 'Advanced optimization', 'cloudinary' ),
 					'collapsible' => 'open',
 					'condition'   => array(
-						'video_optimization' => 'on',
+						'video_optimization' => true,
 					),
 					array(
 						'type'         => 'select',
