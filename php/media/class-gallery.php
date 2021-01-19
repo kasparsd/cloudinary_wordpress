@@ -333,7 +333,7 @@ class Gallery {
 	public function settings() {
 		$settings = array(
 			'type'        => 'page',
-			'page_title'  => __( 'Gallery Settings', 'cloudinary' ),
+			'page_title'  => __( 'Gallery Settings (Beta)', 'cloudinary' ),
 			'option_name' => 'cloudinary_gallery',
 		);
 
