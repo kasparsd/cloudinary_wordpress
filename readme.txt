@@ -13,7 +13,7 @@ Use Cloudinary's plugin to efficiently create, manage and deliver images, videos
 == Description ==
 Cloudinary's [award-winning plugin](https://www.businesswire.com/news/home/20200923005566/en/Cloudinary-Wins-2020-MarTech-Breakthrough-Award-for-Best-WordPress-Plugin) makes automating your image, video, and rich media workflow easy, offering a variety of features. From media upload to image optimization, video transcoding and manipulation through delivery via global CDNs, everything is offered from within the plugin.
 
-Optimize your site performance and user experience with faster page load times, advanced auto-responsive delivery, and better visual experience. Automate image quality and video encoding settings, scale and crop images using AI to focus on the most important region, apply comprehensive video and image manipulations and effects, and deliver optimized media experiences to any device in any resolution or pixel density.
+Optimize your site performance and user experience with faster page load times, advanced auto-responsive delivery, and better visual experience. Automate image quality and video encoding settings, scale and crop images using AI to focus on the most important region, apply comprehensive video and image manipulations and effects, display assets via an interactive media gallery, and deliver optimized media experiences to any device in any resolution or pixel density.
 
 And with advanced digital asset management capabilities available in the plugin, you won’t need to leave your WordPress environment. Take full advantage of advanced search, AI-based tagging, rich media editing, collections, structured metadata, and an intuitive UI as well as our Video and Image APIs for headless DAM functionality, making it much easier to manage all of your media in WordPress.
 
@@ -32,6 +32,8 @@ And with advanced digital asset management capabilities available in the plugin,
 * Transcode, AI crop, apply filters, generate thumbnails, and more with our video transformation capabilities.
 * The most comprehensive array of image and video manipulation capabilities, powered by AI.
 * Ability to display videos using Cloudinary’s video player giving additional features such as bitrate limit, analytics, monetization, and more.
+* Display images and videos via a customizable interactive media gallery (beta).
+
 
 = Simple Integration =
 
@@ -115,13 +117,30 @@ The following plugins/themes/page-builders might not be fully compatible with th
 2. Media Editor
 3. Media Library
 4. Easy Generation of Asset Derivatives
-5. Automatically Deliver Responsive Images
-6. Global Image Transformation Settings
-7. Global Video Transformation Settings
-8. Folder and Syncing Settings
-9. Easily Configure Your Account
+5. Global Image Transformation Settings
+6. Global Video Transformation Settings
+7. Folder and Syncing Settings
+8. Track Your Cloudinary Account Status
+9. Use Interactive Media Gallery 
 
 == Changelog ==
+
+= 2.5.0 (20 Jan 2021) =
+
+New Features:
+
+* Brand new user interface!
+* Introducing the Cloudinary Product Gallery (beta feature):
+    - We added a new 'Cloudinary Gallery' block to the Gutenberg Editor
+    - When using WooCommerce, you can now use the 'Cloudinary Gallery' as your default product gallery
+* Added a rate-us link. Please rate us! ;-) 
+* Added support for conditional transformations
+
+Fixes and improvements:
+
+* Improve the REST API capabilities for better integrability
+* Bug fixes
+
 
 = 2.4.1 (07 Jan 2021) =
 
