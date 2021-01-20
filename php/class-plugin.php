@@ -11,13 +11,17 @@ use Cloudinary\Component\Assets;
 use Cloudinary\Component\Config;
 use Cloudinary\Component\Notice;
 use Cloudinary\Component\Setup;
+use Cloudinary\Settings\Setting;
 use Cloudinary\Sync\Storage;
-use Cloudinary\Deactivation;
+use WP_REST_Request;
+use WP_REST_Server;
+use const E_USER_WARNING;
+use const WPCOM_IS_VIP_ENV;
 
 /**
  * Main plugin bootstrap file.
  */
-class Plugin {
+final class Plugin {
 
 	/**
 	 * Holds the components of the plugin
@@ -33,6 +37,13 @@ class Plugin {
 	 * @var array
 	 */
 	public $config = array();
+
+	/**
+	 * The core Settings object.
+	 *
+	 * @var Setting
+	 */
+	public $settings;
 
 	/**
 	 * Plugin slug.
@@ -92,7 +103,6 @@ class Plugin {
 	 */
 	public $hooks;
 
-
 	/**
 	 * Plugin_Base constructor.
 	 */
@@ -117,16 +127,13 @@ class Plugin {
 	 * that extend the Customizer to ensure resources are available in time.
 	 */
 	public function init() {
-		$this->components['settings']     = new Settings_Page( $this );
+
 		$this->components['connect']      = new Connect( $this );
 		$this->components['deactivation'] = new Deactivation( $this );
-
-		if ( $this->components['connect'] && $this->components['connect']->is_connected() ) {
-			$this->components['sync']    = new Sync( $this );
-			$this->components['api']     = new REST_API( $this );
-			$this->components['media']   = new Media( $this );
-			$this->components['storage'] = new Storage( $this );
-		}
+		$this->components['sync']         = new Sync( $this );
+		$this->components['media']        = new Media( $this );
+		$this->components['api']          = new REST_API( $this );
+		$this->components['storage']      = new Storage( $this );
 	}
 
 	/**
@@ -134,7 +141,7 @@ class Plugin {
 	 *
 	 * @param mixed $component The component.
 	 *
-	 * @return \Cloudinary\Connect|\Cloudinary\Media|\Cloudinary\REST_API|\Cloudinary\Settings_Page|\Cloudinary\Sync|null
+	 * @return Connect|Media|REST_API|Settings_Page|Sync|null
 	 */
 	public function get_component( $component ) {
 		$return = null;
@@ -146,18 +153,107 @@ class Plugin {
 	}
 
 	/**
+	 * Get the core settings page structure for settings.
+	 *
+	 * @return array
+	 */
+	private function get_settings_page_structure() {
+
+		$parts = array(
+			'header' => array(),
+			'pages'  => array(),
+			'footer' => array(),
+		);
+
+		foreach ( $parts as $slug => $part ) {
+			if ( file_exists( $this->dir_path . "ui-definitions/settings-{$slug}.php" ) ) {
+				$parts[ $slug ] = include $this->dir_path . "ui-definitions/settings-{$slug}.php";
+			}
+		}
+
+		$structure = array(
+			'version'     => $this->version,
+			'page_title'  => __( 'Cloudinary', 'cloudinary' ),
+			'menu_title'  => __( 'Cloudinary', 'cloudinary' ),
+			'capability'  => 'manage_options',
+			'icon'        => 'dashicons-cloudinary',
+			'option_name' => $this->slug,
+			'page_header' => $parts['header'],
+			'page_footer' => $parts['footer'],
+			'pages'       => $parts['pages'],
+		);
+
+		return $structure;
+	}
+
+	/**
+	 * Setup settings.
+	 */
+	public function setup_settings() {
+		$params         = $this->get_settings_page_structure();
+		$this->settings = \Cloudinary\Settings::create_setting( $this->slug, $params );
+		$components     = array_filter( $this->components, array( $this, 'is_setting_component' ) );
+		$this->init_component_settings( $components );
+		$this->register_component_settings( $components );
+
+		// Init settings.
+		\Cloudinary\Settings::init_setting( $this->slug );
+
+		// Add count notice if not connected.
+		if ( ! $this->get_component( 'connect' )->is_connected() ) {
+			$count      = sprintf( ' <span class="update-plugins count-%d"><span class="update-count">%d</span></span>', 1, number_format_i18n( 1 ) );
+			$main_title = $this->settings->get_param( 'menu_title' ) . $count;
+			$this->settings->set_param( 'menu_title', $main_title );
+			$this->settings->set_param( 'connect_count', $count );
+
+			// Set the Getting Started title.
+			$connect       = $this->settings->find_setting( 'dashboard' );
+			$connect_title = $connect->get_param( 'menu_title' ) . $count;
+			$connect->set_param( 'menu_title', $connect_title );
+		}
+	}
+
+	/**
+	 * Init component settings objects.
+	 *
+	 * @param Settings_Component[] $components of components to init settings for.
+	 */
+	private function init_component_settings( $components ) {
+		foreach ( $components as $slug => $component ) {
+			/**
+			 * Component that implements Settings.
+			 *
+			 * @var  Component\Settings $component
+			 */
+			$component->init_settings( $this->settings );
+		}
+	}
+
+	/**
+	 * Register settings.
+	 *
+	 * @param Settings_Component[] $components Array of components to register settings for.
+	 */
+	private function register_component_settings( $components ) {
+		foreach ( $components as $slug => $component ) {
+			/**
+			 * Component that implements Settings.
+			 *
+			 * @var  Component\Settings $component
+			 */
+			$component->register_settings( $this->settings );
+		}
+	}
+
+	/**
 	 * Register Hooks for the plugin.
 	 */
 	public function set_config() {
+		$this->setup_settings();
 		$components = array_filter( $this->components, array( $this, 'is_config_component' ) );
 
 		foreach ( $components as $slug => $component ) {
-			/**
-			 * Component that implements Component\Config.
-			 *
-			 * @var  Component\Config $component
-			 */
-			$this->config[ $slug ] = $component->get_config();
+			$component->get_config();
 		}
 	}
 
@@ -184,7 +280,7 @@ class Plugin {
 	public function rest_endpoints( $endpoints ) {
 
 		$endpoints['dismiss_notice'] = array(
-			'method'   => \WP_REST_Server::CREATABLE,
+			'method'   => WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'rest_dismiss_notice' ),
 			'args'     => array(),
 		);
@@ -248,7 +344,6 @@ class Plugin {
 		return $component instanceof Assets;
 	}
 
-
 	/**
 	 * Check if an asset component is active.
 	 *
@@ -289,13 +384,26 @@ class Plugin {
 	}
 
 	/**
+	 * Check if component is a settings implementing component.
+	 *
+	 * @since  0.1
+	 *
+	 * @param object $component The component to check.
+	 *
+	 * @return bool If the component implements Setting.
+	 */
+	private function is_setting_component( $component ) {
+		return $component instanceof Settings_Component;
+	}
+
+	/**
 	 * Check if component is a notice implementing component.
 	 *
 	 * @since  0.1
 	 *
 	 * @param object $component The component to check.
 	 *
-	 * @return bool If the component implements Config.
+	 * @return bool If the component implements Notice.
 	 */
 	private function is_notice_component( $component ) {
 		return $component instanceof Notice;
@@ -321,14 +429,15 @@ class Plugin {
 
 			$component->setup();
 		}
+
 	}
 
 	/**
 	 * Set a transient with the duration using a token as an identifier.
 	 *
-	 * @param \WP_REST_Request $request The request object.
+	 * @param WP_REST_Request $request The request object.
 	 */
-	public function rest_dismiss_notice( \WP_REST_Request $request ) {
+	public function rest_dismiss_notice( WP_REST_Request $request ) {
 		$token    = $request->get_param( 'token' );
 		$duration = $request->get_param( 'duration' );
 
@@ -341,57 +450,28 @@ class Plugin {
 	 * @since  0.1
 	 */
 	public function admin_notices() {
+
+		$setting = Utils::get_active_setting();
 		/**
 		 * An array of classes that implement the Notice interface.
 		 *
 		 * @var $components Notice[]
 		 */
-		$components              = array_filter( $this->components, array( $this, 'is_notice_component' ) );
-		$default                 = array(
+		$components = array_filter( $this->components, array( $this, 'is_notice_component' ) );
+		$default    = array(
 			'message'     => '',
 			'type'        => 'error',
-			'dismissible' => true,
+			'dismissible' => false,
 			'duration'    => 10, // Default dismissible duration is 10 Seconds for save notices etc...
+			'icon'        => null,
 		);
-		$has_dismissible_notices = false;
+
 		foreach ( $components as $component ) {
 			$notices = $component->get_notices();
 			foreach ( $notices as $notice ) {
-				if ( ! empty( $notice ) && ! empty( $notice['message'] ) ) {
-					$notice = wp_parse_args( $notice, $default );
-					if ( true === $notice['dismissible'] ) {
-						// Convert the whole notice data into a string, and make it a hash.
-						// This allows the same notice to show if it has a change, i.e Quota limits change.
-						$notice_key = md5( wp_json_encode( $notice ) );
-						if ( ! get_transient( $notice_key ) ) {
-							$html = sprintf(
-								'<div class="notice-%1$s settings-error notice is-dismissible cld-notice" dismiss="alert" data-dismiss="%3$s" data-duration="%4$d"><p><strong>%2$s</strong></p></div>',
-								esc_attr( $notice['type'] ),
-								$notice['message'],
-								esc_attr( $notice_key ),
-								esc_attr( $notice['duration'] )
-							);
-							// Flag a dismissible notice has been shown.
-							$has_dismissible_notices = true;
-						}
-					} else {
-						$html = sprintf(
-							'<div class="notice-%1$s settings-error notice"><p><strong>%2$s</strong></p></div>',
-							esc_attr( $notice['type'] ),
-							$notice['message']
-						);
-					}
-					echo wp_kses_post( $html );
-				}
+				$notice = wp_parse_args( $notice, $default );
+				$setting->add_admin_notice( 'cld_general', $notice['message'], $notice['type'], $notice['dismissible'], $notice['duration'], $notice['icon'] );
 			}
-		}
-		// Output notice endpoint data only if a dismissible notice has been shown.
-		if ( $has_dismissible_notices ) {
-			$args = array(
-				'url'   => rest_url( REST_API::BASE . '/dismiss_notice' ),
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			);
-			wp_add_inline_script( 'cloudinary', 'var CLDIS = ' . wp_json_encode( $args ), 'before' );
 		}
 	}
 
@@ -420,7 +500,7 @@ class Plugin {
 
 		// Remove "Trait" from the class name.
 		if ( 'trait-' === $class_trait ) {
-			$class_name = str_replace( 'Trait', '', $class_name );
+			$class_name = str_replace( '_Trait', '', $class_name );
 		}
 
 		// For file naming, the namespace is everything but the class name and the root namespace.
@@ -488,7 +568,7 @@ class Plugin {
 	 * @return bool
 	 */
 	public function is_wpcom_vip_prod() {
-		return ( defined( '\WPCOM_IS_VIP_ENV' ) && \WPCOM_IS_VIP_ENV );
+		return ( defined( '\WPCOM_IS_VIP_ENV' ) && WPCOM_IS_VIP_ENV );
 	}
 
 	/**
@@ -497,7 +577,7 @@ class Plugin {
 	 * @param string $message Warning message.
 	 * @param int    $code    Warning code.
 	 */
-	public function trigger_warning( $message, $code = \E_USER_WARNING ) {
+	public function trigger_warning( $message, $code = E_USER_WARNING ) {
 		if ( ! $this->is_wpcom_vip_prod() ) {
 			// @phpcs:disable
 			trigger_error( esc_html( get_class( $this ) . ': ' . $message ), $code );
@@ -525,7 +605,7 @@ class Plugin {
 			$plugin_site_link = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( $plugin_data['PluginURI'] ),
-				__( 'Visit plugin site' )
+				__( 'Visit plugin site', 'cloudinary' )
 			);
 			if ( ! in_array( $plugin_site_link, $plugin_meta, true ) ) {
 				$plugin_meta[] = $plugin_site_link;

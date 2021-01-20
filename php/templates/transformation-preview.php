@@ -36,3 +36,5 @@ wp_add_inline_script( 'cloudinary', 'CLD_GLOBAL_TRANSFORMATIONS.image = ' . wp_j
 		<a class="global-transformations-url-link" href="<?php echo esc_url( $src ); ?>" target="_blank">../<span class="global-transformations-url-resource">image/upload</span><span class="global-transformations-url-transformation" id="transformation-sample-image"></span><span class="global-transformations-url-file"><?php echo esc_html( $sample ); ?></span></a>
 	</div>
 </div>
+
+

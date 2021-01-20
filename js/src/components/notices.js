@@ -1,33 +1,46 @@
-/* global window wp  */
+/* global CLDIS */
 const Notices = {
-    _init: function() {
-        let self = this;
-        if ( typeof CLDIS !== 'undefined' ) {
-            let notices = document.getElementsByClassName( 'cld-notice' );
-            [ ...notices ].forEach( ( notice ) => {
-                notice.addEventListener( 'click', ( ev ) => {
-                    // WordPress has an onClick that cannot be unbound.
-                    // So, we have the click on our Notice, and act on the
-                    // button as a target.
-                    if ( 'notice-dismiss' === ev.target.className ) {
-                        self._dismiss( notice );
-                    }
-                } );
-            } );
-        }
-    },
-    _dismiss: function( notice ) {
-        let token    = notice.dataset.dismiss;
-        let duration = notice.dataset.duration;
-        wp.ajax.send( {
-            url  : CLDIS.url,
-            data : {
-                token    : token,
-                duration : duration,
-                _wpnonce : CLDIS.nonce
-            }
-        } );
-    },
+	_init() {
+		const self = this;
+		if ( typeof CLDIS !== 'undefined' ) {
+			const notices = document.getElementsByClassName( 'cld-notice-box' );
+			[ ...notices ].forEach( ( notice ) => {
+				const dismiss = notice.getElementsByClassName(
+					'notice-dismiss'
+				);
+				if ( dismiss.length ) {
+					dismiss[ 0 ].addEventListener( 'click', ( ev ) => {
+						notice.style.height = notice.offsetHeight + 'px';
+						ev.preventDefault();
+						// Give the event a slight delay to allow the height to
+						// be set for the animation to trigger.
+						setTimeout( function () {
+							self._dismiss( notice );
+						}, 5 );
+					} );
+				}
+			} );
+		}
+	},
+	_dismiss( notice ) {
+		const token = notice.dataset.dismiss;
+		const duration = parseInt( notice.dataset.duration );
+		notice.classList.add( 'dismissed' );
+		notice.style.height = '0px';
+		setTimeout( function () {
+			notice.remove();
+		}, 400 );
+		if ( 0 < duration ) {
+			wp.ajax.send( {
+				url: CLDIS.url,
+				data: {
+					token,
+					duration,
+					_wpnonce: CLDIS.nonce,
+				},
+			} );
+		}
+	},
 };
 
 // Init.

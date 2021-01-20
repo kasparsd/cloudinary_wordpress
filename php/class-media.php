@@ -10,14 +10,16 @@ namespace Cloudinary;
 use Cloudinary\Component\Setup;
 use Cloudinary\Connect\Api;
 use Cloudinary\Media\Filter;
-use Cloudinary\Media\Upgrade;
+use Cloudinary\Media\Gallery;
 use Cloudinary\Media\Global_Transformations;
+use Cloudinary\Media\Upgrade;
 use Cloudinary\Media\Video;
+use Cloudinary\Media\WooCommerceGallery;
 
 /**
  * Class Media
  */
-class Media implements Setup {
+class Media extends Settings_Component implements Setup {
 
 	/**
 	 * Holds the plugin instance.
@@ -91,6 +93,20 @@ class Media implements Setup {
 	public $video;
 
 	/**
+	 * Gallery instance.
+	 *
+	 * @var \Cloudinary\Media\Gallery.
+	 */
+	public $gallery;
+
+	/**
+	 * WooCommerceGallery instance.
+	 *
+	 * @var \Cloudinary\Media\WooCommerceGallery
+	 */
+	public $woocommerce_gallery;
+
+	/**
 	 * Sync instance.
 	 *
 	 * @var \Cloudinary\Sync
@@ -105,18 +121,18 @@ class Media implements Setup {
 	private $in_downsize = false;
 
 	/**
-	 * Holds the max image width registered in WordPress.
-	 *
-	 * @var int
-	 */
-	private $max_width;
-
-	/**
 	 * Flag to determine if the Featured Image is currently being rendered.
 	 *
 	 * @var bool|int
 	 */
 	private $doing_featured_image = false;
+
+	/**
+	 * Holds the media settings slug.
+	 *
+	 * @var string
+	 */
+	const MEDIA_SETTINGS_SLUG = 'media_display';
 
 	/**
 	 * Media constructor.
@@ -160,7 +176,6 @@ class Media implements Setup {
 	 * @return array
 	 */
 	public function get_convertible_extensions() {
-
 
 		// Add preferred formats in future.
 		$base_types = array(
@@ -321,6 +336,45 @@ class Media implements Setup {
 	}
 
 	/**
+	 * Fetch a public id from a cloudinary url.
+	 *
+	 * @param string $url         The url to fetch the public id from.
+	 * @param bool   $as_sync_key Whether to return a plugin-based sync key, which is used to fetch an attachment id.
+	 *
+	 * @return string|null
+	 */
+	public function get_public_id_from_url( $url, $as_sync_key = false ) {
+		if ( ! $this->is_cloudinary_url( $url ) ) {
+			return null;
+		}
+
+		$path  = wp_parse_url( $url, PHP_URL_PATH );
+		$parts = explode( '/', ltrim( $path, '/' ) );
+
+		// Need to find the version part as anything after this is the public id.
+		foreach ( $parts as $part ) {
+			array_shift( $parts ); // Get rid of the first element.
+			if ( 'v' === substr( $part, 0, 1 ) && is_numeric( substr( $part, 1 ) ) ) {
+				break; // Stop removing elements.
+			}
+		}
+
+		// The remaining items should be the file.
+		$file      = implode( '/', $parts );
+		$path_info = pathinfo( $file );
+
+		$public_id = '.' !== $path_info['dirname'] ? $path_info['dirname'] : $path_info['filename'];
+		$public_id = trim( $public_id, './' );
+
+		if ( $as_sync_key ) {
+			$transformations = $this->get_transformations_from_string( $url );
+			$public_id      .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
+		}
+
+		return $public_id;
+	}
+
+	/**
 	 * Attempt to get an attachment_id from a url.
 	 *
 	 * @param string $url The url of the file.
@@ -329,29 +383,9 @@ class Media implements Setup {
 	 */
 	public function get_id_from_url( $url ) {
 		if ( $this->is_cloudinary_url( $url ) ) {
-			$path  = wp_parse_url( $url, PHP_URL_PATH );
-			$parts = explode( '/', ltrim( $path, '/' ) );
-			// Need to find the version part as anything after this is the public id.
-			foreach ( $parts as $part ) {
-				array_shift( $parts ); // Get rid of the first element.
-				if ( 'v' === substr( $part, 0, 1 ) && is_numeric( substr( $part, 1 ) ) ) {
-					break; // Stop removing elements.
-				}
-			}
-
-			// The remaining items should be the file.
-			$file            = implode( '/', $parts );
-			$pathinfo        = pathinfo( $file );
-			$public_id       = trim( $pathinfo['dirname'] . '/' . $pathinfo['filename'], './' );
-			$sync_key        = $public_id;
-			$transformations = $this->get_transformations_from_string( $url );
-			if ( ! empty( $transformations ) ) {
-				$sync_key .= wp_json_encode( $transformations );
-			}
+			$sync_key      = $this->get_public_id_from_url( $url, true );
 			$attachment_id = $this->get_id_from_sync_key( $sync_key );
-
 		} else {
-
 			// Clear out any params.
 			if ( wp_parse_url( $url, PHP_URL_QUERY ) ) {
 				$url = strstr( $url, '?', true );
@@ -504,6 +538,10 @@ class Media implements Setup {
 						'crop'   => $cropped ? 'fill' : 'scale',
 					);
 					if ( $cropped ) {
+						// Special thumbnail size.
+						if ( 'thumbnail' === $size_name ) {
+							$wp_size['crop'] = 'thumb';
+						}
 						$wp_size['gravity'] = 'auto';
 					}
 
@@ -603,7 +641,7 @@ class Media implements Setup {
 	 */
 	public function get_transformations_from_string( $str, $type = 'image' ) {
 
-		$params = \Cloudinary\Connect\Api::$transformation_index[ $type ];
+		$params = Api::$transformation_index[ $type ];
 
 		$transformation_chains = explode( '/', $str );
 		$transformations       = array();
@@ -669,7 +707,7 @@ class Media implements Setup {
 
 		// Base image level.
 		$new_transformations = array(
-			'image'  => \Cloudinary\Connect\Api::generate_transformation_string( $transformations, $type ),
+			'image'  => Api::generate_transformation_string( $transformations, $type ),
 			'global' => array(),
 			'tax'    => array(),
 			'qf'     => array(),
@@ -677,39 +715,38 @@ class Media implements Setup {
 		// Get Taxonomies.
 		$new_transformations['tax'] = $this->global_transformations->get_taxonomy_transformations( $type );
 		if ( ! $this->global_transformations->is_taxonomy_overwrite() ) {
-			// Get Lowest level.
-			$global  = $this->global_transformations->globals[ $type ];
-			$default = array();
-			if ( 'video' === $type ) {
-				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
-					$default['bit_rate'] = $global['video_bitrate'] . 'k';
-				}
-			} else {
-				if ( 'auto' === $global[ $type . '_format' ] ) {
-					$default['fetch_format'] = 'auto';
-				}
-				if ( isset( $global[ $type . '_quality' ] ) ) {
-					$default['quality'] = 'none' !== $global[ $type . '_quality' ] ? $global[ $type . '_quality' ] : null;
-				} else {
-					$default['quality'] = 'auto';
-				}
-			}
+			/**
+			 * Filter the default Quality and Format transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$default                   = apply_filters( "cloudinary_default_qf_transformations_{$type}", array(), $transformations );
 			$default                   = array_filter( $default ); // Clear out empty settings.
-			$new_transformations['qf'] = \Cloudinary\Connect\Api::generate_transformation_string( array( $default ), $type );
+			$new_transformations['qf'] = Api::generate_transformation_string( array( $default ), $type );
+
+			/**
+			 * Filter the default Freeform transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$freeform = apply_filters( "cloudinary_default_freeform_transformations_{$type}", array(), $transformations );
+			$freeform = array_filter( $freeform ); // Clear out empty settings.
 			// Add freeform global transformations.
-			$freeform_type = $type . '_freeform';
-			if ( ! empty( $global[ $freeform_type ] ) ) {
-				$new_transformations['global'][] = trim( $global[ $freeform_type ] );
+			if ( ! empty( $freeform ) ) {
+				$new_transformations['global'] = implode( '/', $freeform );
 			}
-
-			$new_transformations['global'] = implode( '/', $new_transformations['global'] );
-
 		}
 		// Clean out empty parts, and join into a sectioned string.
 		$new_transformations = array_filter( $new_transformations );
 		$new_transformations = implode( '/', $new_transformations );
 		// Take sectioned string, and create a transformation array set.
-		$transformations = $this->get_transformations_from_string( $new_transformations );
+		$transformations = $this->get_transformations_from_string( $new_transformations, $type );
 		/**
 		 * Filter the default cloudinary transformations.
 		 *
@@ -726,18 +763,58 @@ class Media implements Setup {
 	}
 
 	/**
+	 * Apply default  quality anf format image transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_transformations( $default ) {
+
+		$config = $this->settings->get_value( 'image_settings' );
+
+		if ( 'on' === $config['image_optimization'] ) {
+			if ( 'auto' === $config['image_format'] ) {
+				$default['fetch_format'] = 'auto';
+			}
+			if ( isset( $config['image_quality'] ) ) {
+				$default['quality'] = 'none' !== $config['image_quality'] ? $config['image_quality'] : null;
+			} else {
+				$default['quality'] = 'auto';
+			}
+		}
+
+		return $default;
+	}
+
+	/**
+	 * Apply default image freeform transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_freeform_transformations( $default ) {
+		$config = $this->settings->get_value( 'image_settings' );
+		if ( ! empty( $config['image_freeform'] ) ) {
+			$default[] = trim( $config['image_freeform'] );
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Generate a Cloudinary URL based on attachment ID and required size.
 	 *
-	 * @param int          $attachment_id             The id of the attachment.
-	 * @param array|string $size                      The wp size to set for the URL.
-	 * @param array        $transformations           Set of transformations to apply to this url.
-	 * @param string       $cloudinary_id             Optional forced cloudinary ID.
+	 * @param int          $attachment_id The id of the attachment.
+	 * @param array|string $size The wp size to set for the URL.
+	 * @param array        $transformations Set of transformations to apply to this url.
+	 * @param string       $cloudinary_id Optional forced cloudinary ID.
 	 * @param bool         $overwrite_transformations Flag url is a breakpoint URL to stop re-applying default transformations.
 	 *
 	 * @return string The converted URL.
 	 */
 	public function cloudinary_url( $attachment_id, $size = array(), $transformations = array(), $cloudinary_id = null, $overwrite_transformations = false ) {
-
 		if ( ! ( $cloudinary_id ) ) {
 			$cloudinary_id = $this->cloudinary_id( $attachment_id );
 			if ( ! $cloudinary_id ) {
@@ -768,9 +845,11 @@ class Media implements Setup {
 		 *
 		 * @return array
 		 */
-		$pre_args['transformation'] = apply_filters( 'cloudinary_transformations', $transformations, $attachment_id );
+		$pre_args['transformation']    = apply_filters( 'cloudinary_transformations', $transformations, $attachment_id );
+		$apply_default_transformations = apply_filters( 'cloudinary_apply_default_transformations', true );
+
 		// Defaults are only to be added on front, main images ( not breakpoints, since these are adapted down), and videos.
-		if ( ( ! defined( 'REST_REQUEST' ) || false === REST_REQUEST ) && ! is_admin() && false === $overwrite_transformations ) {
+		if ( true === $apply_default_transformations && false === $overwrite_transformations && ! is_admin() ) {
 			$pre_args['transformation'] = $this->apply_default_transformations( $pre_args['transformation'], $resource_type );
 		}
 
@@ -917,9 +996,9 @@ class Media implements Setup {
 			// @todo: Make this use the globals, overrides, and application conversion.
 			$extension = pathinfo( $file, PATHINFO_EXTENSION );
 			if ( wp_attachment_is_image( $attachment_id ) ) {
-				$settings = $this->global_transformations->globals['image'];
-				if ( ! in_array( $settings['image_format'], array( 'none', 'auto' ), true ) ) {
-					$extension = $settings['image_format'];
+				$image_format = $this->settings->find_setting( 'image_format' )->get_value();
+				if ( ! in_array( $image_format, array( 'none', 'auto' ), true ) ) {
+					$extension = $image_format;
 				}
 			}
 			$cloudinary_id = $public_id . '.' . $extension;
@@ -1066,7 +1145,7 @@ class Media implements Setup {
 
 		$image_meta['overwrite_transformations'] = ! empty( $image_meta['overwrite_transformations'] ) ? $image_meta['overwrite_transformations'] : false;
 
-		if ( 'on' === $this->plugin->config['settings']['global_transformations']['enable_breakpoints'] && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
+		if ( 'on' === $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
 			$meta = $this->get_post_meta( $attachment_id, Sync::META_KEYS['breakpoints'], true );
 			if ( ! empty( $meta ) ) {
 				// Since srcset is primary and src is a fallback, we need to set the first srcset with the main image.
@@ -1121,7 +1200,12 @@ class Media implements Setup {
 		// Use current sources, but convert the URLS.
 		foreach ( $sources as &$source ) {
 			if ( ! $this->is_cloudinary_url( $source['url'] ) ) {
-				$source['url'] = $this->convert_url( $source['url'], $attachment_id, $transformations, $image_meta['overwrite_transformations'] ); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
+				$source['url'] = $this->convert_url(
+					$source['url'],
+					$attachment_id,
+					$transformations,
+					$image_meta['overwrite_transformations']
+				); // Overwrite transformations applied, since the $transformations includes globals from the primary URL.
 			}
 		}
 
@@ -1331,7 +1415,6 @@ class Media implements Setup {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_STRING );
 		if ( wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 
-
 			$asset = $this->get_asset_payload();
 			// Set a base array for pulling an asset if needed.
 			$base_return = array(
@@ -1493,32 +1576,35 @@ class Media implements Setup {
 	 *
 	 * @return int
 	 */
-	public function get_max_width() {
-		if ( empty( $this->max_width ) ) {
-			if ( ! empty( $this->plugin->config['settings']['global_transformations']['max_width'] ) ) {
-				$this->max_width = $this->plugin->config['settings']['global_transformations']['max_width'];
-			} else {
-				$core_sizes       = array( 'thumbnail', 'medium', 'large', 'medium_large', 'large' );
-				$additional_sizes = wp_get_additional_image_sizes();
-				foreach ( $core_sizes as $size ) {
-					$additional_sizes[ $size ] = get_option( $size . '_size_w' );
-				}
-				$sizes = array_map(
-					function ( $item ) {
-						if ( is_array( $item ) ) {
-							$item = $item['width'];
-						}
-
-						return intval( $item );
-					},
-					$additional_sizes
-				);
-				rsort( $sizes );
-				$this->max_width = array_shift( $sizes );
-			}
+	public function default_max_width() {
+		$core_sizes       = array( 'thumbnail', 'medium', 'large', 'medium_large', 'large' );
+		$additional_sizes = wp_get_additional_image_sizes();
+		foreach ( $core_sizes as $size ) {
+			$additional_sizes[ $size ] = get_option( $size . '_size_w' );
 		}
+		$sizes = array_map(
+			function ( $item ) {
+				if ( is_array( $item ) ) {
+					$item = $item['width'];
+				}
 
-		return $this->max_width;
+				return intval( $item );
+			},
+			$additional_sizes
+		);
+		rsort( $sizes );
+		$max_width = array_shift( $sizes );
+
+		return $max_width;
+	}
+
+	/**
+	 * Get the max image width registered in WordPress.
+	 *
+	 * @return int
+	 */
+	public function get_max_width() {
+		return $this->settings->get_setting( 'max_width' )->get_value();
 	}
 
 	/**
@@ -1630,9 +1716,9 @@ class Media implements Setup {
 	public function get_breakpoint_options( $attachment_id ) {
 		// Add breakpoints if we have an image.
 		$breakpoints = array();
-		$settings    = $this->plugin->config['settings']['global_transformations'];
+		$settings    = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 
-		if ( 'off' !== $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
+		if ( 'on' === $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
 			$meta = wp_get_attachment_metadata( $attachment_id );
 			// Get meta image size if non exists.
 			if ( empty( $meta ) ) {
@@ -1651,7 +1737,7 @@ class Media implements Setup {
 			);
 			$transformations    = $this->get_transformation_from_meta( $attachment_id );
 			if ( ! empty( $transformations ) ) {
-				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations );
+				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations, 'image' );
 			}
 			$breakpoints = array(
 				'public_id'              => $this->get_public_id( $attachment_id ),
@@ -1871,20 +1957,43 @@ class Media implements Setup {
 	}
 
 	/**
+	 * Checks if local URLS can be filtered out.
+	 *
+	 * @return bool
+	 */
+	public function can_filter_out_local() {
+		$can = true;
+		if ( 'cld' !== $this->plugin->settings->find_setting( 'offload' )->get_value() ) {
+			/**
+			 * Filter to allow stopping filtering out local.
+			 *
+			 * @param bool $can True as default.
+			 *
+			 * @return bool
+			 */
+			$can = apply_filters( 'cloudinary_filter_out_local', true );
+		}
+
+		return $can;
+	}
+
+	/**
 	 * Setup the hooks and base_url if configured.
 	 */
 	public function setup() {
-		if ( $this->plugin->config['connect'] ) {
+		if ( $this->plugin->settings->get_param( 'connected' ) ) {
 
 			$this->base_url          = $this->plugin->components['connect']->api->cloudinary_url();
 			$this->credentials       = $this->plugin->components['connect']->get_credentials();
-			$this->cloudinary_folder = $this->plugin->config['settings']['sync_media']['cloudinary_folder'] ? $this->plugin->config['settings']['sync_media']['cloudinary_folder'] : '';
+			$this->cloudinary_folder = $this->settings->get_value( 'cloudinary_folder' );
 			$this->sync              = $this->plugin->components['sync'];
 
 			// Internal components.
+			$this->global_transformations = new Global_Transformations( $this );
+			$this->gallery                = new Gallery( $this );
+			$this->woocommerce_gallery    = new WooCommerceGallery( $this->gallery );
 			$this->filter                 = new Filter( $this );
 			$this->upgrade                = new Upgrade( $this );
-			$this->global_transformations = new Global_Transformations( $this );
 			$this->video                  = new Video( $this );
 
 			// Set the max image size registered in WordPress.
@@ -1899,17 +2008,104 @@ class Media implements Setup {
 			add_filter( 'upload_dir', array( $this, 'upload_dir' ) );
 
 			// Filter live URLS. (functions that return a URL).
-			add_filter( 'wp_calculate_image_srcset', array( $this, 'image_srcset' ), 10, 5 );
-			add_filter( 'wp_get_attachment_url', array( $this, 'attachment_url' ), 10, 2 );
-			add_filter( 'image_downsize', array( $this, 'filter_downsize' ), 10, 3 );
+			if ( $this->can_filter_out_local() ) {
+				add_filter( 'wp_calculate_image_srcset', array( $this, 'image_srcset' ), 10, 5 );
+				add_filter( 'wp_get_attachment_url', array( $this, 'attachment_url' ), 10, 2 );
+				add_filter( 'image_downsize', array( $this, 'filter_downsize' ), 10, 3 );
+				// Hook into Featured Image cycle.
+				add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
+				add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
+			}
+			// Filter default image Quality and Format transformations.
+			add_filter( 'cloudinary_default_qf_transformations_image', array( $this, 'default_image_transformations' ), 10 );
+			add_filter( 'cloudinary_default_freeform_transformations_image', array( $this, 'default_image_freeform_transformations' ), 10 );
 
 			// Filter and action the custom column.
 			add_filter( 'manage_media_columns', array( $this, 'media_column' ) );
 			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
-
-			// Hook into Featured Image cycle.
-			add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
-			add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
 		}
+	}
+
+	/**
+	 * Register sync settings.
+	 *
+	 * @return array
+	 */
+	public function settings() {
+
+		$image_settings      = array();
+		$video_settings      = array();
+		$image_settings_file = $this->plugin->dir_path . 'ui-definitions/settings-image.php';
+		$video_settings_file = $this->plugin->dir_path . 'ui-definitions/settings-video.php';
+
+		if ( file_exists( $image_settings_file ) ) {
+			$image_settings = include $image_settings_file; //phpcs:ignore
+		}
+
+		if ( file_exists( $video_settings_file ) ) {
+			$video_settings = include $video_settings_file; //phpcs:ignore
+		}
+
+		$args = array(
+			'type'       => 'page',
+			'menu_title' => __( 'Media Settings', 'cloudinary' ),
+			'tabs'       => array(
+				self::MEDIA_SETTINGS_SLUG => array(
+					'page_title' => __( 'Media Display', 'cloudinary' ),
+					array(
+						'type'      => 'info_box',
+						'icon'      => $this->plugin->dir_url . 'css/transformation.svg',
+						'title'     => __( 'Transformations', 'cloudinary' ),
+						'text'      => __(
+							'Cloudinary allows you to easily transform your images on-the-fly to any required format, style and dimension, and also optimizes images for minimal file size alongside high visual quality for an improved user experience and minimal bandwidth. You can do all of this by implementing dynamic image transformation and delivery URLs.',
+							'cloudinary'
+						),
+						'url'       => 'https://cloudinary.com/documentation/transformation_reference',
+						'link_text' => __( 'See Examples', 'cloudinary' ),
+					),
+					$image_settings,
+					$video_settings,
+				),
+			),
+		);
+
+		return $args;
+	}
+
+	/**
+	 * Enabled method for version if settings are enabled.
+	 *
+	 * @param bool $enabled Flag to enable.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled( $enabled ) {
+		return $this->plugin->settings->get_param( 'connected' );
+	}
+
+	/**
+	 * Upgrade settings from 2.4 to 2.5.
+	 *
+	 * @param string $previous_version Previous version.
+	 * @param string $new_version      New version.
+	 */
+	public function upgrade_settings( $previous_version, $new_version ) {
+
+		if ( 2.4 === $previous_version ) {
+			// Setup new data from old.
+			$images    = get_option( 'cloudinary_global_transformations', array() );
+			$video     = get_option( 'cloudinary_global_video_transformations', array() );
+			$old_media = array_merge( $images, $video );
+			$setting   = $this->settings->get_setting( 'media_display' );
+			// Get the current defaults.
+			$default = $setting->get_value();
+
+			$media = wp_parse_args( $old_media, $default );
+			// Update value.
+			$setting->set_value( $media );
+			// Save to DB.
+			$setting->save_value();
+		}
+
 	}
 }

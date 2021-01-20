@@ -23,7 +23,7 @@ class Download_Sync {
 	 *
 	 * @var     \Cloudinary\Plugin Instance of the global plugin.
 	 */
-	private $plugin;
+	protected $plugin;
 
 	/**
 	 * Holds the Media component.
@@ -172,7 +172,7 @@ class Download_Sync {
 		if ( false !== strpos( $public_id, '/' ) ) {
 			$path              = pathinfo( $public_id );
 			$asset_folder      = trailingslashit( $path['dirname'] );
-			$cloudinary_folder = trailingslashit( $this->plugin->config['settings']['sync_media']['cloudinary_folder'] );
+			$cloudinary_folder = trailingslashit( $this->plugin->settings->get_value( 'cloudinary_folder' ) );
 			if ( $asset_folder === $cloudinary_folder ) {
 				// The asset folder matches the defined cloudinary folder, flag it as being in a folder sync.
 				$media->update_post_meta( $attachment_id, Sync::META_KEYS['folder_sync'], true );
@@ -196,7 +196,7 @@ class Download_Sync {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		if ( empty( $source ) ) {
 			$cloudinary_id = $this->media->get_cloudinary_id( $attachment_id );
-			$source        = $this->media->cloudinary_url( $attachment_id, array(), array(), $cloudinary_id );
+			$source        = $this->media->cloudinary_url( $attachment_id, array(), array(), $cloudinary_id, false );
 		}
 		$file_name = basename( $source );
 		try {
@@ -293,10 +293,17 @@ class Download_Sync {
 		if ( 'image' === $attachment['type'] ) {
 			// Get the cloudinary_id from public_id not Media::cloudinary_id().
 			$cloudinary_id = $this->plugin->components['media']->get_cloudinary_id( $attachment_id );
+
+			// don't apply the default transformations here.
+			add_filter( 'cloudinary_apply_default_transformations', '__return_false' );
+
 			// Make sure all sizes have the transformations on for previewing.
 			foreach ( $attachment['sizes'] as $name => &$size ) {
 				$size['url'] = $this->plugin->components['media']->cloudinary_url( $attachment_id, $name, $transformations, $cloudinary_id );
 			}
+
+			// start applying default transformations again.
+			remove_filter( 'cloudinary_apply_default_transformations', '__return_false' );
 		}
 		// Prepare response.
 		$response = array(

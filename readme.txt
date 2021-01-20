@@ -4,18 +4,18 @@ Tags: image, video, DAM, optimization, CDN
 Requires at least: 4.7
 Tested up to: 5.6
 Requires PHP: 5.6
-Stable tag: 2.4.1
+Stable tag: STABLETAG
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Use Cloudinary's plguin to efficiently create, manage and deliver images, videos, and other media, personalized and optimized for every device and channel.
+Use Cloudinary's plugin to efficiently create, manage and deliver images, videos, and other media, personalized and optimized for every device and channel.
 
 == Description ==
 Cloudinary's [award-winning plugin](https://www.businesswire.com/news/home/20200923005566/en/Cloudinary-Wins-2020-MarTech-Breakthrough-Award-for-Best-WordPress-Plugin) makes automating your image, video, and rich media workflow easy, offering a variety of features. From media upload to image optimization, video transcoding and manipulation through delivery via global CDNs, everything is offered from within the plugin.
 
-Optimize your site performance and user experience with faster page load times, advanced auto-responsive delivery, and better visual experience. Automate image quality and video encoding settings, scale and crop images using AI to focus on the most important region, apply comprehensive video and image manipulations and effects, and deliver optimized media experiences to any device in any resolution or pixel density. 
+Optimize your site performance and user experience with faster page load times, advanced auto-responsive delivery, and better visual experience. Automate image quality and video encoding settings, scale and crop images using AI to focus on the most important region, apply comprehensive video and image manipulations and effects, and deliver optimized media experiences to any device in any resolution or pixel density.
 
-And with advanced digital asset management capabilities available in the plugin, you won’t need to leave your WordPress environment. Take full advantage of advanced search, AI-based tagging, rich media editing, collections, structured metadata, and an intuitive UI as well as our Video and Image APIs for headless DAM functionality, making it much easier to manage all of your media in WordPress. 
+And with advanced digital asset management capabilities available in the plugin, you won’t need to leave your WordPress environment. Take full advantage of advanced search, AI-based tagging, rich media editing, collections, structured metadata, and an intuitive UI as well as our Video and Image APIs for headless DAM functionality, making it much easier to manage all of your media in WordPress.
 
 
 = Requirements =
@@ -91,7 +91,7 @@ Upgrade is seamless and requires no action from your side.
 = Does the plugin sync all of my media to Cloudinary? =
 
 The plugin will automatically sync all of your WordPress media to your Cloudinary account and start delivering assets from Cloudinary.
-Your assets in the WP storage will remain intact. 
+Your assets in the WP storage will remain intact.
 
 = Where can I find more info? =
 
@@ -99,7 +99,7 @@ You can read the plugin [documentation](https://cloudinary.com/documentation/wor
 
 = Compatibility with other Plugins/Themes =
 
-The following plugins/themes/page-builders might not be fully compatible with the Cloudinary plugin and advised to be tested side-by-side before enabling in production. 
+The following plugins/themes/page-builders might not be fully compatible with the Cloudinary plugin and advised to be tested side-by-side before enabling in production.
 
 * Divi
 * Elementor
@@ -123,14 +123,14 @@ The following plugins/themes/page-builders might not be fully compatible with th
 
 == Changelog ==
 
-= 2.4.1 (07 Jan 2021) = 
+= 2.4.1 (07 Jan 2021) =
 
 Fixes and improvements:
 
-* Improved server calling efficiency 
+* Improved server calling efficiency
 * More fixes
 
-= 2.4.0 (10 Nov 2020) = 
+= 2.4.0 (10 Nov 2020) =
 
 New Features:
 
@@ -143,11 +143,11 @@ Fixes and improvements:
 * Fixed an issue with syncing a deleted asset
 * Improved the mechanism for removing the Cloudinary account
 * The warning message for exceeding the annual unit plan was revised
-* Improved the Alt text syncronization from Cloudinary to WordPress
+* Improved the Alt text synchronization from Cloudinary to WordPress
 * Fixed WPBakery error when inserting an image by the WordPress editor
 * Fixed AMP plugin conflict issue
 
-= 2.3.0 (05 Oct 2020) = 
+= 2.3.0 (05 Oct 2020) =
 
 New Features:
 
@@ -160,37 +160,37 @@ Fixes and improvements:
 * Fixed 'Resource not found' error when changing credentials
 * Fixed incompatibility with text media block
 
-= 2.2.1 (30 Sep 2020) = 
+= 2.2.1 (30 Sep 2020) =
 
 Fixes and Improvements:
 
 * Fixed an error when toggling 'featured image overwrite' on a custom post type
 
 
-= 2.2.0 (08 Sep 2020) = 
+= 2.2.0 (08 Sep 2020) =
 
-New Features: 
+New Features:
 
 * You can now off-load all assets from WordPress to Cloudinary!!
 * Automatically convert unsupported media file types (such as INDD, PSD, TIFF, etc) to WordPress supported file types
 * Synchronization mechanism was re-built and now exposes a more granular status updates
 * Lazy load polyfills for outdated browsers
 * Add the ability to overwrite the global transformation to a feature image
-* High quota usage alert is now dismissable
+* High quota usage alert is now dismissible
 * Updated Cloudinary brand
 
 
 Fixes and Improvements:
 
-* Sync tab UI improvements 
-* Various performance improvements  
+* Sync tab UI improvements
+* Various performance improvements
 * Fixed an issues where excessive transformations being created due to breakpoints not disabling
 * Sync assets to allow for unique naming, to prevent overwriting existing items
- 
 
-= 2.1.9 (04 Aug 2020) = 
 
-Fixes and Improvements: 
+= 2.1.9 (04 Aug 2020) =
+
+Fixes and Improvements:
 
 * Upgraded the Cloudinary video version
 * Added two new synced icons: Downloading and Syncing meta data
@@ -204,15 +204,15 @@ Fixes and Improvements:
     - Fixed Overwrite transformations on videos
     - Fixed excessive backslash stripping
 
-= 2.1.2 (09 Jun 2020) = 
+= 2.1.2 (09 Jun 2020) =
 
-Fixes and Improvements: 
+Fixes and Improvements:
 
   * Fixed cases where the image size were added to the URL.
   * Added support to dashes ('-') in the connection string.
   * Added an option to re-sync a single asset to Cloudinary.
 
-= 2.1.1 (01 Jun 2020) = 
+= 2.1.1 (01 Jun 2020) =
 
 New features:
 
@@ -223,7 +223,7 @@ New features:
   * Global Transformations are now being applied to Featured Images.
   * Added an `Account Status` to the dashboard tab, displaying the account usage, quota and metrics.
 
-Fixes and Improvements: 
+Fixes and Improvements:
 
   * Improved the sync mechanism.
   * General bug fixes and performance improvements.

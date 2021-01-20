@@ -23,7 +23,7 @@ class Sync_Queue {
 	 *
 	 * @var     \Cloudinary\Plugin Instance of the global plugin.
 	 */
-	private $plugin;
+	protected $plugin;
 
 	/**
 	 * Holds the key for saving the queue.
@@ -74,6 +74,35 @@ class Sync_Queue {
 	 */
 	public function load_hooks() {
 		add_action( 'cloudinary_resume_queue', array( $this, 'maybe_resume_queue' ) );
+	}
+
+	/**
+	 * Setup the sync queue.
+	 */
+	public function setup() {
+		// Catch Queue actions.
+		// Enable sync queue.
+		if ( filter_input( INPUT_GET, 'enable-bulk', FILTER_VALIDATE_BOOLEAN ) ) {
+			$this->plugin->components['api']->background_request( 'sync', array() );
+			wp_safe_redirect( $this->plugin->settings->get_setting( 'sync_media' )->get_component()->get_url() );
+			exit;
+		}
+		// Stop sync queue.
+		if ( filter_input( INPUT_GET, 'disable-bulk', FILTER_VALIDATE_BOOLEAN ) ) {
+			$this->plugin->components['api']->background_request( 'sync', array( 'stop' => true ) );
+			wp_safe_redirect( $this->plugin->settings->get_setting( 'sync_media' )->get_component()->get_url() );
+			exit;
+		}
+	}
+
+	/**
+	 * Check if queue is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled() {
+		$status = $this->get_queue_status();
+		return $status['is_running'];
 	}
 
 	/**
@@ -254,7 +283,8 @@ class Sync_Queue {
 			'post_status'         => 'inherit',
 			'posts_per_page'      => 1000, // phpcs:ignore
 			'fields'              => 'ids',
-			'meta_query'          => array( // phpcs:ignore
+			// phpcs:ignore
+			'meta_query'          => array(
 				'relation' => 'AND',
 				array(
 					'key'     => Sync::META_KEYS['sync_error'],
@@ -337,7 +367,7 @@ class Sync_Queue {
 			unset( $queue['last_update'] );
 			$this->set_queue( $queue );
 		}
-
+		delete_option( self::$queue_key );
 		wp_unschedule_hook( 'cloudinary_resume_queue' );
 	}
 
@@ -384,7 +414,6 @@ class Sync_Queue {
 
 		$this->plugin->components['api']->background_request( 'queue', array( 'thread' => $thread ) );
 	}
-
 
 	/**
 	 * Get a threads queue.
