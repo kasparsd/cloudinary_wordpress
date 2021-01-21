@@ -82,7 +82,7 @@ class Setting {
 	 */
 	public function __construct( $slug, $params = array(), $parent = null ) {
 		$this->slug           = $slug;
-		$this->setting_params = $this->get_settings_params();
+		$this->setting_params = $this->get_dynamic_param_keys();
 		$root                 = $this;
 
 		if ( ! is_null( $parent ) ) {
@@ -102,19 +102,21 @@ class Setting {
 	protected function register_with_root() {
 		if ( ! $this->is_root_setting() ) {
 			// Add to root index.
-			$root                       = $this->get_root_setting();
-			$index                      = $root->get_param( 'index', array() );
-			$index[ $this->get_slug() ] = $this;
-			$root->set_param( 'index', $index );
+			$root  = $this->get_root_setting();
+			$index = $root->get_param( 'index', array() );
+			if ( ! isset( $index[ $this->get_slug() ] ) ) {
+				$index[ $this->get_slug() ] = $this;
+				$root->set_param( 'index', $index );
+			}
 		}
 	}
 
 	/**
-	 * Get the settings parameter and callback list.
+	 * Get the dynamic params and callbacks list. This allows to create a list of specific settings using a key param.
 	 *
 	 * @return array
 	 */
-	protected function get_settings_params() {
+	protected function get_dynamic_param_keys() {
 		$default_setting_params = array(
 			'components'  => array( $this, 'add_child_settings' ),
 			'settings'    => array( $this, 'add_child_settings' ),
@@ -130,7 +132,7 @@ class Setting {
 		 *
 		 * @return array
 		 */
-		$setting_params = apply_filters( 'get_setting_params', $default_setting_params, $this );
+		$setting_params = apply_filters( 'cloudinary_get_setting_params', $default_setting_params, $this );
 
 		return $setting_params;
 	}
@@ -160,7 +162,9 @@ class Setting {
 
 		// Update priority sorting if set.
 		if ( 'priority' === $param && $this->has_parent() ) {
-			$this->get_parent()->sort_settings();
+			$parent = $this->get_parent();
+			$parent->remove_setting( $this->get_slug() );
+			$parent->add_setting( $this );
 		}
 
 		return $this;
@@ -289,19 +293,9 @@ class Setting {
 	 * @return Setting[]
 	 */
 	public function get_settings() {
-		return $this->settings;
-	}
+		$settings = array_filter( $this->settings, array( $this, 'is_public' ) );
 
-	/**
-	 * Sort settings based on priority.
-	 */
-	protected function sort_settings() {
-		uasort(
-			$this->settings,
-			function ( $x, $y ) {
-				return ( (int) $x->get_param( 'priority' ) > (int) $y->get_param( 'priority' ) );
-			}
-		);
+		return $settings;
 	}
 
 	/**
@@ -344,9 +338,13 @@ class Setting {
 	 * @return bool
 	 */
 	public function setting_exists( $slug ) {
+		$exists  = false;
 		$setting = $this->get_root_setting()->get_setting( $slug, false );
+		if ( ! $this->is_private_slug( $slug ) && ! is_null( $setting ) && $setting->get_param( 'is_setup', false ) ) {
+			$exists = true;
+		}
 
-		return ! is_null( $setting );
+		return $exists;
 	}
 
 	/**
@@ -423,6 +421,9 @@ class Setting {
 		// Load data.
 		$this->load_value();
 
+		// Mark as setup.
+		$this->set_param( 'is_setup', true );
+
 		return $this;
 	}
 
@@ -467,8 +468,8 @@ class Setting {
 			 * @param mixed   $current_value The setting current value.
 			 * @param Setting $value         The setting object.
 			 */
-			$new_value = apply_filters( "settings_save_setting_{$slug}", $new_value, $current_value, $setting );
-			$new_value = apply_filters( 'settings_save_setting', $new_value, $current_value, $setting );
+			$new_value = apply_filters( "cloudinary_settings_save_setting_{$slug}", $new_value, $current_value, $setting );
+			$new_value = apply_filters( 'cloudinary_settings_save_setting', $new_value, $current_value, $setting );
 			if ( $current_value !== $new_value ) {
 				// Only use the new value if it's different.
 				$data[ $slug ] = $new_value;
@@ -503,11 +504,6 @@ class Setting {
 				}
 			}
 			$set_errors[ $setting_slug ] = true;
-		}
-
-		$other_errors = $this->get_error_notices();
-		foreach ( $other_errors as $error_code => $error ) {
-			add_settings_error( $setting_slug, $error_code, $error['message'], $error['type'] );
 		}
 
 		return $value;
@@ -704,14 +700,6 @@ class Setting {
 	 * @return string
 	 */
 	public function render_component() {
-		$notices = $this->get_error_notices();
-		if ( ! empty( $notices ) ) {
-			foreach ( $notices as $error_slug => $error_notice ) {
-				add_settings_error( $this->get_slug(), $error_notice['message'], $error_notice['type'] );
-			}
-			settings_errors( $this->get_slug() );
-		}
-
 		return $this->get_component()->render();
 	}
 
@@ -829,11 +817,16 @@ class Setting {
 	 */
 	public function load_value() {
 		if ( ! $this->is_root_setting() && $this->has_param( 'option_name' ) ) {
-			$root                            = $this->get_root_setting();
-			$root_value                      = (array) $root->get_value();
-			$default_value                   = $this->get_param( 'default', null );
-			$option                          = $this->get_param( 'option_name' );
-			$data                            = get_option( $option, $default_value );
+			$root          = $this->get_root_setting();
+			$root_value    = (array) $root->get_value();
+			$default_value = $this->get_param( 'default', null );
+			$option        = $this->get_param( 'option_name' );
+			$data          = get_option( $option, $default_value );
+			// If has settings, get value defaults and merge with found data.
+			if ( $this->has_settings() ) {
+				$default_val = $this->get_value();
+				$data        = array_filter( wp_parse_args( $data, $default_val ) );
+			}
 			$root_value[ $this->get_slug() ] = $data;
 			$root->set_value( $root_value );
 		}
@@ -868,7 +861,13 @@ class Setting {
 			}
 		}
 
-		return $this->value;
+		/**
+		 * Filter the setting value.
+		 *
+		 * @param mixed  $value The setting value.
+		 * @param string $slug  The setting slug.
+		 */
+		return apply_filters( 'cloudinary_setting_get_value', $this->value, $this->get_slug() );
 	}
 
 	/**
@@ -903,7 +902,7 @@ class Setting {
 		if ( $this->setting_exists( $slug ) ) {
 			// translators: Placeholder is the slug.
 			$message = sprintf( __( 'Duplicate setting slug %s. This setting will not be usable.', 'cloudinary' ), $slug );
-			$this->add_error_notice( 'duplicate_setting', $message, 'warning' );
+			$this->add_admin_notice( 'duplicate_setting', $message, 'warning' );
 		}
 		$new_setting = new Setting( $slug, $params, $this->root_setting );
 		$new_setting->set_value( $new_setting->get_param( 'default', null ) ); // Set value to null.
@@ -920,28 +919,62 @@ class Setting {
 	 * @param string $error_code    The error code/slug.
 	 * @param string $error_message The error text/message.
 	 * @param string $type          The error type.
+	 * @param bool   $dismissible   If notice is dismissible.
+	 * @param int    $duration      How long it's dismissible for.
+	 * @param string $icon          Optional icon.
 	 */
-	public function add_error_notice( string $error_code, string $error_message, string $type = 'error' ) {
+	public function add_admin_notice( $error_code, $error_message, $type = 'error', $dismissible = false, $duration = 0, $icon = null ) {
 
-		$option_parent = $this->get_option_parent();
-		$errors        = $option_parent->get_param( '_error_notice', array() );
-		if ( empty( $errors[ $error_code ] ) ) {
-			$errors[ $error_code ] = array();
+		// Format message array into paragraphs.
+		if ( is_array( $error_message ) ) {
+			$message       = implode( "\n\r", $error_message );
+			$error_message = wpautop( $message );
 		}
-		$errors[ $error_code ] = array(
-			'message' => $error_message,
-			'type'    => $type,
+
+		$icons = array(
+			'success' => 'dashicons-yes-alt',
+			'created' => 'dashicons-saved',
+			'updated' => 'dashicons-saved',
+			'error'   => 'dashicons-no-alt',
+			'warning' => 'dashicons-warning',
 		);
-		$option_parent->set_param( '_error_notice', $errors );
+
+		if ( null === $icon && ! empty( $icons[ $type ] ) ) {
+			$icon = $icons[ $type ];
+		}
+
+		$option_parent  = $this->get_option_parent();
+		$option_notices = $option_parent->get_setting( '_notices' );
+		$notices        = $option_notices->get_param( '_notices', array() );
+
+		// Set new notice.
+		$params                  = array(
+			'type'     => 'notice',
+			'level'    => $type,
+			'message'  => $error_message,
+			'code'     => $error_code,
+			'dismiss'  => $dismissible,
+			'duration' => $duration,
+			'icon'     => $icon,
+		);
+		$notice_slug             = md5( wp_json_encode( $params ) );
+		$notices[ $notice_slug ] = $this->create_setting( $notice_slug, $params );
+		$option_notices->set_param( '_notices', $notices );
 	}
 
 	/**
-	 * Get error notices.
+	 * Get admin notices.
 	 *
-	 * @return array
+	 * @return Setting[]
 	 */
-	protected function get_error_notices() {
-		return $this->get_param( '_error_notice', array() );
+	public function get_admin_notices() {
+		$option_parent   = $this->get_option_parent();
+		$setting_notices = get_settings_errors( $option_parent->get_option_name() );
+		foreach ( $setting_notices as $key => $notice ) {
+			$option_parent->add_admin_notice( $notice['code'], $notice['message'], $notice['type'], true );
+		}
+
+		return $option_parent->get_setting( '_notices' )->get_param( '_notices' );
 	}
 
 	/**
@@ -952,11 +985,46 @@ class Setting {
 	 * @return Setting
 	 */
 	public function add_setting( $setting ) {
+
 		$setting->set_parent( $this );
-		$this->settings[ $setting->get_slug() ] = $setting;
-		$this->sort_settings();
+
+		/**
+		 * PHP array sorting methods vary between versions. Sorting ASC, where the value is equal, is sometimes randomized.
+		 * Since multiple priority 10 items are equal, their placement may not be as they are added.
+		 * I.E an item added as 10 while other 10 priorities exist, might get added to the top rather than the expected bottom.
+		 * Here, we are determining the index based on the next highest priority, guaranteeing correct placement.
+		 */
+		$index = $this->get_position_index( $setting->get_param( 'priority', 10 ) );
+
+		$new_setting = array(
+			$setting->get_slug() => $setting,
+		);
+		// Splice in setting based on the position index.
+		$this->settings = array_slice( $this->settings, 0, $index, true ) + $new_setting + array_slice( $this->settings, $index, null, true );
 
 		return $setting;
+	}
+
+	/**
+	 * Get the index where the new setting should go based on the priority.
+	 * The position will be the just after the same priority, but before any priority that's higher.
+	 * This maintains the first-come-first serve for like priorities.
+	 *
+	 * @param int $priority The priority to get the index for.
+	 *
+	 * @return int
+	 */
+	protected function get_position_index( $priority ) {
+		$index = 0;
+		foreach ( $this->settings as $setting_check ) {
+			$check_priority = $setting_check->get_param( 'priority', 10 );
+			if ( $priority < $check_priority ) {
+				break;
+			}
+			$index ++;
+		}
+
+		return $index;
 	}
 
 	/**
@@ -1045,4 +1113,44 @@ class Setting {
 
 		return $capture;
 	}
+
+	/**
+	 * Check if the slug is private. i.e starts with _.
+	 *
+	 * @param string $slug the slug to check.
+	 *
+	 * @return bool
+	 */
+	protected function is_private_slug( $slug ) {
+		return '_' === substr( $slug, 0, 1 );
+	}
+
+	/**
+	 * Check if a setting is public.
+	 */
+	protected function is_public() {
+		return ! $this->is_private_slug( $this->get_slug() );
+	}
+
+	/**
+	 * Get the submitted value.
+	 *
+	 * @param null|mixed $default The default value if submission is not available.
+	 *
+	 * @return mixed|null
+	 */
+	public function get_submitted_value( $default = null ) {
+
+		$input_slug = $this->get_option_name();
+		$args       = array(
+			$input_slug => array(
+				'filter' => FILTER_SANITIZE_STRING,
+				'flags'  => FILTER_REQUIRE_ARRAY,
+			),
+		);
+		$input      = filter_input_array( INPUT_POST, $args );
+
+		return isset( $input[ $input_slug ][ $this->get_slug() ] ) ? $input[ $input_slug ][ $this->get_slug() ] : $default;
+	}
+
 }

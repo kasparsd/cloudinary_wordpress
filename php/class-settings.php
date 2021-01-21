@@ -121,7 +121,7 @@ class Settings {
 		add_action( "load-{$page_handle}", array( $this, 'set_active_setting' ) );
 		// Setup the Child page handles.
 		foreach ( $setting->get_settings() as $sub_setting ) {
-			if ( 'page' !== $sub_setting->get_param( 'type' ) || ! apply_filters( "settings_enabled_{$sub_setting->get_slug()}", true ) ) {
+			if ( 'page' !== $sub_setting->get_param( 'type' ) || ! apply_filters( "cloudinary_settings_enabled_{$sub_setting->get_slug()}", true ) ) {
 				continue;
 			}
 			$sub_setting->set_param( 'page_header', $setting->get_param( 'page_header' ) );
@@ -148,7 +148,7 @@ class Settings {
 	 */
 	public function render() {
 		if ( $this->current_page->has_param( 'page_footer' ) ) {
-			add_action( 'in_admin_footer', array( $this, 'bind_footer' ) );
+			add_action( 'admin_footer', array( $this, 'render_footer' ) );
 		}
 		echo $this->current_page->get_component()->render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
@@ -199,18 +199,9 @@ class Settings {
 	}
 
 	/**
-	 * Bind the footer to the admin page.
-	 */
-	public function bind_footer() {
-		ob_start();
-		add_action( 'admin_footer', array( $this, 'render_footer' ) );
-	}
-
-	/**
 	 * Render the footer in admin page.
 	 */
 	public function render_footer() {
-		ob_get_clean();
 		echo $this->get_active_page()->get_param( 'page_footer' )->get_component()->render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 

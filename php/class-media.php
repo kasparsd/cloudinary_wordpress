@@ -362,11 +362,13 @@ class Media extends Settings_Component implements Setup {
 		// The remaining items should be the file.
 		$file      = implode( '/', $parts );
 		$path_info = pathinfo( $file );
-		$public_id = trim( $path_info['dirname'], './' );
+
+		$public_id = '.' !== $path_info['dirname'] ? $path_info['dirname'] : $path_info['filename'];
+		$public_id = trim( $public_id, './' );
 
 		if ( $as_sync_key ) {
 			$transformations = $this->get_transformations_from_string( $url );
-			$public_id       .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
+			$public_id      .= ! empty( $transformations ) ? wp_json_encode( $transformations ) : '';
 		}
 
 		return $public_id;
@@ -639,7 +641,7 @@ class Media extends Settings_Component implements Setup {
 	 */
 	public function get_transformations_from_string( $str, $type = 'image' ) {
 
-		$params = \Cloudinary\Connect\Api::$transformation_index[ $type ];
+		$params = Api::$transformation_index[ $type ];
 
 		$transformation_chains = explode( '/', $str );
 		$transformations       = array();
@@ -705,7 +707,7 @@ class Media extends Settings_Component implements Setup {
 
 		// Base image level.
 		$new_transformations = array(
-			'image'  => \Cloudinary\Connect\Api::generate_transformation_string( $transformations, $type ),
+			'image'  => Api::generate_transformation_string( $transformations, $type ),
 			'global' => array(),
 			'tax'    => array(),
 			'qf'     => array(),
@@ -713,39 +715,38 @@ class Media extends Settings_Component implements Setup {
 		// Get Taxonomies.
 		$new_transformations['tax'] = $this->global_transformations->get_taxonomy_transformations( $type );
 		if ( ! $this->global_transformations->is_taxonomy_overwrite() ) {
-			// Get Lowest level.
-			$global  = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
-			$default = array();
-			if ( 'video' === $type ) {
-				if ( isset( $global['video_limit_bitrate'] ) && 'on' === $global['video_limit_bitrate'] ) {
-					$default['bit_rate'] = $global['video_bitrate'] . 'k';
-				}
-			} else {
-				if ( 'auto' === $global[ $type . '_format' ] ) {
-					$default['fetch_format'] = 'auto';
-				}
-				if ( isset( $global[ $type . '_quality' ] ) ) {
-					$default['quality'] = 'none' !== $global[ $type . '_quality' ] ? $global[ $type . '_quality' ] : null;
-				} else {
-					$default['quality'] = 'auto';
-				}
-			}
+			/**
+			 * Filter the default Quality and Format transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$default                   = apply_filters( "cloudinary_default_qf_transformations_{$type}", array(), $transformations );
 			$default                   = array_filter( $default ); // Clear out empty settings.
-			$new_transformations['qf'] = \Cloudinary\Connect\Api::generate_transformation_string( array( $default ), $type );
+			$new_transformations['qf'] = Api::generate_transformation_string( array( $default ), $type );
+
+			/**
+			 * Filter the default Freeform transformations for the specific media type.
+			 *
+			 * @param array $defaults        The default transformations array.
+			 * @param array $transformations The current transformations array.
+			 *
+			 * @return array
+			 */
+			$freeform = apply_filters( "cloudinary_default_freeform_transformations_{$type}", array(), $transformations );
+			$freeform = array_filter( $freeform ); // Clear out empty settings.
 			// Add freeform global transformations.
-			$freeform_type = $type . '_freeform';
-			if ( ! empty( $global[ $freeform_type ] ) ) {
-				$new_transformations['global'][] = trim( $global[ $freeform_type ] );
+			if ( ! empty( $freeform ) ) {
+				$new_transformations['global'] = implode( '/', $freeform );
 			}
-
-			$new_transformations['global'] = implode( '/', $new_transformations['global'] );
-
 		}
 		// Clean out empty parts, and join into a sectioned string.
 		$new_transformations = array_filter( $new_transformations );
 		$new_transformations = implode( '/', $new_transformations );
 		// Take sectioned string, and create a transformation array set.
-		$transformations = $this->get_transformations_from_string( $new_transformations );
+		$transformations = $this->get_transformations_from_string( $new_transformations, $type );
 		/**
 		 * Filter the default cloudinary transformations.
 		 *
@@ -762,18 +763,58 @@ class Media extends Settings_Component implements Setup {
 	}
 
 	/**
+	 * Apply default  quality anf format image transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_transformations( $default ) {
+
+		$config = $this->settings->get_value( 'image_settings' );
+
+		if ( 'on' === $config['image_optimization'] ) {
+			if ( 'auto' === $config['image_format'] ) {
+				$default['fetch_format'] = 'auto';
+			}
+			if ( isset( $config['image_quality'] ) ) {
+				$default['quality'] = 'none' !== $config['image_quality'] ? $config['image_quality'] : null;
+			} else {
+				$default['quality'] = 'auto';
+			}
+		}
+
+		return $default;
+	}
+
+	/**
+	 * Apply default image freeform transformations.
+	 *
+	 * @param array $default The current default transformations.
+	 *
+	 * @return array
+	 */
+	public function default_image_freeform_transformations( $default ) {
+		$config = $this->settings->get_value( 'image_settings' );
+		if ( ! empty( $config['image_freeform'] ) ) {
+			$default[] = trim( $config['image_freeform'] );
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Generate a Cloudinary URL based on attachment ID and required size.
 	 *
-	 * @param int          $attachment_id             The id of the attachment.
-	 * @param array|string $size                      The wp size to set for the URL.
-	 * @param array        $transformations           Set of transformations to apply to this url.
-	 * @param string       $cloudinary_id             Optional forced cloudinary ID.
+	 * @param int          $attachment_id The id of the attachment.
+	 * @param array|string $size The wp size to set for the URL.
+	 * @param array        $transformations Set of transformations to apply to this url.
+	 * @param string       $cloudinary_id Optional forced cloudinary ID.
 	 * @param bool         $overwrite_transformations Flag url is a breakpoint URL to stop re-applying default transformations.
 	 *
 	 * @return string The converted URL.
 	 */
 	public function cloudinary_url( $attachment_id, $size = array(), $transformations = array(), $cloudinary_id = null, $overwrite_transformations = false ) {
-
 		if ( ! ( $cloudinary_id ) ) {
 			$cloudinary_id = $this->cloudinary_id( $attachment_id );
 			if ( ! $cloudinary_id ) {
@@ -804,9 +845,11 @@ class Media extends Settings_Component implements Setup {
 		 *
 		 * @return array
 		 */
-		$pre_args['transformation'] = apply_filters( 'cloudinary_transformations', $transformations, $attachment_id );
+		$pre_args['transformation']    = apply_filters( 'cloudinary_transformations', $transformations, $attachment_id );
+		$apply_default_transformations = apply_filters( 'cloudinary_apply_default_transformations', true );
+
 		// Defaults are only to be added on front, main images ( not breakpoints, since these are adapted down), and videos.
-		if ( ( ! defined( 'REST_REQUEST' ) || false === REST_REQUEST ) && ! is_admin() && false === $overwrite_transformations ) {
+		if ( true === $apply_default_transformations && false === $overwrite_transformations && ! is_admin() ) {
 			$pre_args['transformation'] = $this->apply_default_transformations( $pre_args['transformation'], $resource_type );
 		}
 
@@ -1102,7 +1145,7 @@ class Media extends Settings_Component implements Setup {
 
 		$image_meta['overwrite_transformations'] = ! empty( $image_meta['overwrite_transformations'] ) ? $image_meta['overwrite_transformations'] : false;
 
-		if ( $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
+		if ( 'on' === $this->settings->get_setting( 'enable_breakpoints' )->get_value() && wp_image_matches_ratio( $image_meta['width'], $image_meta['height'], $size_array[0], $size_array[1] ) ) {
 			$meta = $this->get_post_meta( $attachment_id, Sync::META_KEYS['breakpoints'], true );
 			if ( ! empty( $meta ) ) {
 				// Since srcset is primary and src is a fallback, we need to set the first srcset with the main image.
@@ -1348,14 +1391,14 @@ class Media extends Settings_Component implements Setup {
 		// Check for transformations.
 		$transformations = $this->get_transformations_from_string( $asset['url'] );
 		if ( ! empty( $transformations ) ) {
-			$asset['sync_key']        .= wp_json_encode( $transformations );
+			$asset['sync_key']       .= wp_json_encode( $transformations );
 			$asset['transformations'] = $transformations;
 		}
 
 		// Check Format.
 		$url_format = pathinfo( $asset['url'], PATHINFO_EXTENSION );
 		if ( strtolower( $url_format ) !== strtolower( $asset['format'] ) ) {
-			$asset['format']   = $url_format;
+			$asset['format']    = $url_format;
 			$asset['sync_key'] .= $url_format;
 		}
 
@@ -1675,7 +1718,7 @@ class Media extends Settings_Component implements Setup {
 		$breakpoints = array();
 		$settings    = $this->settings->get_setting( self::MEDIA_SETTINGS_SLUG )->get_value();
 
-		if ( $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
+		if ( 'on' === $settings['enable_breakpoints'] && wp_attachment_is_image( $attachment_id ) ) {
 			$meta = wp_get_attachment_metadata( $attachment_id );
 			// Get meta image size if non exists.
 			if ( empty( $meta ) ) {
@@ -1694,7 +1737,7 @@ class Media extends Settings_Component implements Setup {
 			);
 			$transformations    = $this->get_transformation_from_meta( $attachment_id );
 			if ( ! empty( $transformations ) ) {
-				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations );
+				$breakpoints['transformation'] = Api::generate_transformation_string( $transformations, 'image' );
 			}
 			$breakpoints = array(
 				'public_id'              => $this->get_public_id( $attachment_id ),
@@ -1973,6 +2016,10 @@ class Media extends Settings_Component implements Setup {
 				add_action( 'begin_fetch_post_thumbnail_html', array( $this, 'set_doing_featured' ), 10, 2 );
 				add_filter( 'post_thumbnail_html', array( $this, 'maybe_srcset_post_thumbnail' ), 10, 3 );
 			}
+			// Filter default image Quality and Format transformations.
+			add_filter( 'cloudinary_default_qf_transformations_image', array( $this, 'default_image_transformations' ), 10 );
+			add_filter( 'cloudinary_default_freeform_transformations_image', array( $this, 'default_image_freeform_transformations' ), 10 );
+
 			// Filter and action the custom column.
 			add_filter( 'manage_media_columns', array( $this, 'media_column' ) );
 			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
@@ -2013,7 +2060,7 @@ class Media extends Settings_Component implements Setup {
 							'Cloudinary allows you to easily transform your images on-the-fly to any required format, style and dimension, and also optimizes images for minimal file size alongside high visual quality for an improved user experience and minimal bandwidth. You can do all of this by implementing dynamic image transformation and delivery URLs.',
 							'cloudinary'
 						),
-						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
+						'url'       => 'https://cloudinary.com/documentation/transformation_reference',
 						'link_text' => __( 'See Examples', 'cloudinary' ),
 					),
 					$image_settings,

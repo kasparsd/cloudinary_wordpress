@@ -10,12 +10,9 @@ namespace Cloudinary;
 use Cloudinary\Component\Assets;
 use Cloudinary\Component\Config;
 use Cloudinary\Component\Notice;
-use Cloudinary\Component\Settings;
 use Cloudinary\Component\Setup;
 use Cloudinary\Settings\Setting;
 use Cloudinary\Sync\Storage;
-use Cloudinary\Deactivation;
-use Cloudinary\Settings_Component;
 use WP_REST_Request;
 use WP_REST_Server;
 use const E_USER_WARNING;
@@ -137,8 +134,6 @@ final class Plugin {
 		$this->components['media']        = new Media( $this );
 		$this->components['api']          = new REST_API( $this );
 		$this->components['storage']      = new Storage( $this );
-		// Testing Settings.
-		$this->components['testing'] = new Test( $this );
 	}
 
 	/**
@@ -163,6 +158,19 @@ final class Plugin {
 	 * @return array
 	 */
 	private function get_settings_page_structure() {
+
+		$parts = array(
+			'header' => array(),
+			'pages'  => array(),
+			'footer' => array(),
+		);
+
+		foreach ( $parts as $slug => $part ) {
+			if ( file_exists( $this->dir_path . "ui-definitions/settings-{$slug}.php" ) ) {
+				$parts[ $slug ] = include $this->dir_path . "ui-definitions/settings-{$slug}.php";
+			}
+		}
+
 		$structure = array(
 			'version'     => $this->version,
 			'page_title'  => __( 'Cloudinary', 'cloudinary' ),
@@ -170,45 +178,9 @@ final class Plugin {
 			'capability'  => 'manage_options',
 			'icon'        => 'dashicons-cloudinary',
 			'option_name' => $this->slug,
-			'page_header' => array(
-				'content' => '<img src="' . esc_url( $this->dir_url ) . 'css/logo.svg" alt="' . esc_attr__( "Cloudinary's logo", 'cloudinary' ) . '" width="150px"><p style="margin-left: 1rem; font-size: 0.75rem;"><a href="#">' . esc_html__( 'Need help?', 'cloudinary' ) . '</a></p>',
-			),
-			'page_footer' => array(
-				'content' => __( 'Thanks for using Cloudinary, please take a minute to rate our plugin.', 'cloudinary' ),
-			),
-			'pages'       => array(
-				$this->slug => array(
-					'page_title' => __( 'Cloudinary Dashboard', 'cloudinary' ),
-					'menu_title' => __( 'Dashboard', 'cloudinary' ),
-					'priority'   => 0,
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'plan',
-							'title' => __( 'Your Current Plan', 'cloudinary' ),
-						),
-						array(
-							'type'    => 'link',
-							'url'     => 'https://cloudinary.com/console/lui/upgrade_options',
-							'content' => __( 'Upgrade Plan', 'cloudinary' ),
-						),
-					),
-					array(
-						'type' => 'panel',
-						array(
-							'type'  => 'plan_status',
-							'title' => __( 'Your Plan Status', 'cloudinary' ),
-						),
-					),
-					array(
-						'type' => 'panel_short',
-						array(
-							'type'  => 'media_status',
-							'title' => __( 'Your Media Sync Status', 'cloudinary' ),
-						),
-					),
-				),
-			),
+			'page_header' => $parts['header'],
+			'page_footer' => $parts['footer'],
+			'pages'       => $parts['pages'],
 		);
 
 		return $structure;
@@ -226,6 +198,19 @@ final class Plugin {
 
 		// Init settings.
 		\Cloudinary\Settings::init_setting( $this->slug );
+
+		// Add count notice if not connected.
+		if ( ! $this->get_component( 'connect' )->is_connected() ) {
+			$count      = sprintf( ' <span class="update-plugins count-%d"><span class="update-count">%d</span></span>', 1, number_format_i18n( 1 ) );
+			$main_title = $this->settings->get_param( 'menu_title' ) . $count;
+			$this->settings->set_param( 'menu_title', $main_title );
+			$this->settings->set_param( 'connect_count', $count );
+
+			// Set the Getting Started title.
+			$connect       = $this->settings->find_setting( 'dashboard' );
+			$connect_title = $connect->get_param( 'menu_title' ) . $count;
+			$connect->set_param( 'menu_title', $connect_title );
+		}
 	}
 
 	/**
@@ -465,57 +450,28 @@ final class Plugin {
 	 * @since  0.1
 	 */
 	public function admin_notices() {
+
+		$setting = Utils::get_active_setting();
 		/**
 		 * An array of classes that implement the Notice interface.
 		 *
 		 * @var $components Notice[]
 		 */
-		$components              = array_filter( $this->components, array( $this, 'is_notice_component' ) );
-		$default                 = array(
+		$components = array_filter( $this->components, array( $this, 'is_notice_component' ) );
+		$default    = array(
 			'message'     => '',
 			'type'        => 'error',
-			'dismissible' => true,
+			'dismissible' => false,
 			'duration'    => 10, // Default dismissible duration is 10 Seconds for save notices etc...
+			'icon'        => null,
 		);
-		$has_dismissible_notices = false;
+
 		foreach ( $components as $component ) {
 			$notices = $component->get_notices();
 			foreach ( $notices as $notice ) {
-				if ( ! empty( $notice ) && ! empty( $notice['message'] ) ) {
-					$notice = wp_parse_args( $notice, $default );
-					if ( true === $notice['dismissible'] ) {
-						// Convert the whole notice data into a string, and make it a hash.
-						// This allows the same notice to show if it has a change, i.e Quota limits change.
-						$notice_key = md5( wp_json_encode( $notice ) );
-						if ( ! get_transient( $notice_key ) ) {
-							$html = sprintf(
-								'<div class="notice-%1$s settings-error notice is-dismissible cld-notice" dismiss="alert" data-dismiss="%3$s" data-duration="%4$d"><p><strong>%2$s</strong></p></div>',
-								esc_attr( $notice['type'] ),
-								$notice['message'],
-								esc_attr( $notice_key ),
-								esc_attr( $notice['duration'] )
-							);
-							// Flag a dismissible notice has been shown.
-							$has_dismissible_notices = true;
-						}
-					} else {
-						$html = sprintf(
-							'<div class="notice-%1$s settings-error notice"><p><strong>%2$s</strong></p></div>',
-							esc_attr( $notice['type'] ),
-							$notice['message']
-						);
-					}
-					echo wp_kses_post( $html );
-				}
+				$notice = wp_parse_args( $notice, $default );
+				$setting->add_admin_notice( 'cld_general', $notice['message'], $notice['type'], $notice['dismissible'], $notice['duration'], $notice['icon'] );
 			}
-		}
-		// Output notice endpoint data only if a dismissible notice has been shown.
-		if ( $has_dismissible_notices ) {
-			$args = array(
-				'url'   => rest_url( REST_API::BASE . '/dismiss_notice' ),
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			);
-			wp_add_inline_script( 'cloudinary', 'var CLDIS = ' . wp_json_encode( $args ), 'before' );
 		}
 	}
 

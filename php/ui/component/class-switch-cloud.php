@@ -27,11 +27,9 @@ class Switch_Cloud extends Submit {
 
 		$url = add_query_arg(
 			array(
-				'page'           => 'dashboard',
-				'tab'            => 'connect',
 				'switch-account' => true,
 			),
-			admin_url( 'admin.php' )
+			$this->setting->get_option_parent()->get_component()->get_url()
 		);
 
 		$struct['element']             = 'a';

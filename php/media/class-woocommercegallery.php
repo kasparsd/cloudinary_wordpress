@@ -28,7 +28,7 @@ class WooCommerceGallery {
 	public function __construct( Gallery $gallery ) {
 		$this->gallery = $gallery;
 
-		if ( $this->woocommerce_active() && $this->gallery->gallery_enabled() ) {
+		if ( self::woocommerce_active() && $this->enabled() ) {
 			$this->setup_hooks();
 		}
 	}
@@ -42,7 +42,7 @@ class WooCommerceGallery {
 
 		if ( $assets ) {
 			$json_assets = wp_json_encode( $assets );
-			wp_add_inline_script( Gallery::GALLERY_LIBRARY_HANDLE, "cloudinaryGalleryConfig.mediaAssets = JSON.parse( '{$json_assets}' );" );
+			wp_add_inline_script( Gallery::GALLERY_LIBRARY_HANDLE, "CLD_GALLERY_CONFIG.mediaAssets = {$json_assets};" );
 		}
 	}
 
@@ -51,8 +51,19 @@ class WooCommerceGallery {
 	 *
 	 * @return bool
 	 */
-	protected function woocommerce_active() {
+	public static function woocommerce_active() {
 		return class_exists( 'WooCommerce' ) && function_exists( 'wc_get_product' );
+	}
+
+	/**
+	 * Whether the replacement toggle is on or off
+	 *
+	 * @return bool
+	 */
+	public function enabled() {
+		return ! empty( $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) ) ?
+			(bool) $this->gallery->media->plugin->settings->get_value( 'gallery_woocommerce_enabled' ) :
+			false;
 	}
 
 	/**
@@ -61,7 +72,14 @@ class WooCommerceGallery {
 	public function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
 
-		if ( ! is_admin() && $this->woocommerce_active() ) {
+		add_filter(
+			'cloudinary_gallery_html_container',
+			static function () {
+				return '.woocommerce-product-gallery';
+			}
+		);
+
+		if ( ! is_admin() && self::woocommerce_active() ) {
 			add_filter( 'woocommerce_single_product_image_thumbnail_html', '__return_empty_string' );
 		}
 	}

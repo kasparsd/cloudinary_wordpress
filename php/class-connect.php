@@ -84,6 +84,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		'signature'  => 'cloudinary_connection_signature',
 		'version'    => 'cloudinary_version',
 		'url'        => 'cloudinary_url',
+		'connect'    => 'cloudinary_connect',
 		'status'     => 'cloudinary_status',
 	);
 
@@ -101,7 +102,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 		$this->plugin        = $plugin;
 		$this->settings_slug = 'dashboard';
 		add_filter( 'pre_update_option_cloudinary_connect', array( $this, 'verify_connection' ) );
-		add_filter( 'cron_schedules', array( $this, 'get_status_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval
 		add_action( 'update_option_cloudinary_connect', array( $this, 'updated_option' ) );
 		add_action( 'cloudinary_status', array( $this, 'check_status' ) );
 		add_action( 'cloudinary_version_upgrade', array( $this, 'upgrade_connection' ) );
@@ -256,10 +256,6 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				);
 			}
 
-			return false;
-		}
-
-		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
 			return false;
 		}
 
@@ -492,23 +488,29 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			$this->usage_stats();
 			$this->setup_status_cron();
 			$this->plugin->settings->set_param( 'connected', $this->is_connected() );
+
+			// Add cancel button.
+			if ( $this->switch_account() ) {
+				$link = array(
+					'type'       => 'link',
+					'content'    => 'Cancel',
+					'url'        => $this->settings->find_setting( 'connect' )->get_component()->get_url(),
+					'target'     => '_self',
+					'attributes' => array(
+						'class'    => array(
+							'button-secondary',
+						),
+						'link_tag' => array(
+							'style' => array(
+								'margin-left:12px;',
+							),
+						),
+					),
+				);
+
+				$this->settings->create_setting( 'cancel_switch', $link, $this->settings->find_setting( 'connect_button' ) );
+			}
 		}
-	}
-
-	/**
-	 * Add our every minute schedule.
-	 *
-	 * @param array $schedules Array of schedules.
-	 *
-	 * @return array
-	 */
-	public function get_status_schedule( $schedules ) {
-		$schedules['every_minute'] = array(
-			'interval' => MINUTE_IN_SECONDS,
-			'display'  => __( 'Every Minute', 'cloudinary' ),
-		);
-
-		return $schedules;
 	}
 
 	/**
@@ -535,13 +537,13 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 			if ( ! is_wp_error( $stats ) && ! empty( $stats['media_limits'] ) ) {
 				$stats['max_image_size'] = $stats['media_limits']['image_max_size_bytes'];
 				$stats['max_video_size'] = $stats['media_limits']['video_max_size_bytes'];
-				$last_usage->save_value( $stats );// Save the last successful call to prevent crashing.
+				$last_usage->save_value( $stats );// Save the last successful call to prevgent crashing.
 			} else {
 				// Handle error by logging and fetching the last success.
 				// @todo : log issue.
 				$stats = $last_usage->get_value();
 			}
-			// Set transient with last data or new data to prevent overload.
+			// Set useage state to the results, either new or the last, to prevent API hits.
 			set_transient( self::META_KEYS['usage'], $stats, HOUR_IN_SECONDS );
 		}
 		$this->usage = $stats;
@@ -613,28 +615,24 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				if ( empty( $usage ) ) {
 					continue;
 				}
-				$link      = null;
-				$link_text = null;
+				$link      = 'https://cloudinary.com/console/lui/upgrade_options';
+				$link_text = __( 'upgrade your account', 'cloudinary' );
 				if ( 90 <= $usage ) {
 					// 90% used - show error.
-					$level     = 'error';
-					$link      = 'https://cloudinary.com/console/lui/upgrade_options';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'error';
 				} elseif ( 80 <= $usage ) {
-					$level     = 'warning';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'warning';
 				} elseif ( 70 <= $usage ) {
-					$level     = 'neutral';
-					$link_text = __( 'upgrade your account', 'cloudinary' );
+					$level = 'neutral';
 				} else {
 					continue;
 				}
 
 				// translators: Placeholders are URLS and percentage values.
 				$message = sprintf(
-					/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
+				/* translators: %1$s quota size, %2$s amount in percent, %3$s link URL, %4$s link anchor text. */
 					__(
-						'<span class="dashicons dashicons-cloudinary"></span> You are %2$s of the way through your monthly quota for %1$s on your Cloudinary account. If you exceed your quota, the Cloudinary plugin will be deactivated until your next billing cycle and your media assets will be served from your WordPress Media Library. You may wish to <a href="%3$s" target="_blank">%4$s</a> and increase your quota to ensure you maintain full functionality.',
+						'You are %2$s of the way through your monthly quota for %1$s on your Cloudinary account. If you exceed your quota, the Cloudinary plugin will be deactivated until your next billing cycle and your media assets will be served from your WordPress Media Library. You may wish to <a href="%3$s" target="_blank">%4$s</a> and increase your quota to ensure you maintain full functionality.',
 						'cloudinary'
 					),
 					ucwords( $stat ),
@@ -644,6 +642,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				);
 
 				$this->notices[] = array(
+					'icon'        => 'dashicons-cloudinary',
 					'message'     => $message,
 					'type'        => $level,
 					'dismissible' => true,
@@ -658,12 +657,13 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	 */
 	public function get_notices() {
 		$this->usage_notices();
-		$screen = get_current_screen();
-		$slg    = $this->settings->find_setting( 'cloudinary_url' )->get_value();
-		if ( empty( $slg ) ) {
+		$screen             = get_current_screen();
+		$connection_setting = $this->settings->find_setting( self::META_KEYS['url'] );
+		$cloudinary_url     = $connection_setting->get_value();
+		if ( empty( $cloudinary_url ) ) {
 			$page_base = $this->settings->get_root_setting()->get_slug();
 			if ( is_object( $screen ) && $page_base === $screen->parent_base ) {
-				$url             = $this->settings->find_setting( 'connect' )->get_component()->get_url();
+				$url             = $connection_setting->get_option_parent()->get_component()->get_url();
 				$link            = '<a href="' . esc_url( $url ) . '">' . __( 'Connect', 'cloudinary' ) . '</a> ';
 				$this->notices[] = array(
 					'message'     => $link . __( 'your Cloudinary account with WordPress to get started.', 'cloudinary' ),
@@ -729,12 +729,35 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 	}
 
 	/**
+	 * Check if the switch account param is set.
+	 *
+	 * @return bool
+	 */
+	public function switch_account() {
+
+		$return = false;
+		if ( filter_input( INPUT_GET, 'switch-account', FILTER_VALIDATE_BOOLEAN ) ) {
+			return true;
+		}
+
+		return $return;
+	}
+
+	/**
 	 * Define the Settings.
 	 *
 	 * @return array
 	 */
 	public function settings() {
 		$self = $this;
+		$url  = add_query_arg(
+			array(
+				'page' => 'media',
+				'tab'  => 'media_display',
+			),
+			admin_url( 'admin.php' )
+		);
+
 		$args = array(
 			'menu_title' => __( 'Getting Started', 'cloudinary' ),
 			'page_title' => __( 'Getting Started', 'cloudinary' ),
@@ -758,8 +781,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'Configure how your images are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as responsive images.',
 							'cloudinary'
 						),
-						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
-						'link_text' => __( 'See Examples', 'cloudinary' ),
+						'url'       => $url . '#panel-image-settings',
+						'blank'     => false,
+						'link_text' => __( 'Image settings', 'cloudinary' ),
 					),
 					array(
 						'type'      => 'info_box',
@@ -769,8 +793,9 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							'Configure how your videos are shown on your site. You can apply transformations to adjust the quality, format or visual appearance and define other settings such as whether to use the Cloudinary video player.',
 							'cloudinary'
 						),
-						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
-						'link_text' => __( 'See Examples', 'cloudinary' ),
+						'url'       => $url . '#panel-video-settings',
+						'blank'     => false,
+						'link_text' => __( 'Video settings', 'cloudinary' ),
 					),
 					array(
 						'type'      => 'info_box',
@@ -787,10 +812,11 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 				'connect' => array(
 					'page_title' => __( 'Connect', 'cloudinary' ),
 					array(
-						'enabled' => array( $this, 'is_connected' ),
+						'enabled' => function () use ( $self ) {
+							return ! $self->switch_account() && $this->is_connected();
+						},
 						array(
-							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
-							'type'  => 'panel',
+							'type' => 'panel',
 							array(
 								'type' => 'connect',
 							),
@@ -801,7 +827,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 					),
 					array(
 						'enabled' => function () use ( $self ) {
-							return ! $self->is_connected();
+							return $self->switch_account() || ! $this->is_connected();
 						},
 						array(
 							'title' => __( 'Connect to Cloudinary!', 'cloudinary' ),
@@ -811,7 +837,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 							),
 							array(
 								'placeholder'  => 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME',
-								'slug'         => 'cloudinary_url',
+								'slug'         => self::META_KEYS['url'],
 								'title'        => __( 'Connection string', 'cloudinary' ),
 								'tooltip_text' => __(
 									'The connection string is made up of your Cloudinary Cloud name, API Key and API Secret and known as the API Environment Variable. This authenticates the Cloudinary WordPress plugin with your Cloudinary account.',
@@ -828,6 +854,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 						array(
 							'label' => __( 'Connect', 'cloudinary' ),
 							'type'  => 'submit',
+							'slug'  => 'connect_button',
 						),
 						array(
 							'collapsible' => 'open',

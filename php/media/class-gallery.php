@@ -7,6 +7,7 @@
 
 namespace Cloudinary\Media;
 
+use Cloudinary\Component\Settings;
 use Cloudinary\Media;
 use Cloudinary\REST_API;
 use Cloudinary\Utils;
@@ -33,27 +34,61 @@ class Gallery {
 	const GALLERY_LIBRARY_URL = 'https://product-gallery.cloudinary.com/all.js';
 
 	/**
+	 * Holds the settings slug.
+	 *
+	 * @var string
+	 */
+	public $settings_slug = 'gallery';
+
+	/**
+	 * Holds the sync settings object.
+	 *
+	 * @var Settings
+	 */
+	public $settings;
+
+	/**
 	 * The default config in case no settings are saved.
 	 *
 	 * @var array
 	 */
 	public static $default_config = array(
-		'enable_gallery'                    => 'on',
-		'primary_color'                     => '#000000',
-		'on_primary_color'                  => '#000000',
-		'active_color'                      => '#777777',
-		'aspect_ratio'                      => '1:1',
-		'zoom_trigger'                      => 'click',
-		'zoom_type'                         => 'popup',
-		'zoom_viewer_position'              => 'bottom',
-		'carousel_location'                 => 'top',
-		'carousel_offset'                   => 5,
-		'carousel_style'                    => 'thumbnails',
-		'carousel_thumbnail_width'          => 64,
-		'carousel_thumbnail_height'         => 64,
-		'carousel_button_shape'             => 'radius',
-		'carousel_thumbnail_selected_style' => 'gradient',
-		'custom_settings'                   => array(),
+		'mediaAssets'      => array(),
+		'transition'       => 'fade',
+		'aspectRatio'      => '3:4',
+		'navigation'       => 'always',
+		'zoom'             => true,
+		'carouselLocation' => 'top',
+		'carouselOffset'   => 5,
+		'carouselStyle'    => 'thumbnails',
+		'displayProps'     => array(
+			'mode'    => 'classic',
+			'columns' => 1,
+		),
+		'transformation'   => array(
+			'crop' => 'fill',
+		),
+		'indicatorProps'   => array( 'shape' => 'round' ),
+		'themeProps'       => array(
+			'primary'   => '#cf2e2e',
+			'onPrimary' => '#000000',
+			'active'    => '#777777',
+		),
+		'zoomProps'        => array(
+			'type'           => 'popup',
+			'viewerPosition' => 'bottom',
+			'trigger'        => 'click',
+		),
+		'thumbnailProps'   => array(
+			'width'                  => 64,
+			'height'                 => 64,
+			'navigationShape'        => 'radius',
+			'selectedStyle'          => 'gradient',
+			'selectedBorderPosition' => 'all',
+			'selectedBorderWidth'    => 4,
+			'mediaSymbolShape'       => 'round',
+		),
+		'customSettings'   => '',
 	);
 
 	/**
@@ -61,7 +96,7 @@ class Gallery {
 	 *
 	 * @var Media
 	 */
-	protected $media;
+	public $media;
 
 	/**
 	 * Holds the current config.
@@ -71,13 +106,6 @@ class Gallery {
 	protected $config = array();
 
 	/**
-	 * Holds the original, unparsed config.
-	 *
-	 * @var array
-	 */
-	protected $original_config = array();
-
-	/**
 	 * Init gallery.
 	 *
 	 * @param Media $media Media class instance.
@@ -85,13 +113,13 @@ class Gallery {
 	public function __construct( Media $media ) {
 		$this->media = $media;
 
-		if ( isset( $media->plugin->config['settings']['gallery'] ) && count( $media->plugin->config['settings']['gallery'] ) ) {
-			$this->original_config = $media->plugin->config['settings']['gallery'];
-		} else {
-			$this->original_config = self::$default_config;
-		}
-
 		$this->setup_hooks();
+
+		$config = ! empty( $media->plugin->settings->get_value( 'gallery_config' ) ) ?
+			$media->plugin->settings->get_value( 'gallery_config' ) :
+			wp_json_encode( self::$default_config );
+
+		$this->config = json_decode( $config, true );
 	}
 
 	/**
@@ -100,67 +128,23 @@ class Gallery {
 	 * @return array
 	 */
 	public function get_config() {
-		if ( count( $this->config ) ) {
-			return $this->config;
-		}
+		$config = Utils::array_filter_recursive( $this->config ); // Remove empty values.
 
-		$config        = $this->original_config;
-		$custom_config = $config['custom_settings'];
+		$config['cloudName'] = $this->media->plugin->components['connect']->get_cloud_name();
 
-		// unset things that don't need to be in the final json.
-		unset( $config['enable_gallery'], $config['custom_settings'] );
+		/**
+		 * Filter the gallery HTML container.
+		 *
+		 * @param string $selector The target HTML selector.
+		 */
+		$config['container'] = apply_filters( 'cloudinary_gallery_html_container', '' );
 
-		$config = $this->prepare_config( $config );
-		$config = Utils::expand_dot_notation( $config );
-		$config = Utils::array_filter_recursive(
-			$config,
-			function ( $item ) {
-				return ! empty( $item );
-			}
-		);
-
-		$config['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
-		$config['container']   = '.woocommerce-product-gallery';
-		$config['mediaAssets'] = array();
-
-		if ( ! empty( $custom_config ) ) {
-			$custom_config = json_decode( $custom_config, true );
-
-			if ( ! empty( $custom_config ) ) {
-				$config = array_merge( $config, $custom_config );
-			}
-		}
-
-		$this->config = apply_filters( 'cloudinary_gallery_config', $config );
-
-		return $this->config;
-	}
-
-	/**
-	 * Convert an array's keys to camelCase and transform booleans.
-	 * This is used for Cloudinary's gallery widget lib.
-	 *
-	 * @param array $input The array input that will have its keys camelcase-d.
-	 *
-	 * @return array
-	 */
-	public function prepare_config( array $input ) {
-		foreach ( $input as $key => $val ) {
-			if ( 'on' === $val || 'off' === $val ) {
-				$val = 'on' === $val;
-			} elseif ( is_numeric( $val ) ) {
-				$val = (int) $val;
-			}
-
-			if ( 'none' !== $val ) {
-				$new_key           = lcfirst( implode( '', array_map( 'ucfirst', explode( '_', $key ) ) ) );
-				$input[ $new_key ] = $val;
-			}
-
-			unset( $input[ $key ] );
-		}
-
-		return $input;
+		/**
+		 * Filter the gallery configuration.
+		 *
+		 * @param array $config The current gallery config.
+		 */
+		return apply_filters( 'cloudinary_gallery_config', $config );
 	}
 
 	/**
@@ -176,7 +160,7 @@ class Gallery {
 		);
 
 		$json_config = wp_json_encode( $this->get_config() );
-		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var cloudinaryGalleryConfig = JSON.parse( '{$json_config}' );" );
+		wp_add_inline_script( self::GALLERY_LIBRARY_HANDLE, "var CLD_GALLERY_CONFIG = {$json_config};" );
 
 		wp_enqueue_script(
 			'cloudinary-gallery-init',
@@ -185,6 +169,54 @@ class Gallery {
 			$this->media->plugin->version,
 			true
 		);
+	}
+
+	/**
+	 * Enqueue admin UI scripts if needed.
+	 */
+	public function enqueue_admin_scripts() {
+		if ( Utils::get_active_setting() !== $this->settings ) {
+			return;
+		}
+
+		$this->block_editor_scripts_styles();
+
+		wp_enqueue_style(
+			'cloudinary-gallery-settings-css',
+			$this->media->plugin->dir_url . 'css/gallery-ui.css',
+			array(),
+			$this->media->plugin->version
+		);
+
+		$script = array(
+			'slug'      => 'gallery_config',
+			'src'       => $this->media->plugin->dir_url . 'js/gallery.js',
+			'in_footer' => true,
+		);
+
+		$asset = $this->get_asset();
+		wp_enqueue_script( $script['slug'], $script['src'], $asset['dependencies'], $asset['version'], $script['in_footer'] );
+
+		$color_palette = wp_json_encode( current( (array) get_theme_support( 'editor-color-palette' ) ) );
+		wp_add_inline_script( $script['slug'], "var CLD_THEME_COLORS = $color_palette;", 'before' );
+	}
+
+	/**
+	 * Retrieve asset dependencies.
+	 *
+	 * @return array
+	 */
+	private function get_asset() {
+		$asset = require $this->media->plugin->dir_path . 'js/gallery.asset.php';
+
+		$asset['dependencies'] = array_filter(
+			$asset['dependencies'],
+			static function ( $dependency ) {
+				return false === strpos( $dependency, '/' );
+			}
+		);
+
+		return $asset;
 	}
 
 	/**
@@ -208,23 +240,7 @@ class Gallery {
 			true
 		);
 
-		wp_localize_script(
-			'cloudinary-gallery-block-js',
-			'cloudinaryGalleryApi',
-			array(
-				'endpoint' => rest_url( REST_API::BASE . '/image_data' ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-			)
-		);
-	}
-
-	/**
-	 * Checks if the Cloudinary Gallery Widget is enabled.
-	 *
-	 * @return bool
-	 */
-	public function gallery_enabled() {
-		return isset( $this->original_config['enable_gallery'] ) && 'on' === $this->original_config['enable_gallery'];
+		wp_add_inline_script( 'cloudinary-gallery-block-js', 'var CLD_REST_ENDPOINT = "/' . REST_API::BASE . '";', 'before' );
 	}
 
 	/**
@@ -240,16 +256,26 @@ class Gallery {
 		foreach ( $images as $index => $image ) {
 			$image_id = is_int( $image ) ? $image : $image['id'];
 
+			$transformations      = null;
+			$image_data[ $index ] = array();
+
+			// Send back the attachment id.
+			$image_data[ $index ]['attachmentId'] = $image_id;
+
+			// Fetch the public id by either syncing NOW or getting the current public id.
 			if ( ! $this->media->sync->is_synced( $image_id ) ) {
-				continue;
+				$res = $this->media->sync->managers['upload']->upload_asset( $image_id );
+
+				if ( ! is_wp_error( $res ) ) {
+					$image_data[ $index ]['publicId'] = $this->media->get_public_id_from_url( $res['url'] );
+					$transformations                  = $this->media->get_transformations_from_string( $res['url'] );
+				}
+			} else {
+				$image_data[ $index ]['publicId'] = $this->media->get_public_id( $image_id, true );
+
+				$image_url       = is_int( $image ) ? $this->media->cloudinary_url( $image_id ) : $image['url'];
+				$transformations = $this->media->get_transformations_from_string( $image_url );
 			}
-
-			$image_url = is_int( $image ) ? $this->media->cloudinary_url( $image_id ) : $image['url'];
-
-			$image_data[ $index ]             = array();
-			$image_data[ $index ]['publicId'] = $this->media->get_public_id( $image_id, true );
-
-			$transformations = $this->media->get_transformations_from_string( $image_url );
 
 			if ( $transformations ) {
 				$image_data[ $index ]['transformation'] = array( 'transformation' => $transformations );
@@ -300,11 +326,126 @@ class Gallery {
 	}
 
 	/**
+	 * Define the settings.
+	 *
+	 * @return array
+	 */
+	public function settings() {
+		$settings = array(
+			'type'        => 'page',
+			'page_title'  => __( 'Gallery Settings (Beta)', 'cloudinary' ),
+			'option_name' => 'cloudinary_gallery',
+		);
+
+		$panel = array(
+			'type'  => 'panel',
+			'title' => __( 'Gallery Settings', 'cloudinary' ),
+			'icon'  => $this->media->plugin->dir_url . 'css/gallery.svg',
+		);
+
+		if ( WooCommerceGallery::woocommerce_active() ) {
+			$panel[] = array(
+				'type'  => 'group',
+				'title' => 'WooCommerce',
+				array(
+					'type'         => 'on_off',
+					'slug'         => 'gallery_woocommerce_enabled',
+					'title'        => __( 'Replace Gallery', 'cloudinary' ),
+					'tooltip_text' => __( 'Replace the default WooCommerce gallery with the Cloudinary Gallery on product pages.', 'cloudinary' ),
+				),
+			);
+		} else {
+			$panel[] = array(
+				array(
+					'type'    => 'tag',
+					'element' => 'h3',
+					'content' => __( 'Cloudinary Gallery block defaults', 'cloudinary' ),
+				),
+				array(
+					'content' => __( 'The Cloudinary Gallery is available as a new block type which can be inserted to any post or page. Note, this is not available when using the classic editor.', 'cloudinary' ),
+				),
+			);
+		}
+
+		$panel[] = array(
+			'type'   => 'react',
+			'slug'   => 'gallery_config',
+			'script' => array(
+				'slug' => 'gallery-widget',
+				'src'  => $this->media->plugin->dir_url . 'js/gallery.js',
+			),
+		);
+
+		$settings[] = $panel;
+		$settings[] = array( 'type' => 'submit' );
+
+		return $settings;
+	}
+
+	/**
+	 * Register the setting under media.
+	 */
+	protected function register_settings() {
+		$settings_params = $this->settings();
+		$this->settings  = $this->media->plugin->settings->create_setting( $this->settings_slug, $settings_params );
+
+		// Move setting to media.
+		$media_settings = $this->media->get_settings();
+		$media_settings->add_setting( $this->settings );
+	}
+
+	/**
+	 * Inits the cloudinary gallery using block attributes.
+	 *
+	 * @param string $content The post content.
+	 * @param array  $block   Block data.
+	 *
+	 * @return string
+	 */
+	public function prepare_block_render( $content, $block ) {
+		if ( 'cloudinary/gallery' !== $block['blockName'] ) {
+			return $content;
+		}
+
+		$attributes = Utils::expand_dot_notation( $block['attrs'], '_' );
+		$attributes = array_merge( self::$default_config, $attributes );
+
+		// Gallery without images. Don't render.
+		if ( empty( $attributes['selectedImages'] ) ) {
+			return $content;
+		}
+
+		$attributes['mediaAssets'] = $attributes['selectedImages'];
+		$attributes['cloudName']   = $this->media->plugin->components['connect']->get_cloud_name();
+		unset( $attributes['selectedImages'], $attributes['customSettings'] );
+
+		ob_start();
+		?>
+		<script>
+			window.addEventListener( 'load', function () {
+				if ( cloudinary && cloudinary.galleryWidget ) {
+					var attributes = <?php echo wp_json_encode( $attributes ); ?>;
+					attributes.container = '.' + attributes.container;
+					cloudinary.galleryWidget( attributes ).render();
+				}
+			}, false );
+		</script>
+		<?php
+
+		return $content . ob_get_clean();
+	}
+
+	/**
 	 * Setup hooks for the gallery.
 	 */
 	public function setup_hooks() {
 		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'block_editor_scripts_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_gallery_library' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_filter( 'render_block', array( $this, 'prepare_block_render' ), 10, 2 );
+
+		// Register Settings.
+		$this->register_settings();
 	}
 }

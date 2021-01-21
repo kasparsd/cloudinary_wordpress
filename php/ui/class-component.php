@@ -145,7 +145,7 @@ abstract class Component {
 	/**
 	 * Setup the components build parts.
 	 */
-	private function setup_component_parts() {
+	protected function setup_component_parts() {
 
 		$default_input_atts = array(
 			'type'  => $this->type,
@@ -303,8 +303,12 @@ abstract class Component {
 
 	/**
 	 * Renders the component.
+	 *
+	 * @param bool $echo Flag to echo output or return it.
+	 *
+	 * @return string
 	 */
-	public function render() {
+	public function render( $echo = false ) {
 		// Setup the component.
 		$this->pre_render();
 
@@ -322,7 +326,11 @@ abstract class Component {
 		$this->compile_structures( $struct );
 
 		// Output html.
-		return self::compile_html( $this->html );
+		$return = self::compile_html( $this->html );
+		if ( false === $echo ) {
+			return $return;
+		}
+		echo $return; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	/**
@@ -448,7 +456,7 @@ abstract class Component {
 	 * @return bool
 	 */
 	public function has_content( $name, $struct = array() ) {
-		$return = ! empty( $struct['content'] ) || $this->setting->has_param( $name ) || ! empty( $struct['render'] );
+		$return = ! empty( $struct['content'] ) || ! empty( $this->setting->get_param( $name ) ) || ! empty( $struct['render'] );
 		if ( false === $return && ! empty( $struct['children'] ) ) {
 			foreach ( $struct['children'] as $child => $child_struct ) {
 				if ( true === $this->has_content( $child, $child_struct ) ) {
@@ -469,7 +477,7 @@ abstract class Component {
 	public function compile_part( $struct ) {
 		$this->open_tag( $struct );
 		if ( ! $this->is_void_element( $struct['element'] ) ) {
-			$this->add_content( $this->setting->get_param( $struct['name'], $struct['content'] ) );
+			$this->add_content( $struct['content'] );
 			if ( ! empty( $struct['children'] ) ) {
 				foreach ( $struct['children'] as $child ) {
 					$this->handle_structure( $child['name'], $child );
@@ -619,6 +627,7 @@ abstract class Component {
 			$struct['attributes']['class']        = array(
 				'dashicons',
 				'dashicons-info',
+				'cld-tooltip',
 			);
 			$tooltip_id                           = 'tooltip_' . $this->setting->get_slug();
 			$struct['attributes']['data-tooltip'] = $tooltip_id;
@@ -659,7 +668,7 @@ abstract class Component {
 	 * @return array
 	 */
 	protected function dashicon( $struct ) {
-		$struct['element']               = 'img';
+		$struct['element']               = 'span';
 		$struct['attributes']['class'][] = 'dashicons';
 		$struct['attributes']['class'][] = $this->setting->get_param( 'icon' );
 
@@ -758,7 +767,7 @@ abstract class Component {
 	 *
 	 * @return self
 	 */
-	public static function init( $setting ) {
+	final public static function init( $setting ) {
 
 		$caller = get_called_class();
 		$type   = $setting->get_param( 'type' );

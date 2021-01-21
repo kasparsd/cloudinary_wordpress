@@ -33,7 +33,7 @@ class On_Off extends Text {
 		$struct['element']             = 'input';
 		$struct['attributes']['type']  = 'hidden';
 		$struct['attributes']['name']  = $this->get_name();
-		$struct['attributes']['value'] = false;
+		$struct['attributes']['value'] = 'off';
 		unset( $struct['attributes']['class'] );
 		unset( $struct['attributes']['data-bound'] );
 		$struct['render'] = true;
@@ -54,12 +54,12 @@ class On_Off extends Text {
 		$struct['attributes']['type']  = 'checkbox';
 		$struct['attributes']['name']  = $this->get_name();
 		$struct['attributes']['id']    = $this->setting->get_slug();
-		$struct['attributes']['value'] = true;
-		if ( $this->setting->get_value() ) {
+		$struct['attributes']['value'] = 'on';
+		if ( 'on' === $this->setting->get_value() ) {
 			$struct['attributes']['checked'] = 'checked';
 		}
-		unset( $struct['attributes']['class'] );
-		$struct['render'] = true;
+		$struct['attributes']['class'] = 'cld-ui-input';
+		$struct['render']              = true;
 
 		return $struct;
 	}
@@ -106,6 +106,6 @@ class On_Off extends Text {
 	 * @return bool
 	 */
 	public function sanitize_value( $value ) {
-		return (bool) $value;
+		return 'on' === $value ? 'on' : 'off';
 	}
 }

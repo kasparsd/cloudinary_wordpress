@@ -86,6 +86,17 @@ if ( wp.media && window.CLDN ) {
 				} else {
 					CLDN.mloptions.asset = null;
 				}
+
+				try {
+					if ( ! CLDN.mloptions.folder ) {
+						CLDN.mloptions.folder = { path: '' };
+					}
+					const type = selection.props.attributes.type;
+					CLDN.mloptions.folder.resource_type = Array.isArray( type )
+						? type[ 0 ]
+						: type;
+				} catch ( err ) {}
+
 				window.ml = cloudinary.openMediaLibrary(
 					CLDN.mloptions,
 					{

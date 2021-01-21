@@ -7,7 +7,6 @@
 
 namespace Cloudinary\Connect;
 
-use Cloudinary\Connect;
 use function Cloudinary\get_plugin_instance;
 
 /**
@@ -261,7 +260,7 @@ class Api {
 		);
 
 		if ( ! empty( $args['transformation'] ) ) {
-			$url_parts[] = self::generate_transformation_string( $args['transformation'] );
+			$url_parts[] = self::generate_transformation_string( $args['transformation'], $args['resource_type'] );
 		}
 		$base = pathinfo( $public_id );
 		if ( 'image' === $args['resource_type'] ) {
@@ -270,7 +269,7 @@ class Api {
 		}
 		// Add size.
 		if ( ! empty( $size ) && is_array( $size ) ) {
-			$url_parts[] = self::generate_transformation_string( array( $size ) );
+			$url_parts[] = self::generate_transformation_string( array( $size ), $args['resource_type'] );
 			// add size to ID if scaled.
 			if ( ! empty( $size['file'] ) ) {
 				$public_id = str_replace( $base['basename'], $size['file'], $public_id );
@@ -428,7 +427,8 @@ class Api {
 		} else {
 			// We should have the file in args at this point, but if the transient was set, it will be defaulting here.
 			if ( empty( $args['file'] ) ) {
-				$args['file'] = wp_get_original_image_path( $attachment_id );
+				$get_path_func = function_exists( 'wp_get_original_image_path' ) ? 'wp_get_original_image_path' : 'get_attached_file';
+				$args['file']  = call_user_func( $get_path_func, $attachment_id );
 			}
 			// Headers indicate chunked upload.
 			if ( empty( $headers ) ) {
@@ -662,11 +662,8 @@ class Api {
 	 * @return array|\WP_Error
 	 */
 	private function call( $url, $args = array(), $method = 'get' ) {
-
-		$args['method']     = strtoupper( $method );
-		$args['user-agent'] = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . ' (' . $this->plugin_version . ')';
-
-		// Add site url to the referer headers.
+		$args['method']             = strtoupper( $method );
+		$args['user-agent']         = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . ' (' . $this->plugin_version . ')';
 		$args['headers']['referer'] = get_site_url();
 		if ( 'GET' === $args['method'] ) {
 			$url = 'https://' . $this->credentials['api_key'] . ':' . $this->credentials['api_secret'] . '@' . $url;
@@ -685,7 +682,8 @@ class Api {
 
 		// Set a long-ish timeout since uploads can be 20mb+.
 		$args['timeout'] = 60; // phpcs:ignore
-		$request         = wp_remote_request( $url, $args );
+
+		$request = wp_remote_request( $url, $args );
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		}

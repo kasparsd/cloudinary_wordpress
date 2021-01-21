@@ -301,7 +301,7 @@ class Sync implements Setup, Assets {
 	public function generate_public_id( $attachment_id ) {
 
 		$cld_folder = $this->managers['media']->get_cloudinary_folder();
-		if ( wp_attachment_is_image( $attachment_id ) ) {
+		if ( function_exists( 'wp_get_original_image_path' ) && wp_attachment_is_image( $attachment_id ) ) {
 			$file = wp_get_original_image_path( $attachment_id );
 		} else {
 			$file = get_attached_file( $attachment_id );
@@ -799,6 +799,22 @@ class Sync implements Setup, Assets {
 	}
 
 	/**
+	 * Filter the Cloudinary Folder.
+	 *
+	 * @param string $value The set folder.
+	 * @param string $slug  The setting slug.
+	 *
+	 * @return string
+	 */
+	public function filter_get_cloudinary_folder( $value, $slug ) {
+		if ( '.' === $value && 'cloudinary_folder' === $slug ) {
+			$value = '';
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Checks if auto sync feature is enabled.
 	 *
 	 * @return bool
@@ -838,6 +854,8 @@ class Sync implements Setup, Assets {
 			$this->register_settings();
 			// Setup sync queue.
 			$this->managers['queue']->setup( $this );
+
+			add_filter( 'cloudinary_setting_get_value', array( $this, 'filter_get_cloudinary_folder' ), 10, 2 );
 		}
 	}
 
@@ -857,21 +875,22 @@ class Sync implements Setup, Assets {
 				'type'  => 'panel',
 				'title' => __( 'Sync Settings', 'cloudinary' ),
 				array(
-					'type'      => 'radio',
-					'title'     => __( 'Sync Method', 'cloudinary' ),
-					'slug'      => 'auto_sync',
-					'no_cached' => true,
-					'default'   => 'off',
-					'options'   => array(
-						'on'  => __( 'Auto Sync', 'cloudinary' ),
-						'off' => __( 'Manual Sync', 'cloudinary' ),
+					'type'         => 'radio',
+					'title'        => __( 'Sync method', 'cloudinary' ),
+					'tooltip_text' => __( 'Auto sync: Ensures that all of your WordPress assets are automatically synced with Cloudinary when they are added to the WordPress Media Library. Manual sync: Assets must be synced manually using the WordPress Media Library', 'cloudinary' ),
+					'slug'         => 'auto_sync',
+					'no_cached'    => true,
+					'default'      => 'on',
+					'options'      => array(
+						'on'  => __( 'Auto sync', 'cloudinary' ),
+						'off' => __( 'Manual sync', 'cloudinary' ),
 					),
 				),
 				array(
 					'type'        => 'sync',
 					'title'       => __( 'Bulk sync all your WordPress assets to Cloudinary', 'cloudinary' ),
-					'tooltip_off' => __( 'Manual sync is enabled. Assets can only be synced from using the Media Library.', 'cloudinary' ),
-					'tooltip_on'  => __( 'For large numbers of assets, you can choose to sync them to Cloudinary in bulk.', 'cloudinary' ),
+					'tooltip_off' => __( 'Manual sync is enabled. Individual assets must be synced manually using the WordPress Media Library.', 'cloudinary' ),
+					'tooltip_on'  => __( "An optional one-time operation to by manually push all media to Cloudinary that was stored in your WordPress Media Library prior to activation of the Cloudinary plugin. Please note that there is a limit of 1000 images at a time so your server doesn't get overloaded.", 'cloudinary' ),
 					'queue'       => $this->managers['queue'],
 				),
 				array(
@@ -903,33 +922,6 @@ class Sync implements Setup, Assets {
 						'dual_full' => __( 'Cloudinary and WordPress', 'cloudinary' ),
 						'dual_low'  => __( 'Cloudinary and WordPress (low resolution)', 'cloudinary' ),
 						'cld'       => __( 'Cloudinary only', 'cloudinary' ),
-					),
-				),
-				array(
-					'type'        => 'group',
-					'title'       => __( 'Advanced Options', 'cloudinary' ),
-					'collapsible' => 'closed',
-					array(
-						'type'         => 'number',
-						'title'        => __( 'Auto sync threads', 'cloudinary' ),
-						'suffix'       => __( 'Max background threads for Auto Sync.', 'cloudinary' ),
-						'tooltip_text' => __(
-							'The max amount of background threads to create when auto syncing assets. Adding more threads speeds up syncing, but increases server load.',
-							'cloudinary'
-						),
-						'slug'         => 'autosync_threads',
-						'default'      => 2,
-					),
-					array(
-						'type'         => 'number',
-						'title'        => __( 'Bulk sync threads', 'cloudinary' ),
-						'suffix'       => __( 'Max background threads for Bulk Sync.', 'cloudinary' ),
-						'tooltip_text' => __(
-							'The max amount of background threads to create when doing a bulk sync. Adding more threads speeds up syncing, but increases server load.',
-							'cloudinary'
-						),
-						'slug'         => 'bulksync_threads',
-						'default'      => 3,
 					),
 				),
 			),
