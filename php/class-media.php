@@ -934,7 +934,7 @@ class Media extends Settings_Component implements Setup {
 	public function get_cloudinary_folder() {
 		$folder = '';
 		if ( ! empty( $this->cloudinary_folder ) ) {
-			$folder = trailingslashit( $this->cloudinary_folder );
+			$folder = trailingslashit( trim( $this->cloudinary_folder, '/' ) );
 		}
 
 		return $folder;
