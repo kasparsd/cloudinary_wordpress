@@ -67,7 +67,7 @@ class Sync_Queue {
 	 *
 	 * @var array
 	 */
-	public $queue_threads;
+	public $queue_threads = array();
 
 	/**
 	 * Holds all the threads.
@@ -101,20 +101,31 @@ class Sync_Queue {
 	 * @param Sync $sync The sync instance.
 	 */
 	public function setup( $sync ) {
-		$this->sync          = $sync;
-		$queue_threads_count = $this->plugin->settings->get_value( 'bulksync_threads' );
-		$queue_threads       = array();
+		$this->sync = $sync;
+		/**
+		 * Filter the amount of threads to process background syncing.
+		 *
+		 * @param int $threads The number of threads.
+		 *
+		 * @return int
+		 */
+		$queue_threads_count = apply_filters( 'cloudinary_queue_threads', 2 );
 		for ( $i = 0; $i < $queue_threads_count; $i ++ ) {
-			$queue_threads[] = 'queue_sync_thread_' . $i;
+			$this->queue_threads[] = 'queue_sync_thread_' . $i;
 		}
-		$this->queue_threads    = apply_filters( 'cloudinary_queue_threads', $queue_threads );
-		$autosync_threads_count = $this->plugin->settings->get_value( 'autosync_threads' );
-		$autosync_threads       = array();
-		for ( $i = 0; $i < $autosync_threads_count; $i ++ ) {
-			$autosync_threads[] = 'auto_sync_thread_' . $i;
+
+		/**
+		 * Filter the amount of background threads to process for auto syncing.
+		 *
+		 * @param int $threads The number of threads.
+		 *
+		 * @return int
+		 */
+		$autosync_thread_count = apply_filters( 'cloudinary_autosync_threads', 1 );
+		for ( $i = 0; $i < $autosync_thread_count; $i ++ ) {
+			$this->autosync_threads[] = 'auto_sync_thread_' . $i;
 		}
-		$this->autosync_threads = apply_filters( 'cloudinary_autosync_threads', $autosync_threads );
-		$this->threads          = array_merge( $this->queue_threads, $this->autosync_threads );
+		$this->threads = array_merge( $this->queue_threads, $this->autosync_threads );
 
 		// Catch Queue actions.
 		// Enable sync queue.
