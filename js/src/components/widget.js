@@ -248,6 +248,7 @@ if ( wp.media && window.CLDN ) {
 			 * Render callback for the content region in the `upload` mode.
 			 */
 			cloudinaryContent() {
+				this.$el.addClass( 'hide-toolbar' );
 				const state = this.state();
 				const view = new Cloudinary( {
 					controller: this,
