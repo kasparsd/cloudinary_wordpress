@@ -262,12 +262,14 @@ final class Plugin {
 	 */
 	public function register_hooks() {
 		add_action( 'plugins_loaded', array( $this, 'init' ), 9 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ), 11 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_enqueue_styles' ), 11 );
+		add_action( 'admin_footer', array( $this, 'enqueue_assets' ), 11 );
 		add_action( 'init', array( $this, 'setup' ), 10 );
 		add_action( 'init', array( $this, 'register_assets' ), 10 );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 		add_filter( 'plugin_row_meta', array( $this, 'force_visit_plugin_site_link' ), 10, 4 );
 		add_filter( 'cloudinary_api_rest_endpoints', array( $this, 'rest_endpoints' ) );
+		add_action( 'wp_enqueue_editor', array( $this, 'enqueue_assets' ) );
 	}
 
 	/**
@@ -289,12 +291,10 @@ final class Plugin {
 	}
 
 	/**
-	 * Enqueue scripts.
+	 * Register scripts and enqueue styles.
 	 */
-	public function enqueue_assets() {
-		// Enqueue Main.
-		wp_enqueue_script( 'cloudinary', $this->dir_url . 'js/cloudinary.js', array( 'jquery', 'wp-util' ), $this->version, true );
-		wp_enqueue_style( 'cloudinary', $this->dir_url . 'css/cloudinary.css', null, $this->version );
+	public function register_enqueue_styles() {
+		wp_enqueue_style( 'cloudinary' );
 		$components = array_filter( $this->components, array( $this, 'is_active_asset_component' ) );
 
 		// Enqueue components.
@@ -312,11 +312,23 @@ final class Plugin {
 	}
 
 	/**
+	 * Enqueue the core scripts and styles as needed.
+	 */
+	public function enqueue_assets() {
+		wp_enqueue_style( 'cloudinary' );
+		wp_enqueue_script( 'cloudinary' );
+	}
+
+	/**
 	 * Register Assets
 	 *
 	 * @since  0.1
 	 */
 	public function register_assets() {
+		// Register Main.
+		wp_register_script( 'cloudinary', $this->dir_url . 'js/cloudinary.js', array( 'jquery', 'wp-util' ), $this->version, true );
+		wp_register_style( 'cloudinary', $this->dir_url . 'css/cloudinary.css', null, $this->version );
+
 		$components = array_filter( $this->components, array( $this, 'is_asset_component' ) );
 		array_map(
 			function ( $component ) {
