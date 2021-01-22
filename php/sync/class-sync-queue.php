@@ -90,7 +90,7 @@ class Sync_Queue {
 	 */
 	public function __construct( \Cloudinary\Plugin $plugin ) {
 		$this->plugin            = $plugin;
-		$this->cron_frequency    = apply_filters( 'cloudinary_cron_frequency', 10 );
+		$this->cron_frequency    = apply_filters( 'cloudinary_cron_frequency', 10 * MINUTE_IN_SECONDS );
 		$this->cron_start_offset = apply_filters( 'cloudinary_cron_start_offset', MINUTE_IN_SECONDS );
 		$this->load_hooks();
 	}
@@ -286,7 +286,7 @@ class Sync_Queue {
 			'post_status'         => 'inherit',
 			'posts_per_page'      => 100,
 			'fields'              => 'ids',
-			// phpcs:ignore
+			// phpcs:ignore WordPress.DB.SlowDBQuery
 			'meta_query'          => array(
 				'relation' => 'AND',
 				array(
@@ -306,8 +306,6 @@ class Sync_Queue {
 			'no_found_rows'       => true,
 		);
 
-		$ids = array();
-
 		// translators: variable is page number.
 		$action_message = sprintf( __( 'Building Queue.', 'cloudinary' ), $args['paged'] );
 		do_action( '_cloudinary_queue_action', $action_message );
@@ -320,7 +318,7 @@ class Sync_Queue {
 
 			return;
 		}
-		$ids = array_merge( $query->get_posts(), $ids );
+		$ids = $query->get_posts();
 
 		$threads          = $this->add_to_queue( $ids );
 		$queue['total']   = array_sum( $threads );
