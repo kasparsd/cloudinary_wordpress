@@ -802,7 +802,7 @@ class Connect extends Settings_Component implements Config, Setup, Notice {
 						'icon'      => $this->plugin->dir_url . 'css/transformation.svg',
 						'title'     => __( 'Learn More', 'cloudinary' ),
 						'text'      => __(
-							'You can upload and manage your images in Cloudinary directly from your WordPress interface. The plugin also supports automated (single-click) migration of all images from your existing posts to Cloudinary. Once your WordPress images are stored in Cloudinary, you can take advantage of Cloudinary\'s transformation, optimization, and responsive image features as well as fast CDN delivery.',
+							'You can upload and manage your images and videos in Cloudinary directly from your WordPress interface. The plugin also supports automated (single-click) migration of all media assets from your existing posts to Cloudinary. Once your WordPress media is stored in Cloudinary, you can take advantage of Cloudinary\'s transformation, optimization, and responsive features as well as fast CDN delivery.',
 							'cloudinary'
 						),
 						'url'       => 'https://cloudinary.com/documentation/image_transformations#quick_example',
