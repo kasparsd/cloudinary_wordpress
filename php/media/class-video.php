@@ -256,7 +256,7 @@ class Video {
 	 */
 	public function filter_video_tags( $content ) {
 
-		$video_tags = $this->media->filter->get_media_tags( $content, 'video' );
+		$video_tags = $this->media->filter->get_media_tags( $content, 'video|source' );
 		foreach ( $video_tags as $tag ) {
 			$args = array();
 
@@ -282,7 +282,10 @@ class Video {
 			}
 			$attachment_id = $this->media->filter->get_id_from_tag( $tag );
 			if ( empty( $attachment_id ) ) {
-				continue; // Missing or no attachment ID found.
+				$attachment_id = attachment_url_to_postid( $url );
+				if ( ! $attachment_id ) {
+					continue; // Missing or no attachment ID found.
+				}
 			}
 			// Enable Autoplay for this video.
 			if ( false !== strpos( $tag, 'autoplay' ) ) {
