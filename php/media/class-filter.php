@@ -9,7 +9,6 @@ namespace Cloudinary\Media;
 
 use Cloudinary\Connect\Api;
 use Cloudinary\Utils;
-use Google\Web_Stories\Story_Post_Type;
 
 /**
  * Class Filter.
