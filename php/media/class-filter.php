@@ -8,6 +8,8 @@
 namespace Cloudinary\Media;
 
 use Cloudinary\Connect\Api;
+use Cloudinary\Utils;
+use Google\Web_Stories\Story_Post_Type;
 
 /**
  * Class Filter.
@@ -243,6 +245,10 @@ class Filter {
 	 * @return array
 	 */
 	public function filter_out_cloudinary( $data ) {
+		// Check whether this page is powered by AMP or is a web story. Bail if that's the case.
+		if ( Utils::is_webstory_post_type( $data['post_type'] ) || Utils::is_amp( $data['post_content'] ) ) {
+			return $data;
+		}
 
 		$content = trim( wp_unslash( $data['post_content'] ) );
 		$assets  = $this->get_media_tags( $content );

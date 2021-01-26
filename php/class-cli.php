@@ -61,7 +61,7 @@ class CLI {
 	 * Syncs assets with Cloudinary.
 	 * ## EXAMPLES
 	 *
-	 *     wp cloudinary sync
+	 *     Wp cloudinary sync
 	 *
 	 * @when    after_wp_load
 	 * @since   2.5.1
@@ -102,7 +102,7 @@ class CLI {
 	 * Analyze assets with Cloudinary.
 	 * ## EXAMPLES
 	 *
-	 *     wp cloudinary analyze
+	 *     Wp cloudinary analyze
 	 *
 	 * @when    after_wp_load
 	 * @since   2.5.1
