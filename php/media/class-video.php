@@ -97,8 +97,7 @@ class Video {
 	public function init_player() {
 		if ( isset( $this->config['video_player'] ) && 'cld' === $this->config['video_player'] && ! is_admin() ) {
 			global $wp_query;
-			$this->player_enabled = true;
-			$posts                = $wp_query->get_posts();
+			$posts = $wp_query->get_posts();
 			// Check content has a video to enqueue assets in correct location.
 			foreach ( $posts as $post ) {
 				$has_video  = $this->media->filter->get_video_shortcodes( get_the_content() );
