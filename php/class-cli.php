@@ -50,11 +50,23 @@ class CLI {
 	 * @param Plugin $plugin The plugin instance.
 	 */
 	public function __construct( $plugin ) {
-		\WP_CLI::log( '' );
-		\WP_CLI::log( '╔═╗┬  ┌─┐┬ ┬┌┬┐┬┌┐┌┌─┐┬─┐┬ ┬  ╔═╗╦  ╦' );
-		\WP_CLI::log( '║  │  │ ││ │ ││││││├─┤├┬┘└┬┘  ║  ║  ║' );
-		\WP_CLI::log( '╚═╝┴─┘└─┘└─┘─┴┘┴┘└┘┴ ┴┴└─ ┴   ╚═╝╩═╝╩' );
 		$this->plugin = $plugin;
+	}
+
+	/**
+	 * Output the Intro.
+	 *
+	 * @since   2.5.1
+	 */
+	public function do_intro() {
+		static $intro;
+		if ( ! $intro ) {
+			\WP_CLI::log( '' );
+			\WP_CLI::log( '╔═╗┬  ┌─┐┬ ┬┌┬┐┬┌┐┌┌─┐┬─┐┬ ┬  ╔═╗╦  ╦' );
+			\WP_CLI::log( '║  │  │ ││ │ ││││││├─┤├┬┘└┬┘  ║  ║  ║' );
+			\WP_CLI::log( '╚═╝┴─┘└─┘└─┘─┴┘┴┘└┘┴ ┴┴└─ ┴   ╚═╝╩═╝╩' );
+			$intro = true;
+		}
 	}
 
 	/**
@@ -113,7 +125,7 @@ class CLI {
 
 		// Initial query.
 		$query_args = $this->base_query_args;
-		$query = new \WP_Query( $query_args );
+		$query      = new \WP_Query( $query_args );
 
 		// Kill all _cld_ related meta.
 		delete_post_meta_by_key( '_cld_unsynced' );
@@ -132,6 +144,8 @@ class CLI {
 	 * @param string    $process The process to do.
 	 */
 	protected function do_process( &$query, $process ) {
+		$this->do_intro();
+
 		// Bail early.
 		if ( ! method_exists( $this, "process_{$process}" ) ) {
 			\WP_CLI::log( \WP_CLI::colorize( "%Invalid Process: {$process}.%n" ) );
@@ -175,8 +189,9 @@ class CLI {
 		}
 		foreach ( $posts as $index => $asset ) {
 			$done ++; // Set $done early to not show 0 of x.
-			$file = get_attached_file( $asset );
-			$bar->tick( 0, 'Syncing: ' . basename( $file ) . ' (' . ( $done ) . ' of ' . $total . ')' );
+			$file     = get_attached_file( $asset );
+			$filename = self::pad_name( basename( $file ), 20, ' ', '*' );
+			$bar->tick( 0, 'Syncing (' . ( $done ) . ' of ' . $total . ') : ' . $filename );
 			if ( ! $this->plugin->get_component( 'sync' )->is_synced( $asset ) ) {
 				$this->plugin->get_component( 'sync' )->managers['push']->process_assets( $asset, $bar );
 			}
@@ -240,5 +255,35 @@ class CLI {
 			\WP_CLI::log( \WP_CLI::colorize( '%rUnsupported%n :' ) . ' ' . $info['_cld_unsupported'] );
 			update_option( '_cld_cli_analyzed', true, false );
 		}
+	}
+
+	/**
+	 * Pad a file name to fit within max chars.
+	 *
+	 * @param string $name        The name to pad.
+	 * @param int    $max_length  The max length of the  filename.
+	 * @param string $pad_char    The pad char to use when name is less of the max.
+	 * @param string $concat_char The char to use when shortening names to fit.
+	 *
+	 * @return string
+	 */
+	protected static function pad_name( $name, $max_length, $pad_char = '.', $concat_char = '*' ) {
+		$name_length = strlen( $name );
+		$prefix      = null;
+		if ( $name_length > $max_length ) {
+			$diff          = $name_length - $max_length;
+			$concat_length = $diff > 3 ? 3 : $diff;
+			$usable_length = $max_length - $concat_length;
+			$front         = substr( $name, 0, floor( $usable_length / 2 ) );
+			$back          = substr( $name, strlen( $name ) - ceil( $usable_length / 2 ) );
+			$name          = $front . implode( array_fill( 0, $concat_length, $concat_char ) ) . $back;
+		}
+		$used_length = $max_length - strlen( $name );
+		if ( 0 < $used_length ) {
+			$prefix = implode( array_fill( 0, $used_length, $pad_char ) );
+		}
+		$out = $prefix . $name;
+
+		return $out;
 	}
 }

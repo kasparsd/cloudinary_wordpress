@@ -383,9 +383,12 @@ class Sync implements Setup, Assets {
 				'note'     => __( 'Downloading from Cloudinary', 'cloudinary' ),
 			),
 			'file'        => array(
-				'generate' => 'get_attached_file',
+				'generate' => array( $this, 'generate_file_signature' ),
 				'priority' => 5.1,
 				'sync'     => array( $this->managers['upload'], 'upload_asset' ),
+				'validate' => function ( $attachment_id ) {
+					return ! $this->managers['media']->has_public_id( $attachment_id );
+				},
 				'state'    => 'uploading',
 				'note'     => __( 'Uploading to Cloudinary', 'cloudinary' ),
 				'required' => true, // Required to complete URL render flag.
@@ -931,6 +934,19 @@ class Sync implements Setup, Assets {
 		);
 
 		return $args;
+	}
+
+	/**
+	 * Generate the real file attachment path for the file sync type signature.
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 *
+	 * @return string
+	 */
+	public function generate_file_signature( $attachment_id ) {
+		$path = get_attached_file( $attachment_id );
+
+		return basename( $path );
 	}
 
 	/**
