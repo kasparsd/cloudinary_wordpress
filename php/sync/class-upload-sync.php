@@ -152,6 +152,7 @@ class Upload_Sync {
 			case 'cloudinary-push':
 				foreach ( $post_ids as $post_id ) {
 					$this->sync->set_signature_item( $post_id, 'file', '' );
+					$this->media->delete_post_meta( $post_id, Sync::META_KEYS['public_id'] );
 					$this->sync->add_to_sync( $post_id );
 				}
 				break;
