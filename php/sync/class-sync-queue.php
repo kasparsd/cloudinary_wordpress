@@ -175,7 +175,7 @@ class Sync_Queue {
 	 */
 	public function load_hooks() {
 		add_action( 'cloudinary_resume_queue', array( $this, 'maybe_resume_queue' ) );
-		add_action( 'settings_save_setting_auto_sync', array( $this, 'change_setting_state' ), 10, 3 );
+		add_action( 'cloudinary_settings_save_setting_auto_sync', array( $this, 'change_setting_state' ), 10, 3 );
 	}
 
 	/**
@@ -188,9 +188,14 @@ class Sync_Queue {
 	 * @return mixed
 	 */
 	public function change_setting_state( $new_value, $current_value, $setting ) {
-		if ( $this->is_running() && 'on' === $current_value && 'off' === $new_value ) {
-			$this->shutdown_queue();
-			$setting->add_error_notice( 'disabled_sync', 'Bulk sync has been disabled.', 'warning' );
+		// shutdown queues if needed.
+		if ( 'on' === $current_value && 'off' === $new_value ) {
+			if ( $this->is_running() ) {
+				$this->shutdown_queue( 'queue' );
+				$setting->add_error_notice( 'disabled_sync', 'Bulk sync has been disabled.', 'warning' );
+			}
+			// Shutdown autosync queue.
+			$this->shutdown_queue( 'autosync' );
 		}
 
 		return $new_value;
@@ -268,7 +273,7 @@ class Sync_Queue {
 	 */
 	public function is_running( $type = 'queue' ) {
 		if ( 'autosync' === $type ) {
-			return $this->sync->is_auto_sync_enabled();
+			return true; // Autosync always runs, however if off, auto sync queue building is off.
 		}
 		$queue = $this->get_queue();
 
@@ -356,6 +361,9 @@ class Sync_Queue {
 	protected function shutdown_queue( $type = 'queue' ) {
 		if ( 'queue' === $type ) {
 			delete_option( self::$queue_enabled );
+		} elseif ( 'autosync' === $type ) {
+			// Remove pending flag.
+			delete_post_meta_by_key( Sync::META_KEYS['pending'] );
 		}
 		$this->stop_queue( $type );
 	}
@@ -535,7 +543,8 @@ class Sync_Queue {
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
 			'cache_results'  => false,
-			'meta_query'     => array( // phpcs:ignore
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
 				array(
 					'key'     => $thread,
 					'compare' => 'EXISTS',
