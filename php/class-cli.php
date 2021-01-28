@@ -106,6 +106,7 @@ class CLI {
 		$this->do_process( $query, 'sync' );
 		if ( ! $query->have_posts() ) {
 			\WP_CLI::log( \WP_CLI::colorize( '%gAll assets synced.%n' ) );
+			delete_option( '_cld_cli_analyzed' );
 		}
 
 	}
@@ -161,9 +162,7 @@ class CLI {
 				$this->{$process}( $posts, $total );
 
 				// Free up memory.
-				if ( method_exists( $this, 'stop_the_insanity' ) ) {
-					$this->stop_the_insanity();
-				}
+				$this->oh_the_humanity();
 
 				// Paginate.
 				$query_args = $query->query_vars;
@@ -285,5 +284,26 @@ class CLI {
 		$out = $prefix . $name;
 
 		return $out;
+	}
+
+	/**
+	 * Workaround to prevent memory leaks from growing variables
+	 */
+	protected function oh_the_humanity() {
+		global $wpdb, $wp_object_cache;
+		if ( method_exists( $this, 'stop_the_insanity' ) ) {
+			return $this->stop_the_insanity();
+		}
+
+		$wpdb->queries = array();
+		if ( is_object( $wp_object_cache ) ) {
+			$wp_object_cache->group_ops      = array();
+			$wp_object_cache->stats          = array();
+			$wp_object_cache->memcache_debug = array();
+			$wp_object_cache->cache          = array();
+			if ( method_exists( $wp_object_cache, '__remoteset' ) ) {
+				$wp_object_cache->__remoteset();
+			}
+		}
 	}
 }
