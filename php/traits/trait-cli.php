@@ -104,7 +104,7 @@ trait CLI_Trait {
 
 		// Get assets that need to be synced.
 		$query = new \WP_Query( $query_args );
-		$this->do_process( $query, 'sync' );
+		$this->do_process( $query, 'sync', false );
 		if ( ! $query->have_posts() ) {
 			\WP_CLI::log( \WP_CLI::colorize( '%gAll assets synced.%n' ) );
 			delete_option( '_cld_cli_analyzed' );
@@ -142,10 +142,11 @@ trait CLI_Trait {
 	 *
 	 * @since   2.5.1
 	 *
-	 * @param \WP_Query $query   The initial query object.
-	 * @param string    $process The process to do.
+	 * @param \WP_Query $query    The initial query object.
+	 * @param string    $process  The process to do.
+	 * @param bool      $paginate Flag to paginate.
 	 */
-	protected function do_process( &$query, $process ) {
+	protected function do_process( &$query, $process, $paginate = true ) {
 		$this->do_intro();
 
 		// Bail early.
@@ -165,9 +166,14 @@ trait CLI_Trait {
 				// Free up memory.
 				$this->stop_the_insanity();
 
+				// Sleep for a catchup.
+				sleep( 1 );
+
 				// Paginate.
 				$query_args = $query->query_vars;
-				$query_args['paged'] ++;
+				if ( true === $paginate ) {
+					$query_args['paged'] ++;
+				}
 				$query = new \WP_Query( $query_args );
 			} while ( $query->have_posts() );
 		}
@@ -191,7 +197,7 @@ trait CLI_Trait {
 			$done ++; // Set $done early to not show 0 of x.
 			$file     = get_attached_file( $asset );
 			$filename = self::pad_name( basename( $file ), 20, ' ', '*' );
-			$bar->tick( 0, 'Syncing (' . ( $done ) . ' of ' . $total . ') : ' . $filename );
+			$bar->tick( 1, 'Syncing (' . ( $done ) . ' of ' . $total . ') : ' . $filename );
 			if ( ! $this->plugin->get_component( 'sync' )->is_synced( $asset ) ) {
 				$this->plugin->get_component( 'sync' )->managers['push']->process_assets( $asset, $bar );
 			}
