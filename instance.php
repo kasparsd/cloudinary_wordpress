@@ -26,7 +26,20 @@ function get_plugin_instance() {
 	return $cloudinary_plugin;
 }
 
+/**
+ * Get an instance of the CLI Class.
+ */
+function cloudinary_cli_instance() {
+	if ( class_exists( '\WPCOM_VIP_CLI_Command' ) ) {
+		return new CLI_VIP();
+	}
+
+	return new CLI();
+}
+
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	$instance = new CLI( get_plugin_instance() );
-	\WP_CLI::add_command( 'cloudinary', $instance );
+	$plugin_instance = get_plugin_instance();
+	$cli             = cloudinary_cli_instance();
+	$cli->setup_cloudinary( $plugin_instance );
+	\WP_CLI::add_command( 'cloudinary', $cli );
 }
