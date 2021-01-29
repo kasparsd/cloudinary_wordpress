@@ -8,6 +8,7 @@
 namespace Cloudinary\Media;
 
 use Cloudinary\Connect\Api;
+use Cloudinary\Utils;
 
 /**
  * Class Filter.
@@ -236,6 +237,23 @@ class Filter {
 	}
 
 	/**
+	 * If the post is a web story or AMP-powered, take care of the special AMP tags.
+	 *
+	 * @param array $data The post data array to save.
+	 *
+	 * @return array
+	 */
+	public function prepare_amp_posts( $data ) {
+		if ( ! Utils::is_webstory_post_type( $data['post_type'] ) && ! Utils::is_amp( $data['post_content'] ) ) {
+			return $data;
+		}
+
+		$data['post_content'] = $this->filter_out_local( wp_unslash( $data['post_content'] ), 'amp-img|source' );
+
+		return $data;
+	}
+
+	/**
 	 * Filter out Cloudinary URL when saving to the DB.
 	 *
 	 * @param array $data The post data array to save.
@@ -243,6 +261,10 @@ class Filter {
 	 * @return array
 	 */
 	public function filter_out_cloudinary( $data ) {
+		// Check whether this page is powered by AMP or is a web story. Bail if that's the case.
+		if ( Utils::is_webstory_post_type( $data['post_type'] ) || Utils::is_amp( $data['post_content'] ) ) {
+			return $data;
+		}
 
 		$content = trim( wp_unslash( $data['post_content'] ) );
 		$assets  = $this->get_media_tags( $content );
@@ -279,12 +301,13 @@ class Filter {
 	 * Filter content to replace local src urls with Cloudinary urls.
 	 *
 	 * @param string $content The content to filter urls.
+	 * @param string $tags    The tags to look out for in the post content.
 	 *
 	 * @return string The filtered content.
 	 */
-	public function filter_out_local( $content ) {
+	public function filter_out_local( $content, $tags = 'img' ) {
 
-		$assets = $this->get_media_tags( $content, 'img' );
+		$assets = $this->get_media_tags( $content, $tags );
 		foreach ( $assets as $asset ) {
 
 			$url           = $this->get_url_from_tag( $asset );
@@ -713,6 +736,7 @@ class Filter {
 	public function setup_hooks() {
 		// Filter URLS within content.
 		add_action( 'wp_insert_post_data', array( $this, 'filter_out_cloudinary' ) );
+		add_action( 'wp_insert_post_data', array( $this, 'prepare_amp_posts' ), 11 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'filter_attachment_for_js' ), 11 );
 
 		// Add support for custom header.

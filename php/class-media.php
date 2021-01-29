@@ -929,12 +929,19 @@ class Media extends Settings_Component implements Setup {
 	/**
 	 * Get the setup Cloudinary Folder.
 	 *
+	 * @param bool $add_trailing_slash Whether to add trailing slash or not.
+	 *
 	 * @return string
 	 */
-	public function get_cloudinary_folder() {
+	public function get_cloudinary_folder( $add_trailing_slash = true ) {
 		$folder = '';
-		if ( ! empty( $this->cloudinary_folder ) ) {
-			$folder = trailingslashit( $this->cloudinary_folder );
+
+		if ( ! empty( $this->cloudinary_folder ) && '/' !== $this->cloudinary_folder ) {
+			$folder = trim( $this->cloudinary_folder, '/' );
+
+			if ( $add_trailing_slash ) {
+				$folder = trailingslashit( $folder );
+			}
 		}
 
 		return $folder;
@@ -1263,8 +1270,9 @@ class Media extends Settings_Component implements Setup {
 		);
 
 		// Set folder if needed.
-		if ( ! empty( $this->cloudinary_folder ) ) {
-			$params['mloptions']['folder'] = array( 'path' => $this->cloudinary_folder );
+		$folder = $this->get_cloudinary_folder( false );
+		if ( ! empty( $folder ) ) {
+			$params['mloptions']['folder'] = array( 'path' => $folder );
 		}
 
 		$params['mloptions']['insert_transformation'] = true;

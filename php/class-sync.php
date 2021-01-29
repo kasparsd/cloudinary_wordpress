@@ -9,6 +9,7 @@ namespace Cloudinary;
 
 use Cloudinary\Component\Assets;
 use Cloudinary\Component\Setup;
+use Cloudinary\Settings\Setting;
 use Cloudinary\Sync\Delete_Sync;
 use Cloudinary\Sync\Download_Sync;
 use Cloudinary\Sync\Push_Sync;
@@ -67,9 +68,9 @@ class Sync implements Setup, Assets {
 	/**
 	 * Holds the sync settings object.
 	 *
-	 * @var Settings
+	 * @var Setting
 	 */
-	protected $settings;
+	public $settings;
 
 	/**
 	 * Holds the meta keys for sync meta to maintain consistency.
@@ -90,6 +91,7 @@ class Sync implements Setup, Assets {
 		'downloading'    => '_cloudinary_downloading',
 		'process_log'    => '_process_log',
 		'storage'        => '_cloudinary_storage',
+		'queued'         => '_cloudinary_sync_queued',
 	);
 
 	/**
@@ -381,9 +383,12 @@ class Sync implements Setup, Assets {
 				'note'     => __( 'Downloading from Cloudinary', 'cloudinary' ),
 			),
 			'file'        => array(
-				'generate' => 'get_attached_file',
+				'generate' => array( $this, 'generate_file_signature' ),
 				'priority' => 5.1,
 				'sync'     => array( $this->managers['upload'], 'upload_asset' ),
+				'validate' => function ( $attachment_id ) {
+					return ! $this->managers['media']->has_public_id( $attachment_id );
+				},
 				'state'    => 'uploading',
 				'note'     => __( 'Uploading to Cloudinary', 'cloudinary' ),
 				'required' => true, // Required to complete URL render flag.
@@ -791,18 +796,8 @@ class Sync implements Setup, Assets {
 	 */
 	public function init_background_upload() {
 		if ( ! empty( $this->to_sync ) ) {
-
-			$threads    = $this->managers['push']->queue->threads;
-			$chunk_size = ceil( count( $this->to_sync ) / count( $threads ) ); // Max of 3 threads to prevent server overload.
-			$chunks     = array_chunk( $this->to_sync, $chunk_size );
-			$token      = uniqid();
-			foreach ( $chunks as $key => $ids ) {
-				$params = array(
-					'process_key' => $token . '-' . $threads[ $key ],
-				);
-				set_transient( $params['process_key'], $ids, 120 );
-				$this->plugin->components['api']->background_request( 'process', $params );
-			}
+			$this->managers['queue']->add_to_queue( $this->to_sync, 'autosync' );
+			$this->managers['queue']->start_threads( 'autosync' );
 		}
 	}
 
@@ -939,6 +934,19 @@ class Sync implements Setup, Assets {
 		);
 
 		return $args;
+	}
+
+	/**
+	 * Generate the real file attachment path for the file sync type signature.
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 *
+	 * @return string
+	 */
+	public function generate_file_signature( $attachment_id ) {
+		$path = get_attached_file( $attachment_id );
+
+		return basename( $path );
 	}
 
 	/**

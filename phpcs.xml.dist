@@ -21,6 +21,10 @@
 		</properties>
 	</rule>
 
+	<rule ref="Generic.Commenting.DocComment.LongNotCapital">
+		<exclude-pattern>php/class-cli.php</exclude-pattern>
+	</rule>
+
 	<!-- Include WP VIP coding standard checks -->
 	<rule ref="WordPress-VIP-Go" />
 	<rule ref="WordPressVIPMinimum" />

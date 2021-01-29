@@ -95,11 +95,11 @@ class Video {
 	 * Initialises the Cloudinary player if it's enabled and if video content is found.
 	 */
 	public function init_player() {
-
 		if ( isset( $this->config['video_player'] ) && 'cld' === $this->config['video_player'] && ! is_admin() ) {
+			global $wp_query;
+			$posts = $wp_query->get_posts();
 			// Check content has a video to enqueue assets in correct location.
-			while ( have_posts() ) {
-				the_post();
+			foreach ( $posts as $post ) {
 				$has_video  = $this->media->filter->get_video_shortcodes( get_the_content() );
 				$video_tags = $this->media->filter->get_media_tags( get_the_content(), 'video' );
 				if ( ! empty( $has_video ) || ! empty( $video_tags ) ) {
@@ -124,8 +124,6 @@ class Video {
 					break; // Exit since we determined that a video is present.
 				}
 			}
-			// Reset wp_query.
-			rewind_posts();
 		}
 	}
 
