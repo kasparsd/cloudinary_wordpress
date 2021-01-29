@@ -466,7 +466,7 @@ class Setting {
 			 *
 			 * @param mixed   $new_value     The new setting value.
 			 * @param mixed   $current_value The setting current value.
-			 * @param Setting $value         The setting object.
+			 * @param Setting $setting         The setting object.
 			 */
 			$new_value = apply_filters( "cloudinary_settings_save_setting_{$slug}", $new_value, $current_value, $setting );
 			$new_value = apply_filters( 'cloudinary_settings_save_setting', $new_value, $current_value, $setting );
