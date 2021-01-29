@@ -192,7 +192,7 @@ class Sync_Queue {
 		if ( 'on' === $current_value && 'off' === $new_value ) {
 			if ( $this->is_running() ) {
 				$this->shutdown_queue( 'queue' );
-				$setting->add_error_notice( 'disabled_sync', 'Bulk sync has been disabled.', 'warning' );
+				add_settings_error( $setting->get_option_name(), 'disabled_sync', __( 'Bulk sync has been disabled.', 'cloudinary' ), 'warning' );
 			}
 			// Shutdown autosync queue.
 			$this->shutdown_queue( 'autosync' );
