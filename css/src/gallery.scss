@@ -49,6 +49,10 @@
 	align-items: center;
 }
 
+.wp-block-cloudinary-gallery .block-editor-media-placeholder .components-placeholder__label .dashicon {
+	margin-right: 8px;
+}
+
 /* stylelint-disable */
 .wp-block-cloudinary-gallery .block-editor-media-placeholder.is-appender .components-placeholder__label {
 	display: none;

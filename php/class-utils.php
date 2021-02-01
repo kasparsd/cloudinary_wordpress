@@ -8,6 +8,7 @@
 namespace Cloudinary;
 
 use Cloudinary\Settings\Setting;
+use Google\Web_Stories\Story_Post_Type;
 
 /**
  * Class that includes utility methods.
@@ -80,5 +81,28 @@ class Utils {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Check whether the inputted HTML string is powered by AMP.
+	 * Reference on how to detect an AMP page: https://amp.dev/documentation/guides-and-tutorials/learn/spec/amphtml/?format=websites#ampd.
+	 *
+	 * @param string $html_string The HTML string to check.
+	 *
+	 * @return bool
+	 */
+	public static function is_amp( $html_string ) {
+		return strpos( $html_string, '<html amp' ) !== false || strpos( $html_string, '<html ⚡' ) !== false;
+	}
+
+	/**
+	 * Check whether the inputted post type is a webstory.
+	 *
+	 * @param string $post_type The post type to compare to.
+	 *
+	 * @return bool
+	 */
+	public static function is_webstory_post_type( $post_type ) {
+		return class_exists( Story_Post_Type::class ) && Story_Post_Type::POST_TYPE_SLUG === $post_type;
 	}
 }
